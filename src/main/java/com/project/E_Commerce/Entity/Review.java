@@ -26,7 +26,7 @@ public class Review {
 
     @PastOrPresent(message = "Created date can't be in the future")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt=LocalDateTime.now();
 
     @NotNull(message = "User ID is required")
     private Integer userId;
