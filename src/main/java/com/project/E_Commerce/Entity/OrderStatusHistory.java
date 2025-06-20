@@ -1,6 +1,8 @@
 package com.project.E_Commerce.Entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,11 +14,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class OrderStatusHistory {
     private  Integer id;
-    private Integer orderId;
-    private OrderStatus status; // ✅ Use enum instead of raw String
 
+    @NotNull
+    private Integer orderId;
+
+    @NotNull
+    private OrderStatus status;
+
+    @PastOrPresent
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
+
     public enum OrderStatus {
         PENDING,
         CONFIRMED,

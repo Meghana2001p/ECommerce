@@ -1,5 +1,6 @@
 package com.project.E_Commerce.Entity;
 
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +9,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductDiscount {
-    private int id;
-    private int productId;
-    private int discountId;
+
+    private Integer id;
+
+    @NotNull(message = "Product ID is required")
+    private Integer productId;
+
+    @NotNull(message = "Discount ID is required")
+    private Integer discountId;
 }

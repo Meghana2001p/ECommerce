@@ -1,7 +1,6 @@
 package com.project.E_Commerce.Entity;
 
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,15 +11,29 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product {
-    private Integer id;
-    private String name;
-    private String description;
-    private String imageAdress;
-    private BigDecimal price;
-    private  String sku;
-    private boolean isAvaliable;
-    @ManyToOne
-    @JoinColumn(name="brand_id",referencedColumnName = "brandId")
-    private Brand brand;
 
+    private Integer id;
+
+    @NotBlank(message = "Product name is required")
+    @Size(max = 255, message = "Product name must be under 255 characters")
+    private String name;
+
+    @NotBlank(message = "Description is required")
+    private String description;
+
+    @NotBlank(message = "Image address is required")
+    private String imageAddress;
+
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero")
+    private BigDecimal price;
+
+    @NotBlank(message = "SKU is required")
+    @Size(max = 50, message = "SKU must be under 50 characters")
+    private String sku;
+
+    private Boolean isAvailable = true;
+
+    @NotNull(message = "Brand ID is required")
+    private Integer brandId;  // Foreign key for brand, used by MyBatis
 }

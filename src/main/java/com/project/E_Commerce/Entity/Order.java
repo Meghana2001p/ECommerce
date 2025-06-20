@@ -1,11 +1,9 @@
 package com.project.E_Commerce.Entity;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.cglib.core.Local;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,21 +14,26 @@ import java.time.LocalDateTime;
 public class Order {
 
     private Integer id;
-    private Integer userId;
-    private LocalDateTime orderDate= LocalDateTime.now();
-    @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus;
 
-    private enum OrderStatus
-    {
+    @NotNull(message = "User ID is required")
+    private Integer userId;
+
+    @PastOrPresent(message = "Order date must be in the past or present")
+    private LocalDateTime orderDate = LocalDateTime.now();
+
+    @NotNull(message = "Order status is required")
+    private OrderStatus orderStatus = OrderStatus.PENDING;
+
+    @NotNull(message = "Total amount is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be greater than 0")
+    private BigDecimal totalAmount;
+
+    public enum OrderStatus {
         PENDING,
         PROCESSING,
         SHIPPED,
         DELIVERED,
         CANCELLED,
-        REFUNDED;
+        REFUNDED
     }
-    private BigDecimal totalAmount;
-
-
 }
