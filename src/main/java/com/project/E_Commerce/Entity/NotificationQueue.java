@@ -38,16 +38,4 @@ public class NotificationQueue
     public enum NotificationStatus {
         PENDING, SENT, FAILED, CANCELLED
     }
-
-
-
-
-
-
-
-
-
-
-
-
 }
