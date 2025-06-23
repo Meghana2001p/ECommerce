@@ -10,7 +10,7 @@ import jakarta.validation.constraints.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Adress
+public class Address
 {
 
     private Integer id;
