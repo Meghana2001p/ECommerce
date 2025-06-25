@@ -16,15 +16,15 @@ public interface WishlistMapper {
     @Insert("INSERT INTO wishlist (user_id, product_id, created_at, available, product_name, product_image_url) " +
             "VALUES (#{userId}, #{productId}, #{createdAt}, #{available}, #{productName}, #{productImageUrl})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insertWishlistItem(Wishlist wishlist);
+    int insertWishlistItem(Wishlist wishlist);
 
     // 3. Delete a wishlist item
     @Delete("DELETE FROM wishlist WHERE id = #{id}")
-    void deleteWishlistItem(@Param("id") int id);
+    int deleteWishlistItem(@Param("id") int id);
 
     // 4. Delete wishlist item by user and product
     @Delete("DELETE FROM wishlist WHERE user_id = #{userId} AND product_id = #{productId}")
-    void deleteByUserAndProduct(@Param("userId") int userId, @Param("productId") int productId);
+    int deleteByUserAndProduct(@Param("userId") int userId, @Param("productId") int productId);
 
     // 5. Check if a product is already in wishlist
     @Select("SELECT * FROM wishlist WHERE user_id = #{userId} AND product_id = #{productId}")

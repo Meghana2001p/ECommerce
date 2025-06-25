@@ -33,4 +33,6 @@ public interface RelatedProductMapper {
     // 6. Get all relations
     @Select("SELECT * FROM related_product")
     List<RelatedProduct> getAllRelations();
+    @Select("SELECT EXISTS(SELECT 1 FROM related_product WHERE id = #{id})")
+    boolean relationExists(@Param("id") int id);
 }

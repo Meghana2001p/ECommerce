@@ -19,12 +19,14 @@ CREATE TABLE category (
     category_id INT PRIMARY KEY AUTO_INCREMENT,
     category_name VARCHAR(100) NOT NULL,
     parent_id INT,
-    FOREIGN KEY (parent_id) REFERENCES category(category_id)
+    FOREIGN KEY (parent_id) REFERENCES category(category_id),
+    CONSTRAINT uq_category_name_parent UNIQUE (category_name, parent_id)
 );
+
 
 CREATE TABLE brand (
     brand_id INT PRIMARY KEY AUTO_INCREMENT,
-    brand_name VARCHAR(255) NOT NULL,
+    brand_name VARCHAR(255) NOT NULL UNIQUE,
     category_id INT,
     FOREIGN KEY (category_id) REFERENCES category(category_id)
 );

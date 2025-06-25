@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.*;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.UniqueElements;
 
 
 @Data
@@ -18,6 +19,7 @@ public class User {
 
     @NotBlank(message = "Email must not be blank")
     @Email(message = "Invalid email")
+    @UniqueElements
     private String email;
 
     @NotBlank(message = "Password is required")

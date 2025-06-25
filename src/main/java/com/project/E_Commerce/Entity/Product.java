@@ -1,9 +1,12 @@
 package com.project.E_Commerce.Entity;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Collate;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import java.math.BigDecimal;
 
@@ -35,5 +38,6 @@ public class Product {
     private Boolean isAvailable = true;
 
     @NotNull(message = "Brand ID is required")
+    @Column(unique = true)
     private Integer brandId;  // Foreign key for brand, used by MyBatis
 }

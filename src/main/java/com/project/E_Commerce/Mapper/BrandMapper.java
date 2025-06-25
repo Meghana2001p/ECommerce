@@ -27,6 +27,12 @@ public interface BrandMapper {
     @Select("SELECT * FROM brand WHERE brand_id = #{brandId}")
     Brand getBrandById(@Param("brandId") int brandId);
 
+    @Select("SELECT * FROM brand WHERE brand_name = #{brandName}")
+    boolean getBrandByBrandName(@Param("brandName") String  brandName);
+
+    @Select("SELECT * FROM brand WHERE brand_id = #{brandId}")
+    Brand getBrandBy(@Param("brandId") int brandId);
+
     // Get All Brands
     @Select("SELECT * FROM brand")
     List<Brand> getAllBrands();

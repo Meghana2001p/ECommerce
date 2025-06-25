@@ -8,7 +8,7 @@ import java.util.List;
 @Mapper
 public interface SearchHistoryMapper {
 
-    // ✅ Insert new search record
+    // Insert new search record
     @Insert("""
         INSERT INTO search_history (user_id, product_id, keyword, session_id, searched_at)
         VALUES (#{userId}, #{productId}, #{keyword}, #{sessionId}, #{searchedAt})
@@ -16,24 +16,26 @@ public interface SearchHistoryMapper {
     @Options(useGeneratedKeys = true, keyProperty = "searchId")
     int createSearchHistory(SearchHistory searchHistory);
 
-    // ✅ Get all search history
+    // Get all search history
     @Select("SELECT * FROM search_history")
     List<SearchHistory> getAllSearchHistory();
 
-    // ✅ Get history by user ID
+    // Get history by user ID
     @Select("SELECT * FROM search_history WHERE user_id = #{userId}")
     List<SearchHistory> getSearchHistoryByUserId(@Param("userId") int userId);
 
-    // ✅ Get history by session ID
+    // Get history by session ID
     @Select("SELECT * FROM search_history WHERE session_id = #{sessionId}")
     List<SearchHistory> getSearchHistoryBySessionId(@Param("sessionId") String sessionId);
 
-    // ✅ Get recent N searches for user
+    // Get recent N searches for user
     @Select("""
         SELECT * FROM search_history
         WHERE user_id = #{userId}
         ORDER BY searched_at DESC
-        LIMIT #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     """)
-    List<SearchHistory> getRecentSearchesForUser(@Param("userId") int userId, @Param("limit") int limit);
+    List<SearchHistory> getRecentSearchesForUser( @Param("userId") int userId,
+                                                  @Param("limit") int limit,
+                                                  @Param("offset") int offset);
 }

@@ -27,10 +27,9 @@ public interface ProductAttributeValueMapper {
     // Delete by product + attribute
     @Delete("""
         DELETE FROM product_attribute_value
-        WHERE product_id = #{productId} AND attribute_id = #{attributeId}
+        WHERE  id =#{id}
     """)
-    int deleteAttributeValue(@Param("productId") int productId,
-                             @Param("attributeId") int attributeId);
+    int deleteAttributeValue(@Param("id") int id );
 
     // Get all attribute values for a product
     @Select("""
@@ -46,4 +45,11 @@ public interface ProductAttributeValueMapper {
     """)
     ProductAttributeValue getOneByProductAndAttribute(@Param("productId") int productId,
                                                       @Param("attributeId") int attributeId);
+
+
+    @Select("""
+        SELECT * FROM product_attribute_value
+        WHERE product_id = #{id}
+    """)
+    ProductAttributeValue getAttributeValueById(@Param("id")Integer id);
 }

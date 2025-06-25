@@ -1,9 +1,12 @@
 package com.project.E_Commerce.Mapper;
 
 import com.project.E_Commerce.Entity.User;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import java.util.List;
 
@@ -31,4 +34,12 @@ public interface UserMapper {
     @Select("SELECT * FROM users")
     List<User> getAllUsers();
 
+
+    //login user based on the email and the password
+    @Select("select * from users where email = #{email} and password= #{password} ")
+    User userLogin(String email,String password);
+
+
+    @Select("select * from users where email = #{email}")
+    boolean getUserByEmail(@Param("email") String email);
 }

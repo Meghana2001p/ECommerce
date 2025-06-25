@@ -34,4 +34,7 @@ public interface CategoryMapper {
     // Get Subcategories by Parent ID
     @Select("SELECT * FROM category WHERE parent_id = #{parentId}")
     List<Category> getSubCategories(@Param("parentId") int parentId);
+
+    @Select("SELECT * FROM category WHERE category_name = #{categoryName}")
+    Category getCategoryByName(@Param("categoryName") String  categoryName);
 }

@@ -20,7 +20,7 @@ public interface ProductImageMapper {
     @Insert("INSERT INTO product_image (product_id, image_url, is_primary, alt_text) " +
             "VALUES (#{productId}, #{imageUrl}, #{isPrimary}, #{altText})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insertProductImage(ProductImage productImage);
+    int insertProductImage(ProductImage productImage);
 
     // 4. Update image metadata (optional)
     @Update("UPDATE product_image SET image_url = #{imageUrl}, is_primary = #{isPrimary}, alt_text = #{altText} " +
@@ -29,7 +29,7 @@ public interface ProductImageMapper {
 
     // 5. Delete image by ID
     @Delete("DELETE FROM product_image WHERE id = #{id}")
-    void deleteProductImage(@Param("id") int id);
+    int deleteProductImage(@Param("id") int id);
 
     // 6. Delete all images for a product
     @Delete("DELETE FROM product_image WHERE product_id = #{productId}")

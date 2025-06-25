@@ -6,7 +6,8 @@ import org.apache.ibatis.annotations.*;
 import java.util.List;
 
 @Mapper
-public interface AppliedCouponMapper {
+public interface AppliedCouponMapper
+{
 
     // 1. Get applied coupon by order ID
     @Select("SELECT * FROM applied_coupon WHERE order_id = #{orderId}")

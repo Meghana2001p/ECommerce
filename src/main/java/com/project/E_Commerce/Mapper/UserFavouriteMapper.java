@@ -20,13 +20,13 @@ public interface UserFavouriteMapper {
     @Insert("INSERT INTO user_favourite (user_id, product_id, is_liked, added_at) " +
             "VALUES (#{userId}, #{productId}, #{isLiked}, #{addedAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insertUserFavourite(UserFavourite userFavourite);
+    int  insertUserFavourite(UserFavourite userFavourite);
 
     // 4. Update like status (e.g., toggle)
     @Update("UPDATE user_favourite SET is_liked = #{isLiked} WHERE user_id = #{userId} AND product_id = #{productId}")
-    void updateFavouriteStatus(@Param("userId") int userId, @Param("productId") int productId, @Param("isLiked") boolean isLiked);
+    int updateFavouriteStatus(@Param("userId") int userId, @Param("productId") int productId, @Param("isLiked") boolean isLiked);
 
     // 5. Remove product from favourites
     @Delete("DELETE FROM user_favourite WHERE user_id = #{userId} AND product_id = #{productId}")
-    void deleteByUserAndProduct(@Param("userId") int userId, @Param("productId") int productId);
+    int  deleteByUserAndProduct(@Param("userId") int userId, @Param("productId") int productId);
 }
