@@ -20,7 +20,7 @@ public interface CartItemMapper {
     @Insert("INSERT INTO cart_item (cart_id, product_id, quantity, price) " +
             "VALUES (#{cartId}, #{productId}, #{quantity}, #{price})")
     @Options(useGeneratedKeys = true, keyProperty = "itemId")
-    void insertCartItem(CartItem cartItem);
+    int insertCartItem(CartItem cartItem);
 
     // 4. Update quantity and price of an item
     @Update("UPDATE cart_item SET quantity = #{quantity}, price = #{price} WHERE item_id = #{itemId}")
@@ -28,7 +28,7 @@ public interface CartItemMapper {
 
     // 5. Delete item from cart
     @Delete("DELETE FROM cart_item WHERE item_id = #{itemId}")
-    void deleteCartItem(@Param("itemId") int itemId);
+    int deleteCartItem(@Param("itemId") int itemId);
 
     // 6. Clear all items in a cart
     @Delete("DELETE FROM cart_item WHERE cart_id = #{cartId}")
@@ -37,4 +37,7 @@ public interface CartItemMapper {
     // 7. Check if product already in cart
     @Select("SELECT * FROM cart_item WHERE cart_id = #{cartId} AND product_id = #{productId}")
     CartItem getCartItemByCartAndProduct(@Param("cartId") int cartId, @Param("productId") int productId);
+
+     @Delete("delete from cart_item")
+    int  clearCartById(int userId);
 }

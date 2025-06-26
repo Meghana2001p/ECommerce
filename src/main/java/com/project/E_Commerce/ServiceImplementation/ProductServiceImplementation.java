@@ -412,6 +412,31 @@ public class ProductServiceImplementation implements ProductService {
         }
     }
 
+    @Override
+    public boolean deleteCategory(int id)
+    {
+        if (id <= 0) {
+            throw new IllegalArgumentException("Category ID must be a positive number");
+        }
+
+        try {
+            Category existingCategory = categoryMapper.getCategoryById(id);
+            if (existingCategory == null)
+            {
+                throw new NotFoundException("Category does not exist with ID");
+            }
+            int affectedRows = categoryMapper.deleteCategory(id);
+
+            if (affectedRows == 0) {
+                throw new DataUpdateException("No category was deleted - possible concurrency issue");
+            }
+
+            return true;
+        } catch (DataAccessException e) {
+            throw new DataUpdateException("Failed to update category: " + e.getMessage());
+        }
+   }
+
     //related product
     @Override
     public RelatedProduct addRelatedProduct(RelatedProduct relatedProduct) {

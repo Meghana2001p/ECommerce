@@ -34,4 +34,6 @@ public interface CouponMapper {
     // 6. Get all coupons
     @Select("SELECT * FROM coupon ORDER BY expiry_date ASC")
     List<Coupon> getAllCoupons();
+
+
 }

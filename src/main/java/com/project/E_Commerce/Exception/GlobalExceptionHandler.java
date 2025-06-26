@@ -197,6 +197,106 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+
+    //UserDeactivationException
+    @ExceptionHandler(UserDeactivationException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(UserDeactivationException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "User Already Deactivation",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
+    @ExceptionHandler(PreferenceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePreferenceNotFoundException(
+            PreferenceNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Email Preference Not Found",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicatePreferenceException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicatePreferenceException(
+            DuplicatePreferenceException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Duplicate Email Preference",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            ServiceException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Email Preference Service Error",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+//NoContentException
+
+    @ExceptionHandler(NoContentException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            NoContentException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "No content expection",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
+//ProductSearchException
+
+    @ExceptionHandler(ProductSearchException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            ProductSearchException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Product Search Invalid",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+//InvalidSearchCriteriaException
+
+
+    @ExceptionHandler(InvalidSearchCriteriaException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            InvalidSearchCriteriaException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid Search Exception",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+
+
+
     // Generic exception handler
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception exception, HttpServletRequest request) {

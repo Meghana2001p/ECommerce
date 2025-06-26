@@ -29,4 +29,6 @@ public interface AppliedCouponMapper
     // 5. Delete by order ID (e.g. if order is cancelled)
     @Delete("DELETE FROM applied_coupon WHERE order_id = #{orderId}")
     void deleteByOrderId(@Param("orderId") int orderId);
+
+
 }

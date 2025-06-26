@@ -38,4 +38,14 @@ public interface SearchHistoryMapper {
     List<SearchHistory> getRecentSearchesForUser( @Param("userId") int userId,
                                                   @Param("limit") int limit,
                                                   @Param("offset") int offset);
+
+
+
+
+    @Delete("delete from search_history where user_id=#{userId}")
+   int  deleteSearchHistoryById(@Param("userId") int userId);
+
+
+    @Delete("delete from search_history where session_id=#{sessionId}")
+    int  deleteSearchHistoryBySessionId(@Param("userId") String  sessionId);
 }

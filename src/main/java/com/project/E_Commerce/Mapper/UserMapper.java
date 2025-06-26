@@ -26,7 +26,7 @@ public interface UserMapper {
     int updateUser(User user);
 
     @Delete("DELETE FROM users WHERE user_id = #{userId}")
-   int deleteUser(User user);
+   int deleteUser(@Param("userId")int  userId);
 
     @Select("SELECT * FROM users WHERE user_id = #{id}")
    User getUserByID(@Param("id") Integer id);
@@ -42,4 +42,13 @@ public interface UserMapper {
 
     @Select("select * from users where email = #{email}")
     boolean getUserByEmail(@Param("email") String email);
+
+
+    @Select("SELECT EXISTS(SELECT 1 FROM users WHERE user_id = #{userId} AND is_active = true)")
+    boolean isUserActive(@Param("userId") int userId);
+
+    // Deactivate user by ID
+    @Update("UPDATE users SET is_active = FALSE WHERE user_id = #{userId}")
+    int deactivateUser(@Param("userId") int userId);
+
 }

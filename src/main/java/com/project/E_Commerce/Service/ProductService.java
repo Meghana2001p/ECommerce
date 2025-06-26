@@ -43,6 +43,7 @@ public interface ProductService {
     List<Category> getAllCategories();
     Category getCategoryById(int id);
     Category updateCategory(Category category);
+    boolean deleteCategory(int id);
 
     //Related Product
     RelatedProduct addRelatedProduct(RelatedProduct relatedProduct);
@@ -50,4 +51,5 @@ public interface ProductService {
     String deleteRelatedProduct(int relationId);
     List<RelatedProduct> getRelatedProductsByType(int productId, RelatedProduct.RelationshipType type);
     String hardDeleteRelation(int productId, int relatedProductId, RelatedProduct.RelationshipType type);
+
 }

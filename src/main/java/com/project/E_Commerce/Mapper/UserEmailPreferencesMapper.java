@@ -46,4 +46,6 @@ public interface UserEmailPreferencesMapper {
     """)
     int deletePreference(@Param("userId") int userId,
                          @Param("emailType") String emailType);
+
+
 }

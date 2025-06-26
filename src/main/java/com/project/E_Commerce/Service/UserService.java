@@ -13,11 +13,17 @@ public interface UserService {
     User updateUser(User user);
     User getUserById(int userId);
     User userLogin(String email,String password);
+    void deactivateUser(int userId);
+    void deleteUser(int userId);
 
     // Email Preferences--User can choose the type of email,update that and late get all the userEmails
-    UserEmailPreferences setEmailPreference(UserEmailPreferences pref);
-    void updateEmailSubscription(int userId, String emailType, boolean isSubscribed);
-    List<UserEmailPreferences> getUserEmailPreferences(int userId);
+    UserEmailPreferences createEmailPreference(UserEmailPreferences pref);
+    boolean updateEmailSubscription(int userId, UserEmailPreferences.EmailType emailType, boolean isSubscribed);
+    List<UserEmailPreferences> getUserEmailPreferencesById(int userId);
+    UserEmailPreferences getPreference(int userId, UserEmailPreferences.EmailType emailType);
+    boolean deletePreference(int userId, UserEmailPreferences.EmailType emailType);
+    boolean isSubscribedTo(int userId, String emailType);
+
 
     // Favorites (Likes)
     List<UserFavourite> getUserFavourites(int userId);
@@ -36,12 +42,13 @@ public interface UserService {
 
 
 //searchHistory
-void addSearchHistory(SearchHistory searchHistory);
+    void addSearchHistory(SearchHistory searchHistory);
     List<SearchHistory> getAllSearchHistory();
     List<SearchHistory> getSearchHistoryByUserId(int userId);
     List<SearchHistory> getSearchHistoryBySessionId(String sessionId);
     List<SearchHistory> getRecentSearchesForUser(int userId, int limit);
-
+    void clearSearchHistoryForUser(int userId);
+    void clearSearchHistoryForSession(String sessionId);
 
 
 }

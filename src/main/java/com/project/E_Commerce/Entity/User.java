@@ -34,6 +34,8 @@ public class User {
     @NotNull(message = "Status is required")
     private Status status;
 
+    private boolean isActive;
+
     public enum Role {
         ADMIN, USER, SELLER
     }

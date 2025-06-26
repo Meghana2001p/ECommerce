@@ -1,6 +1,7 @@
 package com.project.E_Commerce.Mapper;
 
 import com.project.E_Commerce.Entity.Product;
+import jakarta.validation.constraints.NotNull;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -81,4 +82,7 @@ public interface ProductMapper {
            OR LOWER(c.category_name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
     """)
     List<Product> searchProductsByKeyword(@Param("keyword") String keyword);
+
+    @Select("SELECT * FROM product WHERE id = #{productId} AND is_available = true")
+    boolean inStock(@Param("productId") Integer productId);
 }

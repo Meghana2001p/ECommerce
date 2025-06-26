@@ -4,6 +4,7 @@ import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception.*;
 import com.project.E_Commerce.Mapper.*;
 import com.project.E_Commerce.Service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -11,8 +12,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+//User,UserFavourite,Wishlist,UserEmailPreference,SearchHistory
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -31,21 +34,36 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public User createUser(User user) {
+
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
         }
+        if (user.getConfirmPassword() != null &&
+                !user.getPassword().equals(user.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and confirm password do not match");
+        }
         try {
+
             // Check if user already exists
             if (userMapper.getUserByEmail(user.getEmail())) {
                 throw new UserAlreadyExists("User with email " + user.getEmail() + " already exists");
             }
 
+            //if the user status is null
+            if (user.getStatus() == null) {
+                user.setStatus(User.Status.ACTIVE);
+            }
+
             int result = userMapper.createUser(user);
+
+
             if (result <= 0) {
                 throw new DataCreationException("Failed to create user");
             }
             return user;
-        } catch (DataAccessException e) {
+        }
+        catch (DataAccessException e)
+        {
             throw new DataCreationException("Failed to create user: " + e.getMessage());
         }
     }
@@ -106,45 +124,192 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserEmailPreferences setEmailPreference(UserEmailPreferences pref) {
-        if (pref == null) {
-            throw new IllegalArgumentException("Email preference cannot be null");
+    @Transactional
+    public void deactivateUser(int userId) {
+        try {
+            User user = userMapper.getUserByID(userId);
+            if (user == null) {
+                throw new UserNotFoundException("User not found with ID: " + userId);
+            }
+
+            // 2. Check if user is already deactivated
+            if (!user.isActive()) {
+                throw new UserDeactivationException("User with ID " + userId + " is already deactivated");
+            }
+
+
+            // 4. Deactivate the user account
+            int result = userMapper.deactivateUser(userId);
+
+            if (result <= 0) {
+                throw new DataUpdateException("Failed to deactivate user with ID: " + userId);
+            }
+
+            // 5. Log the deactivation
+            log.info("User with ID {} was successfully deactivated", userId);
+
+            // 6. Optionally send notification
+          //  notificationService.sendDeactivationNotification(user.getEmail());
+
+        } catch (DataAccessException e) {
+            log.error("Error deactivating user with ID {}: {}", userId, e.getMessage());
+            throw new DataDeletionException("Failed to deactivate user with ID " + userId + ": " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteUser(int userId)
+    {
+        User user = userMapper.getUserByID(userId);
+        if (user == null) {
+            throw new UserNotFoundException("User not found with ID: " + userId);
         }
         try {
-            int res = userEmailPreferencesMapper.createPreference(pref);
-            if (res <= 0) {
-                throw new DataCreationException("The email preference could not be set");
+            userMapper.deleteUser(userId);
+        }
+        catch (DataAccessException e)
+        {
+            throw new DataDeletionException("Failed to delete user with ID " + userId + ": " + e.getMessage());
+
+
+        }
+
+    }
+
+
+
+
+
+
+    //Email preferencs
+
+    @Transactional
+    public UserEmailPreferences createEmailPreference(UserEmailPreferences pref) {
+        try {
+            // Check if preference already exists
+            if (userEmailPreferencesMapper.getPreference(pref.getUserId(), pref.getEmailType().toString()) != null) {
+                throw new DuplicatePreferenceException(
+                        "Preference already exists for user " + pref.getUserId() +
+                                " and email type " + pref.getEmailType()
+                );
+            }
+
+            int affectedRows = userEmailPreferencesMapper.createPreference(pref);
+            if (affectedRows <= 0) {
+                throw new ServiceException("Failed to create email preference");
             }
             return pref;
-        } catch (DataAccessException e) {
-            throw new DataCreationException("Failed to set email preference: " + e.getMessage());
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Database error while creating email preference");
         }
     }
 
-    @Override
-    public void updateEmailSubscription(int userId, String emailType, boolean isSubscribed) {
+    @Transactional
+    public boolean updateEmailSubscription(int userId,
+                                           UserEmailPreferences.EmailType emailType,
+                                           boolean isSubscribed) {
         try {
-            int res = userEmailPreferencesMapper.updateSubscriptionStatus(userId, emailType, isSubscribed);
-            if (res <= 0) {
-                throw new DataUpdateException("Failed to update email subscription");
+            // Verify preference exists first
+            if (userEmailPreferencesMapper.getPreference(userId, emailType.toString()) == null) {
+                throw new PreferenceNotFoundException(
+                        "No preference found for user " + userId +
+                                " and email type " + emailType
+                );
             }
-        } catch (DataAccessException e) {
-            throw new DataUpdateException("Failed to update email subscription: " + e.getMessage());
+
+            int updated = userEmailPreferencesMapper.updateSubscriptionStatus(
+                    userId,
+                    emailType.toString(),
+                    isSubscribed
+            );
+
+            if (updated <= 0) {
+                throw new ServiceException("Failed to update email subscription");
+            }
+            return true;
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Database error while updating email subscription");
         }
     }
 
-    @Override
-    public List<UserEmailPreferences> getUserEmailPreferences(int userId) {
+    public List<UserEmailPreferences> getUserEmailPreferencesById(int userId) {
         try {
             List<UserEmailPreferences> preferences = userEmailPreferencesMapper.getPreferencesByUserId(userId);
-            if (preferences == null || preferences.isEmpty()) {
-                log.info("No email preferences found for user ID: {}", userId);
+            if (preferences.isEmpty()) {
+                throw new PreferenceNotFoundException("No preferences found for user " + userId);
             }
             return preferences;
-        } catch (DataAccessException e) {
-            throw new DataRetrievalException("Failed to retrieve email preferences for user ID " + userId);
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Database error while fetching user preferences");
         }
     }
+
+    public UserEmailPreferences getPreference(int userId,
+                                              UserEmailPreferences.EmailType emailType) {
+        try {
+            UserEmailPreferences pref = userEmailPreferencesMapper.getPreference(
+                    userId,
+                    emailType.toString()
+            );
+            if (pref == null) {
+                throw new PreferenceNotFoundException(
+                        "No preference found for user " + userId +
+                                " and email type " + emailType
+                );
+            }
+            return pref;
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Database error while fetching preference");
+        }
+    }
+
+    @Transactional
+    public boolean deletePreference(int userId,
+                                    UserEmailPreferences.EmailType emailType) {
+        try {
+            // Verify exists before deletion
+            if (userEmailPreferencesMapper.getPreference(userId, emailType.toString()) == null) {
+                throw new PreferenceNotFoundException(
+                        "Cannot delete - no preference found for user " + userId +
+                                " and email type " + emailType
+                );
+            }
+
+            int deleted = userEmailPreferencesMapper.deletePreference(userId, emailType.toString());
+            if (deleted == 0) {
+                throw new ServiceException("Failed to delete email preference");
+            }
+            return true;
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Database error while deleting preference");
+        }
+    }
+
+    public boolean isSubscribedTo(int userId, String emailType) {
+        try {
+            UserEmailPreferences pref = userEmailPreferencesMapper.getPreference(userId, emailType);
+            if (pref == null) {
+                throw new PreferenceNotFoundException(
+                        "No preference found for user " + userId +
+                                " and email type " + emailType
+                );
+            }
+            return pref.getIsSubscribed();
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Database error while checking subscription status");
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     public List<UserFavourite> getUserFavourites(int userId) {
@@ -304,12 +469,23 @@ public class UserServiceImplementation implements UserService {
         }
     }
 
+
+
+
+
+
+
+    //Search history
+
     @Override
     public void addSearchHistory(SearchHistory searchHistory) {
         if (searchHistory == null) {
             throw new IllegalArgumentException("Search history cannot be null");
         }
         try {
+            if (searchHistory.getSearchedAt() == null) {
+                searchHistory.setSearchedAt(LocalDateTime.now());
+            }
             int res = searchHistoryMapper.createSearchHistory(searchHistory);
             if (res <= 0) {
                 log.warn("Search history insertion failed for userId: {}", searchHistory.getUserId());
@@ -374,6 +550,45 @@ public class UserServiceImplementation implements UserService {
             return recentSearches;
         } catch (DataAccessException e) {
             throw new DataRetrievalException("Failed to retrieve recent searches for user ID " + userId);
+        }
+    }
+
+    @Override
+    public void clearSearchHistoryForUser(int userId) {
+        try {
+            // Validate user ID first
+            if (userId <= 0) {
+                throw new IllegalArgumentException("User ID must be a positive number");
+            }
+
+            int affectedRows = searchHistoryMapper.deleteSearchHistoryById(userId);
+
+            // Optional: Check if any rows were actually deleted
+            if (affectedRows == 0) {
+
+                throw new NoContentException("No search history found for user: " + userId);
+            }
+
+
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Failed to clear search history for user");
+        }
+    }
+
+    @Override
+    public void clearSearchHistoryForSession(String sessionId) {
+        try {
+            if (sessionId == null || sessionId.isEmpty()) {
+                throw new IllegalArgumentException("Session ID cannot be null or empty");
+            }
+
+            int affectedRows = searchHistoryMapper.deleteSearchHistoryBySessionId(sessionId);
+
+            if (affectedRows == 0) {
+                throw new NoContentException("No search history found for session: " + sessionId);
+            }
+        } catch (DataAccessException ex) {
+            throw new ServiceException("Failed to clear search history for session");
         }
     }
 }
