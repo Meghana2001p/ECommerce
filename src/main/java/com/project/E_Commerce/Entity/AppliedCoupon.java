@@ -17,6 +17,10 @@ public class AppliedCoupon {
     @Min(value = 1, message = "Order ID must be greater than 0")
     private Integer orderId;
 
+    @NotNull(message = "Cart ID cannot be null")
+    @Min(value = 1, message = "Cart ID must be greater than 0")
+    private Integer cartId;
+
     @NotNull(message = "Coupon ID cannot be null")
     @Min(value = 1, message = "Coupon ID must be greater than 0")
     private Integer couponId;

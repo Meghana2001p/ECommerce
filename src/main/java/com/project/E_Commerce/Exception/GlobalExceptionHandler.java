@@ -292,6 +292,77 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+//CartNotFoundException
+
+
+    @ExceptionHandler(CartNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            CartNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Cart Not Found",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+//ProductNotFoundException
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            ProductNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Cart Not Found",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+    //CouponNotFoundException
+    @ExceptionHandler(CouponNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            CouponNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Coupon Not Found ",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+//InvalidCouponException
+
+
+    @ExceptionHandler(InvalidCouponException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            InvalidCouponException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid Coupon ",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+//CouponAlreadyExistsException
+@ExceptionHandler(CouponAlreadyExistsException.class)
+public ResponseEntity<ErrorResponse> handleServiceException(
+        CouponAlreadyExistsException exception, HttpServletRequest request) {
+    ErrorResponse error = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            " Coupon Already exists",
+            exception.getMessage()
+    );
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+}
 
 
 

@@ -28,6 +28,9 @@ public class Coupon {
     @DecimalMax(value = "100.0", inclusive = true, message = "Discount cannot exceed 100%")
     private BigDecimal discountPercent;
 
+    @DecimalMin(value = "0.0", inclusive = false, message = "Discount amount must be greater than 0")
+    private BigDecimal discountAmount;
+
     @Future(message = "Expiry date must be in the future")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate expiryDate;

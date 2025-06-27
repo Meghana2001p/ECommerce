@@ -81,13 +81,18 @@ CREATE TABLE coupon (
     id INT PRIMARY KEY AUTO_INCREMENT,
     code VARCHAR(255) NOT NULL UNIQUE,
     discount_percent DECIMAL(60, 30) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100),
+    discount_amount DECIMAL(50, 20)
     expiry_date DATE NOT NULL,
     usage_limit INT NOT NULL CHECK (usage_limit >= 1)
 );
 CREATE TABLE applied_coupon (
     id INT PRIMARY KEY AUTO_INCREMENT,
+        cart_id INT NOT NULL,
+
     order_id INT NOT NULL,
     coupon_id INT NOT NULL,
+        FOREIGN KEY (cart_id) REFERENCES cart(cart_id),
+
     FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (coupon_id) REFERENCES coupon(id)
 );

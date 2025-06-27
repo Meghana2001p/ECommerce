@@ -20,7 +20,7 @@ public interface CouponMapper {
     @Insert("INSERT INTO coupon (code, discount_percent, expiry_date, usage_limit) " +
             "VALUES (#{code}, #{discountPercent}, #{expiryDate}, #{usageLimit})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insertCoupon(Coupon coupon);
+    int insertCoupon(Coupon coupon);
 
     // 4. Update coupon usage limit or expiry
     @Update("UPDATE coupon SET discount_percent = #{discountPercent}, expiry_date = #{expiryDate}, usage_limit = #{usageLimit} " +
