@@ -1,11 +1,23 @@
 CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
+
     user_id INT NOT NULL,
+    shipping_address VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(15) NOT NULL,
+
+    payment_method ENUM('COD', 'UPI', 'CREDIT_CARD', 'DEBIT_CARD', 'NET_BANKING', 'WALLET') NOT NULL,
+    is_gift BOOLEAN DEFAULT FALSE,
+
     order_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL,
+
     order_status ENUM('PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED') NOT NULL DEFAULT 'PENDING',
-    total_amount DECIMAL(30,20) NOT NULL CHECK (total_amount > 0),
+    total_amount DECIMAL(30, 20) NOT NULL CHECK (total_amount > 0),
+
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
 CREATE TABLE order_item (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,

@@ -1,6 +1,8 @@
 package com.project.E_Commerce.Mapper;
 
 import com.project.E_Commerce.Entity.DeliveryStatus;
+import com.project.E_Commerce.dto.DeliveryStatusAdminUpdateDto;
+import com.project.E_Commerce.dto.DeliveryStatusAgentUpdateDto;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -20,7 +22,7 @@ public interface DeliveryStatusMapper {
     @Insert("INSERT INTO delivery_status (order_id, status, updated_at, tracking_number, carrier, estimated_delivery_date, delivery_type) " +
             "VALUES (#{orderId}, #{status}, #{updatedAt}, #{trackingNumber}, #{carrier}, #{estimatedDeliveryDate}, #{deliveryType})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insertDeliveryStatus(DeliveryStatus deliveryStatus);
+    int  insertDeliveryStatus(DeliveryStatus deliveryStatus);
 
     // 4. Update status and timestamp
     @Update("UPDATE delivery_status SET status = #{status}, updated_at = CURRENT_TIMESTAMP WHERE order_id = #{orderId}")
@@ -34,4 +36,36 @@ public interface DeliveryStatusMapper {
     // 6. Get all delivery records
     @Select("SELECT * FROM delivery_status ORDER BY updated_at DESC")
     List<DeliveryStatus> getAllDeliveryStatuses();
+
+
+
+    @Update("""
+        UPDATE delivery_status 
+        SET 
+            status = #{status},
+            tracking_number = #{trackingNumber},
+            estimated_delivery_date = #{estimatedDeliveryDate},
+            updated_at = NOW()
+        WHERE order_id = #{orderId}
+    """)
+    int updateDeliveryStatus(DeliveryStatusAgentUpdateDto dto);
+
+
+
+
+
+    @Update("""
+    UPDATE delivery_status 
+    SET 
+        status = #{status},
+        tracking_number = #{trackingNumber},
+        carrier = #{carrier},
+        estimated_delivery_date = #{estimatedDeliveryDate},
+        delivery_type = #{deliveryType},
+        updated_at = NOW()
+    WHERE order_id = #{orderId}
+""")
+    int updateDeliveryStatusByAdmin(DeliveryStatusAdminUpdateDto dto);
+
+
 }

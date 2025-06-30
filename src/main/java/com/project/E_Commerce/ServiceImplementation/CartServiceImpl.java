@@ -149,6 +149,24 @@ public class CartServiceImpl implements CartService {
     }
 
 
+    //remove all the Cart items
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //from json the coupon entity to be sent
     @Override
     public Coupon addCoupons(Coupon coupon) {
@@ -224,6 +242,7 @@ public class CartServiceImpl implements CartService {
 
     }
 
+
     @Override
     public CartAmountSummaryDto calculateCartSummary(int userId) {
         // 1. Get cart for user
@@ -289,9 +308,9 @@ public class CartServiceImpl implements CartService {
             summary.setShipping(shipping);
             summary.setTotalAmount(totalAmount);
             summary.setCouponCode(couponCode);
-
             return summary;
-        } catch (DataRetrievalException e) {
+        }
+        catch (DataRetrievalException e) {
             throw new DataRetrievalException("Data could not be deleted");
         }
 

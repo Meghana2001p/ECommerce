@@ -17,10 +17,34 @@ public interface OrderMapper {
     List<Order> getOrdersByUserId(@Param("userId") int userId);
 
     // 3. Insert a new order
-    @Insert("INSERT INTO orders (user_id, order_date, order_status, total_amount) " +
-            "VALUES (#{userId}, #{orderDate}, #{orderStatus}, #{totalAmount})")
+    @Insert("""
+    INSERT INTO orders (
+        user_id,
+        shipping_address,
+        phone_number,
+        payment_method,
+        is_gift,
+        order_date,
+        created_at,
+        updated_at,
+        order_status,
+        total_amount
+    ) VALUES (
+        #{userId},
+        #{shippingAddress},
+        #{phoneNumber},
+        #{paymentMethod},
+        #{isGift},
+        #{orderDate},
+        #{createdAt},
+        #{updatedAt},
+        #{orderStatus},
+        #{totalAmount}
+    )
+""")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insertOrder(Order order);
+
 
     // 4. Update order status
     @Update("UPDATE orders SET order_status = #{orderStatus} WHERE id = #{id}")

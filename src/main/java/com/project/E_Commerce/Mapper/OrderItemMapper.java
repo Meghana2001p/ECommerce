@@ -1,6 +1,7 @@
 package com.project.E_Commerce.Mapper;
 
 import com.project.E_Commerce.Entity.OrderItem;
+import com.project.E_Commerce.dto.UserOrderUpdateDto;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -29,4 +30,22 @@ public interface OrderItemMapper {
     // 5. Delete all items for an order
     @Delete("DELETE FROM order_item WHERE order_id = #{orderId}")
     int  deleteItemsByOrderId(@Param("orderId") int orderId);
+
+
+    //update by the user
+    @Update("""
+    UPDATE orders
+    SET 
+        shipping_address = COALESCE(#{shippingAddress}, shipping_address),
+        phone_number = COALESCE(#{phoneNumber}, phone_number),
+        is_gift = COALESCE(#{isGift}, is_gift),
+        updated_at = NOW(),
+        order_status = CASE
+            WHEN #{cancelOrder} = true AND order_status IN ('PENDING', 'PROCESSING') THEN 'CANCELLED'
+            ELSE order_status
+        END
+    WHERE id = #{orderId}
+""")
+    int updateOrderByUser(UserOrderUpdateDto dto);
+
 }

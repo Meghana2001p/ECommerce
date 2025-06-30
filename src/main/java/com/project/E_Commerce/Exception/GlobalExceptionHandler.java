@@ -364,6 +364,62 @@ public ResponseEntity<ErrorResponse> handleServiceException(
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 }
 
+//OrderCouldNotBePlacedException
+@ExceptionHandler(OrderCouldNotBePlacedException.class)
+public ResponseEntity<ErrorResponse> handleServiceException(
+        OrderCouldNotBePlacedException exception, HttpServletRequest request) {
+    ErrorResponse error = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            " Order Could Not Be Placed ",
+            exception.getMessage()
+    );
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+}
+
+//OrderValidationException
+
+    @ExceptionHandler(OrderValidationException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            OrderValidationException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Order Validation Exception",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+    //DeliveryStatusCreationException
+    @ExceptionHandler(DeliveryStatusCreationException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            DeliveryStatusCreationException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Delivery Status Creation Exception",
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+   //OrderCannotCancelException
+   @ExceptionHandler(OrderCannotCancelException.class)
+   public ResponseEntity<ErrorResponse> handleServiceException(
+           OrderCannotCancelException exception, HttpServletRequest request) {
+       ErrorResponse error = new ErrorResponse(
+               LocalDateTime.now(),
+               HttpStatus.BAD_REQUEST.value(),
+               "Order Cannot Cancel Exception",
+               exception.getMessage()
+       );
+       return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+   }
 
 
 

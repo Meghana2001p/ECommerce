@@ -3,19 +3,24 @@ package com.project.E_Commerce.Mapper;
 import com.project.E_Commerce.Entity.CartItem;
 import com.project.E_Commerce.dto.CartItemDto;
 import org.apache.ibatis.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 @Mapper
 public interface CartItemMapper {
 
+
+
+
     // 1. Get all items in a cart
     @Select("SELECT * FROM cart_item WHERE cart_id = #{cartId}")
     List<CartItem> getItemsByCartId(@Param("cartId") int cartId);
 
     // 2. Get a cart item by ID
-    @Select("SELECT * FROM cart_item WHERE item_id = #{itemId}")
-    CartItem getCartItemById(@Param("itemId") int itemId);
+    @Select("SELECT * FROM cart_item WHERE cart_id = #{cartId} LIMIT 1")
+    CartItem getAnyCartItemByCartId(@Param("cartId") int cartId);
+
 
     // 3. Add item to cart
     @Insert("INSERT INTO cart_item (cart_id, product_id, quantity) " +
@@ -39,8 +44,9 @@ public interface CartItemMapper {
     @Select("SELECT * FROM cart_item WHERE cart_id = #{cartId} AND product_id = #{productId}")
     CartItem getCartItemByCartAndProduct(@Param("cartId") int cartId, @Param("productId") int productId);
 
-     @Delete("delete from cart_item")
-    int  clearCartById(int userId);
+    @Delete("DELETE FROM cart_item WHERE cart_id = #{cartId}")
+    int clearCartByCartId(@Param("cartId") int cartId);
+
 
 
 

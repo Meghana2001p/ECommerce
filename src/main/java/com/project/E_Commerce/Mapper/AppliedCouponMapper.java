@@ -1,6 +1,7 @@
 package com.project.E_Commerce.Mapper;
 
 import com.project.E_Commerce.Entity.AppliedCoupon;
+import com.project.E_Commerce.Entity.CartItem;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -26,10 +27,6 @@ public interface AppliedCouponMapper
     @Delete("DELETE FROM applied_coupon WHERE id = #{id}")
     void deleteAppliedCoupon(@Param("id") int id);
 
-    // 5. Delete by order ID (e.g. if order is cancelled)
-    @Delete("DELETE FROM applied_coupon WHERE order_id = #{orderId}")
-    void deleteByOrderId(@Param("orderId") int orderId);
-
 
 
     //verify the coupon is applied or not
@@ -39,4 +36,11 @@ public interface AppliedCouponMapper
 
     @Select("SELECT * FROM applied_coupon WHERE cart_id = #{cartId}")
     AppliedCoupon getAppliedCouponByCartId(@Param("cartId") int cartId);
+
+
+    @Delete("DELETE FROM applied_coupon WHERE cart_id = #{cartId}")
+
+    void deleteByCartId(@Param("cartId") int cartId);
+
+
 }

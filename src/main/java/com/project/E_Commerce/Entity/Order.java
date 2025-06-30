@@ -1,5 +1,6 @@
 package com.project.E_Commerce.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,17 +16,35 @@ public class Order {
 
     private Integer id;
 
+    // ✅ User Input
     @NotNull(message = "User ID is required")
     private Integer userId;
+
+    @NotBlank(message = "Shipping address is required")
+    private String shippingAddress;
+
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Invalid phone number")
+    private String phoneNumber;
+
+    @NotNull(message = "Payment method is required")
+    private PaymentMethod paymentMethod;
+
+    private boolean isGift = false;
+
 
     @PastOrPresent(message = "Order date must be in the past or present")
     private LocalDateTime orderDate = LocalDateTime.now();
 
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime updatedAt;
+
+
     @NotNull(message = "Order status is required")
     private OrderStatus orderStatus = OrderStatus.PENDING;
 
-    @NotNull(message = "Total amount is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be greater than 0")
+    @JsonIgnore
     private BigDecimal totalAmount;
 
     public enum OrderStatus {
@@ -35,5 +54,13 @@ public class Order {
         DELIVERED,
         CANCELLED,
         REFUNDED
+    }
+    public enum PaymentMethod {
+        COD,
+        UPI,
+        CREDIT_CARD,
+        DEBIT_CARD,
+        NET_BANKING,
+        WALLET
     }
 }
