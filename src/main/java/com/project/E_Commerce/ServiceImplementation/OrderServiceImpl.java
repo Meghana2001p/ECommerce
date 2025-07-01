@@ -153,7 +153,7 @@ public class OrderServiceImpl implements OrderService {
             NotificationQueue notification = new NotificationQueue();
             notification.setUserId(order.getUserId());
             notification.setType(NotificationQueue.NotificationType.EMAIL);
-            notification.setMessage("🎉 Your order #" + order.getId() + " has been placed! Track ID: " + trackingNumber);
+            notification.setMessage("🎉 Your order " + order.getId() + " has been placed! Track ID: " + trackingNumber);
             notification.setStatus(NotificationQueue.NotificationStatus.PENDING);
             notification.setScheduledAt(LocalDateTime.now());
             notificationMapper.insertNotification(notification);

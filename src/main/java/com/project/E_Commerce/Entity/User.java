@@ -1,38 +1,52 @@
 package com.project.E_Commerce.Entity;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.*;
-import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.UniqueElements;
 
-
+@Entity
+@Table(
+        name = "users",
+        uniqueConstraints = @UniqueConstraint(columnNames = "email")
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Integer userId;
 
     @NotBlank(message = "Name must not be blank")
+    @Column(nullable = false, length = 255)
     private String name;
 
     @NotBlank(message = "Email must not be blank")
     @Email(message = "Invalid email")
-    @UniqueElements
+    @Column(nullable = false, length = 255, unique = true)
     private String email;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
+    @Column(nullable = false, length = 255)
     private String password;
 
+    /** Transient: used only for validation, not stored in DB */
+    @Transient
     private String confirmPassword;
 
     @NotNull(message = "Role is required")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
     @NotNull(message = "Status is required")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status;
+
 
     private boolean isActive;
 

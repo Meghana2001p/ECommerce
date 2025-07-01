@@ -1,5 +1,6 @@
 package com.project.E_Commerce.Entity;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,19 +10,24 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "applied_coupon")
+
 public class AppliedCoupon {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Order ID cannot be null")
-    @Min(value = 1, message = "Order ID must be greater than 0")
-    private Integer orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
 
-    @NotNull(message = "Cart ID cannot be null")
-    @Min(value = 1, message = "Cart ID must be greater than 0")
-    private Integer cartId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
-    @NotNull(message = "Coupon ID cannot be null")
-    @Min(value = 1, message = "Coupon ID must be greater than 0")
-    private Integer couponId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id", nullable = false)
+    private Coupon coupon;
 }

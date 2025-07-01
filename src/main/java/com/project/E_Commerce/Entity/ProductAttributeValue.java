@@ -1,28 +1,35 @@
 package com.project.E_Commerce.Entity;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
+@Entity
+@Table(
+        name = "product_attribute_value",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "attribute_id"})
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductAttributeValue {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Product ID is required")
-    private Integer productId;
+    @NotNull(message = "Product is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    @NotNull(message = "Attribute ID is required")
-    private Integer attributeId;
+    @NotNull(message = "Attribute is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attribute_id", nullable = false)
+    private ProductAttribute attribute;
 
-    @NotNull(message = "Attribute ID is required")
+    @NotNull(message = "Value is required")
     @Size(max = 255, message = "Value must be under 255 characters")
+    @Column(nullable = false, length = 255)
     private String value;
-
-
-
 }

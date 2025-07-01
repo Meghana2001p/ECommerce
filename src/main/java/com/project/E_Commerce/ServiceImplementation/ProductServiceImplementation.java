@@ -140,6 +140,7 @@ public class ProductServiceImplementation implements ProductService {
         try {
             return productImageMapper.getImagesByProductId(productId);
         } catch (DataAccessException e) {
+            //logger.log(ex)
             throw new DataRetrievalException("Failed to retrieve images for product ID " + productId);
         }
     }

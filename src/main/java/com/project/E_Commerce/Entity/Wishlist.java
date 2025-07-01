@@ -1,34 +1,44 @@
 package com.project.E_Commerce.Entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
-
+@Entity
+@Table(name = "wishlist")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Wishlist {
 
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @NotNull(message = "User ID cannot be null")
-    @Min(value = 1, message = "User ID must be positive")
-    private Integer userId;
 
-    @NotNull(message = "Product ID cannot be null")
-    @Min(value = 1, message = "Product ID must be positive")
-    private Integer productId;
+    @NotNull(message = "User is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @NotNull(message = "Product is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @PastOrPresent(message = "Created time can't be in the future")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdAt=LocalDateTime.now();
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    private Boolean available = true;  // Whether the product is currently in stock or active
-    private String productName;     // To reduce join if used in views
-    private String productImageUrl; // For frontend wishlist display
+    @Column(nullable = false)
+    private Boolean available = true;
 
+    @Column(name = "product_name", length = 255)
+    private String productName;
+
+    @Column(name = "product_image_url", length = 500)
+    private String productImageUrl;
 }
