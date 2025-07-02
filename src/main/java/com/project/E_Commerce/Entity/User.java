@@ -33,9 +33,12 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
-    /** Transient: used only for validation, not stored in DB */
     @Transient
     private String confirmPassword;
+
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Phone number must be 10 digits and start with 6, 7, 8, or 9")
+    private String phoneNumber;
+
 
     @NotNull(message = "Role is required")
     @Enumerated(EnumType.STRING)

@@ -1,6 +1,10 @@
 package com.project.E_Commerce.Service;
 
 import com.project.E_Commerce.Entity.*;
+import com.project.E_Commerce.dto.ChangePasswordRequest;
+import com.project.E_Commerce.dto.FavouriteProductResponse;
+import com.project.E_Commerce.dto.UserUpdateRequest;
+import com.project.E_Commerce.dto.WishlistResponse;
 
 import java.util.List;
 import java.util.logging.Filter;
@@ -10,45 +14,53 @@ public interface UserService {
 
     //user profile related-- create,login,update,get the profile
     User createUser(User user);
-    User updateUser(User user);
-    User getUserById(int userId);
-    User userLogin(String email,String password);
-    void deactivateUser(int userId);
-    void deleteUser(int userId);
 
-    // Email Preferences--User can choose the type of email,update that and late get all the userEmails
-    UserEmailPreferences createEmailPreference(UserEmailPreferences pref);
-    boolean updateEmailSubscription(int userId, UserEmailPreferences.EmailType emailType, boolean isSubscribed);
-    List<UserEmailPreferences> getUserEmailPreferencesById(int userId);
-    UserEmailPreferences getPreference(int userId, UserEmailPreferences.EmailType emailType);
-    boolean deletePreference(int userId, UserEmailPreferences.EmailType emailType);
-    boolean isSubscribedTo(int userId, String emailType);
+    User loginUser(String email, String password);
+
+    String deactivateUser(Integer id);
+
+    String updateUserProfile(int userId, UserUpdateRequest dto);
+
+    User updateUserByAdmin(User user);
+
+    public void deleteUser(int userId);
+
+    String changePassword(int userId, ChangePasswordRequest request);
 
 
-    // Favorites (Likes)
-    List<UserFavourite> getUserFavourites(int userId);
-    UserFavourite getFavouriteByUserAndProduct(int userId, int productId);
-    String addToFavourites(UserFavourite userFavourite);
-    String updateFavouriteStatus(int userId, int productId, boolean isLiked);
+//UserFavourites
+
+    // ✅ Add a product to user's favourites
+    String addToFavourites(int userId, int productId);
+
+    // ✅ Remove a product from user's favourites (soft delete)
     String removeFromFavourites(int userId, int productId);
 
-    //Wishlist
-    List<Wishlist> getWishlistByUserId(int userId);
-    String addToWishlist(Wishlist wishlist);
-    String removeWishlistItemById(int id);
-    String removeWishlistItemByUserAndProduct(int userId, int productId);
-    Wishlist getWishlistItem(int userId, int productId);
+    // ✅ Get all liked favourites for a user
+    List<FavouriteProductResponse> getUserFavouritesResponse(int userId);
 
 
 
-//searchHistory
-    void addSearchHistory(SearchHistory searchHistory);
-    List<SearchHistory> getAllSearchHistory();
-    List<SearchHistory> getSearchHistoryByUserId(int userId);
-    List<SearchHistory> getSearchHistoryBySessionId(String sessionId);
-    List<SearchHistory> getRecentSearchesForUser(int userId, int limit);
-    void clearSearchHistoryForUser(int userId);
-    void clearSearchHistoryForSession(String sessionId);
+
+
+
+
+//User Wishlist
+
+    String addToWishlist(int userId, int productId);
+
+    String removeFromWishlist(int userId, int productId);
+
+    List<WishlistResponse> getWishlistByUser(int userId);
+
+    String clearWishlist(int userId);
+
+
+
+
+
+
+
 
 
 }

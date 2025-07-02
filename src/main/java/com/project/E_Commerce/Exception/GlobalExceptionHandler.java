@@ -19,8 +19,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                "User Not Found",
+                HttpStatus.BAD_REQUEST
+                        .value(),
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
@@ -31,7 +31,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
-                "User Already Exists",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
@@ -43,7 +42,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
-                "User Not Found",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
@@ -54,7 +52,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
-                "No Users Exist",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
@@ -65,7 +62,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
-                "User Already Exists",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
@@ -77,7 +73,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
-                "Partner Not Found",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
@@ -88,7 +83,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
-                "Partner Already Exists",
+
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
@@ -100,7 +95,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Data Creation Failed",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -111,7 +105,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Data Retrieval Failed",
+
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -122,7 +116,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Data Deletion Failed",
+
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -133,7 +127,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Data Update Failed",
+
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -145,7 +139,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
-                "Resource Not Found",
+
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
@@ -156,7 +150,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
-                "Duplicate Resource",
+
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
@@ -167,7 +161,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
-                "Duplicate Relation",
+
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
@@ -179,7 +173,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.UNAUTHORIZED.value(),  // Changed from CONFLICT to UNAUTHORIZED
-                "Authentication Failed",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
@@ -191,7 +184,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Invalid Input",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -204,7 +196,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "User Already Deactivation",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -217,7 +208,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
-                "Email Preference Not Found",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
@@ -229,7 +219,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
-                "Duplicate Email Preference",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
@@ -242,7 +231,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Email Preference Service Error",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -256,7 +244,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "No content expection",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -271,7 +258,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Product Search Invalid",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -286,7 +272,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Invalid Search Exception",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -301,7 +286,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Cart Not Found",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -315,7 +299,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Cart Not Found",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -330,7 +313,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Coupon Not Found ",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -345,7 +327,6 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Invalid Coupon ",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -358,7 +339,6 @@ public ResponseEntity<ErrorResponse> handleServiceException(
     ErrorResponse error = new ErrorResponse(
             LocalDateTime.now(),
             HttpStatus.BAD_REQUEST.value(),
-            " Coupon Already exists",
             exception.getMessage()
     );
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -371,7 +351,6 @@ public ResponseEntity<ErrorResponse> handleServiceException(
     ErrorResponse error = new ErrorResponse(
             LocalDateTime.now(),
             HttpStatus.BAD_REQUEST.value(),
-            " Order Could Not Be Placed ",
             exception.getMessage()
     );
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -385,7 +364,6 @@ public ResponseEntity<ErrorResponse> handleServiceException(
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Order Validation Exception",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -400,7 +378,6 @@ public ResponseEntity<ErrorResponse> handleServiceException(
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Delivery Status Creation Exception",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
@@ -415,13 +392,25 @@ public ResponseEntity<ErrorResponse> handleServiceException(
        ErrorResponse error = new ErrorResponse(
                LocalDateTime.now(),
                HttpStatus.BAD_REQUEST.value(),
-               "Order Cannot Cancel Exception",
                exception.getMessage()
        );
        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
    }
 
 
+   //DataBaseException
+
+
+    @ExceptionHandler(DataBaseException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            DataBaseException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 
 
     // Generic exception handler
@@ -430,7 +419,6 @@ public ResponseEntity<ErrorResponse> handleServiceException(
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
                 exception.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
