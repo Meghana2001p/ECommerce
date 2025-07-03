@@ -38,4 +38,14 @@ public interface UserEmailPreferencesRepo extends JpaRepository<UserEmailPrefere
     //  Delete preference
     @Query("delete u  from UserEmailPreferences u where u.user.userId=:userId  and u.emailType=:emailType ")
     int  deleteByUserIdAndEmailType(Integer userId, UserEmailPreferences.EmailType emailType);
+
+    @Modifying
+    @Query("DELETE FROM UserEmailPreferences uep WHERE uep.user.id = :userId")
+    void deleteByUserId(@Param("userId") Integer userId);
+
+
+
+    @Query("SELECT uep FROM UserEmailPreferences uep WHERE uep.user.id = :userId")
+    List<UserEmailPreferences> findAllByUserId(@Param("userId")Integer userId);
+
 }

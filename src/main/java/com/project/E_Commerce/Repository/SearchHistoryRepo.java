@@ -45,4 +45,8 @@ public interface SearchHistoryRepo extends JpaRepository<SearchHistory,Integer> 
 
 
     void deleteBySessionId(String sessionId);
+
+    @Query("SELECT sh FROM SearchHistory sh WHERE sh.user.id = :userId ORDER BY sh.searchedAt DESC")
+    List<SearchHistory> findByUserIdOrderBySearchedAtDesc(@Param("userId") Integer userId);
+
 }

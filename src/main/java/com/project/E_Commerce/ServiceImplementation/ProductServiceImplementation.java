@@ -1,23 +1,369 @@
-//package com.project.E_Commerce.ServiceImplementation;
-//
-//import com.project.E_Commerce.Entity.*;
-//import com.project.E_Commerce.Exception.*;
-//import com.project.E_Commerce.Mapper.*;
-//import com.project.E_Commerce.Service.ProductService;
-//import jakarta.transaction.Transactional;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.dao.DataAccessException;
-//import org.springframework.dao.DuplicateKeyException;
-//import org.springframework.stereotype.Service;
-//
-//import java.time.LocalDateTime;
-//import java.util.List;
-//
-////Product, ProductImage, ProductAttribue, ProductAttributeValue, Brand, Category, RelatedProduct
-//@Service
-//@RequiredArgsConstructor
-//public class ProductServiceImplementation implements ProductService {
+package com.project.E_Commerce.ServiceImplementation;
+
+import com.project.E_Commerce.Entity.*;
+import com.project.E_Commerce.Exception.*;
+import com.project.E_Commerce.Mapper.*;
+import com.project.E_Commerce.Repository.ProductAttributeRepo;
+import com.project.E_Commerce.Repository.ProductAttributeValueRepo;
+import com.project.E_Commerce.Repository.ProductImageRepo;
+import com.project.E_Commerce.Repository.ProductRepo;
+import com.project.E_Commerce.Service.ProductService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+//Product, ProductImage, ProductAttribue, ProductAttributeValue, Brand, Category, RelatedProduct
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ProductServiceImplementation implements ProductService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImplementation.class);
+
+    @Autowired
+    private ProductRepo productRepo;
+
+    @Autowired
+    private ProductImageRepo productImageRepo;
+
+    @Autowired
+    private ProductAttributeRepo productAttributeRepo;
+
+    @Autowired
+    private ProductAttributeValueRepo productAttributeValueRepo;
+
+
+
+    public Product addProduct(Product product) {
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+
+        try {
+            int res = productRepo.save(product).getId();
+            if (res <= 0) {
+                throw new DataCreationException("Product could not be added");
+            }
+            return product;
+        } catch (DataAccessException e) {
+            logger.error("Database access error while creating product : {}", e.getMessage(), e); // logs full stack trace
+
+            throw new DataBaseException("Internal server error");
+        }
+        catch (Exception e) {
+            log.error("Unexpected error while inserting the product ", e);
+            throw e; // Rethrow so global handler can manage it
+        }
+    }
+
+    @Override
+    public Product getProductById(Integer id) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Invalid product ID");
+        }
+
+        try {
+            return productRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
+        } catch (DataAccessException e) {
+            logger.error("Database access error while fetching product by ID {}: {}", id, e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error while fetching product by ID {}", id, e);
+            throw e;
+        }    }
+
+    public Product updateProduct(Integer id, Product updatedProduct) {
+        if (id == null || id <= 0 || updatedProduct == null) {
+            throw new IllegalArgumentException("Invalid product data or ID");
+        }
+
+        try {
+            Product existing = productRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
+
+            // Update fields
+            existing.setName(updatedProduct.getName());
+            existing.setDescription(updatedProduct.getDescription());
+            existing.setImageAddress(updatedProduct.getImageAddress());
+            existing.setPrice(updatedProduct.getPrice());
+            existing.setSku(updatedProduct.getSku());
+            existing.setIsAvailable(updatedProduct.getIsAvailable());
+            existing.setBrand(updatedProduct.getBrand());
+
+            Product saved = productRepo.save(existing);
+            if (saved.getId() == null || saved.getId() <= 0) {
+                throw new DataCreationException("Product could not be updated");
+            }
+
+            return saved;
+        } catch (DataAccessException e) {
+            logger.error("Database access error while updating product ID {}: {}", id, e.getMessage(), e);
+            throw new DataCreationException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error while updating product ID {}", id, e);
+            throw e;
+        }
+    }
+
+
+    public String deleteProduct(Integer id) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Invalid product ID");
+        }
+
+        try {
+            Product existing = productRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
+            productRepo.delete(existing);
+            return "Product deleted successfully";
+        } catch (DataAccessException e) {
+            logger.error("Database access error while deleting product ID {}: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error while deleting product ID {}", id, e);
+            throw e;
+        }
+    }
+
+
+    //Product Image
+    @Override
+    public String addProductImage(ProductImage image) {
+        if (image == null || image.getProduct() == null || image.getProduct().getId() == null) {
+            throw new IllegalArgumentException("Image or Product ID is required");
+        }
+
+        try {
+            boolean exists = productImageRepo.existsById(image.getProduct().getId());
+            if (!exists) {
+                throw new IllegalArgumentException("Product not found with id: " + image.getProduct().getId());
+            }
+
+            ProductImage saved = productImageRepo.save(image);
+            if (saved.getId() == null || saved.getId() <= 0) {
+                throw new DataCreationException("Image could not be saved");
+            }
+
+            return "Product image added successfully ";
+        } catch (DataAccessException e) {
+            logger.error("Database error while saving product image: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error while adding product image", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<ProductImage> getImagesByProductId(int productId) {
+        if (productId <= 0) {
+            throw new IllegalArgumentException("Invalid product ID");
+        }
+
+        try {
+            return productImageRepo.findByProductId(productId);
+        } catch (DataAccessException e) {
+            logger.error("Database error fetching images for product ID {}: {}", productId, e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error fetching product images", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public String deleteProductImage(int imageId) {
+        if (imageId <= 0) {
+            throw new IllegalArgumentException("Invalid image ID");
+        }
+
+        try {
+            ProductImage image = productImageRepo.findById(imageId)
+                    .orElseThrow(() -> new ProductNotFoundException("Image not found "));
+            productImageRepo.delete(image);
+            return "Product image deleted successfully";
+        } catch (DataAccessException e) {
+            logger.error("Database error deleting image ID {}: {}", imageId, e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting product image", e);
+            throw e;
+        }
+    }
+    //Attributes
+
+    @Override
+    public ProductAttribute addAttribute(ProductAttribute attribute) {
+        if (attribute == null) {
+            throw new IllegalArgumentException("Attribute cannot be null");
+        }
+
+        try {
+            ProductAttribute saved = productAttributeRepo.save(attribute);
+            if (saved.getId() <= 0) {
+                throw new RuntimeException("Attribute could not be saved");
+            }
+            return saved;
+        } catch (DataAccessException e) {
+            logger.error("Database error while saving attribute: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public ProductAttribute updateAttribute(int attributeId, ProductAttribute updated) {
+        if (attributeId <= 0 || updated == null) {
+            throw new IllegalArgumentException("Invalid data for update");
+        }
+
+        try {
+            ProductAttribute existing = productAttributeRepo.findById(attributeId)
+                    .orElseThrow(() -> new RuntimeException("Attribute not found"));
+
+            existing.setName(updated.getName());
+            return productAttributeRepo.save(existing);
+        } catch (DataAccessException e) {
+            logger.error("DB error updating attribute ID {}: {}", attributeId, e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error updating attribute", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public ProductAttribute getAttributeById(int attributeId) {
+        if (attributeId <= 0) {
+            throw new IllegalArgumentException("Invalid attribute ID");
+        }
+
+        try {
+            return productAttributeRepo.findById(attributeId)
+                    .orElseThrow(() -> new RuntimeException("Attribute not found"));
+        } catch (DataAccessException e) {
+            logger.error("DB error fetching attribute ID {}: {}", attributeId, e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error fetching attribute", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public String deleteAttribute(int attributeId) {
+        if (attributeId <= 0) {
+            throw new IllegalArgumentException("Invalid attribute ID");
+        }
+
+        try {
+            ProductAttribute existing = productAttributeRepo.findById(attributeId)
+                    .orElseThrow(() -> new RuntimeException("Attribute not found"));
+            productAttributeRepo.delete(existing);
+            return "Attribute deleted successfully";
+        } catch (DataAccessException e) {
+            logger.error("DB error deleting attribute ID {}: {}", attributeId, e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting attribute", e);
+            throw e;
+        }
+    }
+
+    //ProductAttribute
+    @Override
+    public ProductAttributeValue addAttributeValue(ProductAttributeValue value) {
+        if (value == null || value.getProduct() == null || value.getAttribute() == null) {
+            throw new IllegalArgumentException("Product and Attribute must not be null");
+        }
+
+        try {
+            boolean productExists = productRepo.existsById(value.getProduct().getId());
+            boolean attrExists = productAttributeValueRepo.existsById(value.getAttribute().getId());
+
+            if (!productExists) throw new ProductNotFoundException("Product not found");
+            if (!attrExists) throw new ProductNotFoundException("Attribute not found");
+
+            return productAttributeValueRepo.save(value);
+        } catch (DataAccessException e) {
+            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting attribute", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public ProductAttributeValue updateAttributeValue(Integer id, ProductAttributeValue updated) {
+        if (id == null || updated == null) {
+            throw new IllegalArgumentException("Invalid input for update");
+        }
+
+        try {
+            ProductAttributeValue existing = productAttributeValueRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Attribute value not found"));
+
+            existing.setValue(updated.getValue());
+            existing.setProduct(updated.getProduct());
+            existing.setAttribute(updated.getAttribute());
+
+            return productAttributeValueRepo.save(existing);
+        } catch (DataAccessException e) {
+            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting attribute", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public ProductAttributeValue getAttributeValueById(Integer id) {
+        try {
+            return productAttributeValueRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Attribute value not found with ID: " + id));
+        }catch (DataAccessException e) {
+            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting attribute", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public String deleteAttributeValue(Integer id) {
+        try {
+            ProductAttributeValue val = productAttributeValueRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Attribute value not found with ID: " + id));
+            productAttributeValueRepo.delete(val);
+            return "Attribute value deleted successfully";
+        }
+        catch (DataAccessException e) {
+            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting attribute", e);
+            throw e;
+        }
+    }
+
+}
+
+
 //
 //    @Autowired
 //    private ProductMapper productMapper;

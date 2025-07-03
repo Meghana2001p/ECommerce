@@ -1,10 +1,7 @@
 package com.project.E_Commerce.Service;
 
 import com.project.E_Commerce.Entity.*;
-import com.project.E_Commerce.dto.ChangePasswordRequest;
-import com.project.E_Commerce.dto.FavouriteProductResponse;
-import com.project.E_Commerce.dto.UserUpdateRequest;
-import com.project.E_Commerce.dto.WishlistResponse;
+import com.project.E_Commerce.dto.*;
 
 import java.util.List;
 import java.util.logging.Filter;
@@ -55,12 +52,17 @@ public interface UserService {
 
     String clearWishlist(int userId);
 
+    //EmailPreferences
+
+     void createOrUpdateEmailPreferences(Integer userId, List<EmailPreferenceRequest> preferences);
+     void clearAllPreferencesForUser(Integer userId);
+    List<EmailPreferenceRequest> getPreferencesByUserId(Integer userId);
 
 
 
 
-
-
-
-
+    void saveSearchKeyword(SearchHistoryRequest request);
+    List<SearchHistoryResponse> getSearchHistoryByUserId(Integer userId);
+    void clearSearchHistory(Integer userId);
+    SearchHistoryResponse viewProductFromSearch(Integer searchId);
 }

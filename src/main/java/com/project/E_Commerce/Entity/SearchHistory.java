@@ -32,9 +32,6 @@ public class SearchHistory {
     @Column(nullable = false, length = 255)
     private String keyword;
 
-    @Size(max = 255, message = "Session ID too long")
-    @Column(name = "session_id", length = 255)
-    private String sessionId;
 
     @PastOrPresent
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

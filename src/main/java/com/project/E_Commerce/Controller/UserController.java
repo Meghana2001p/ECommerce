@@ -140,12 +140,64 @@ public ResponseEntity<?> addFavourite(@PathVariable int userId, @PathVariable in
     @GetMapping("/Favourites/{userId}")
     public ResponseEntity<List<FavouriteProductResponse>> getUserFavourites(@PathVariable Integer userId) {
         List<FavouriteProductResponse> favourites = userService.getUserFavouritesResponse(userId);
-        return ResponseEntity.ok(favourites);  // ✅ This is correct
+        return ResponseEntity.ok(favourites);
     }
 
 
+//UserEmailPrefernces
+
+    //create User Email preference
+    @PostMapping("/email-preference/{userId}")
+    public ResponseEntity<?> createOrUpdateEmailPreferences( @PathVariable("userId") Integer userId,
+                                                             @RequestBody List<EmailPreferenceRequest> preferences){
+         userService.createOrUpdateEmailPreferences(userId,preferences);
+         return ResponseEntity.ok("User Preferences set successfully ");
+    }
+
+    @DeleteMapping("/clear/email-preference/{userId}")
+    public ResponseEntity<?> clearAllPreferences(@PathVariable("userId") Integer userId) {
+        userService.clearAllPreferencesForUser(userId);
+        return ResponseEntity.ok("All email preferences cleared for user ID: " + userId);
+    }
+
+    @GetMapping("/get/email-preference/{userId}")
+    public ResponseEntity<List<EmailPreferenceRequest>> getUserEmailPreferences(
+            @PathVariable("userId") Integer userId) {
+
+        List<EmailPreferenceRequest> preferences =
+                userService.getPreferencesByUserId(userId);
+
+        return ResponseEntity.ok(preferences);
+    }
 
 
+   //Seach history
 
+    @PostMapping("/search-history/save")
+    public ResponseEntity<String> saveSearchKeyword(@RequestBody SearchHistoryRequest request) {
+        userService.saveSearchKeyword(request);
+        return ResponseEntity.ok("Search keyword saved successfully.");
+    }
+
+    // Get recent search history for a user
+    @GetMapping("/search-history/{userId}")
+    public ResponseEntity<List<SearchHistoryResponse>> getSearchHistoryByUser(@PathVariable Integer userId) {
+        List<SearchHistoryResponse> historyList = userService.getSearchHistoryByUserId(userId);
+        return ResponseEntity.ok(historyList);
+    }
+
+    // Clear search history for a user
+    @DeleteMapping("/search-history/clear/{userId}")
+    public ResponseEntity<String> clearSearchHistory(@PathVariable Integer userId) {
+        userService.clearSearchHistory(userId);
+        return ResponseEntity.ok("Search history cleared successfully.");
+    }
+
+    // View product associated with a search entry
+    @GetMapping("/search-history/view-product/{searchId}")
+    public ResponseEntity<SearchHistoryResponse> viewProductFromSearch(@PathVariable Integer searchId) {
+        SearchHistoryResponse response = userService.viewProductFromSearch(searchId);
+        return ResponseEntity.ok(response);
+    }
 
 }

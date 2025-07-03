@@ -2,29 +2,20 @@ package com.project.E_Commerce.ServiceImplementation;
 
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception.*;
-import com.project.E_Commerce.Mapper.*;
-import com.project.E_Commerce.Repository.ProductRepo;
-import com.project.E_Commerce.Repository.UserFavouriteRepo;
-import com.project.E_Commerce.Repository.UserRepo;
-import com.project.E_Commerce.Repository.WishlistRepo;
+import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.UserService;
-import com.project.E_Commerce.dto.ChangePasswordRequest;
-import com.project.E_Commerce.dto.FavouriteProductResponse;
-import com.project.E_Commerce.dto.UserUpdateRequest;
-import com.project.E_Commerce.dto.WishlistResponse;
-import jakarta.transaction.Transactional;
+import com.project.E_Commerce.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 ////User,UserFavourite,Wishlist,UserEmailPreference,SearchHistory
 @Slf4j
@@ -49,6 +40,12 @@ public class UserServiceImplementation implements UserService {
    @Autowired
    private WishlistRepo wishlistRepo;
 
+
+   @Autowired
+   private UserEmailPreferencesRepo userEmailPreferencesRepo;
+
+   @Autowired
+   private  SearchHistoryRepo searchHistoryRepo;
 
 
     @Override
@@ -473,7 +470,7 @@ catch (DataAccessException e) {
             wishlistRepo.deleteByUserUserId(userId);
             return "Wishlist cleared for user ID: " + userId;
         }catch (DataAccessException e) {
-            log.info("Could not clear from the wishlist", userId);
+            log.info("Could not clear  the wishlist", userId);
             throw new DataBaseException("Internal Server Error");
 
         } catch (Exception e) {
@@ -482,16 +479,105 @@ catch (DataAccessException e) {
         }
     }
 
+    @Override
+    public void createOrUpdateEmailPreferences(Integer userId, List<EmailPreferenceRequest> preferences) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        for (EmailPreferenceRequest dto : preferences) {
+            // Check if the preference already exists for the user and email type
+            Optional<UserEmailPreferences> existingPreferenceOpt =
+                    userEmailPreferencesRepo.findByUserIdAndEmailType(userId, dto.getEmailType());
+
+            if (existingPreferenceOpt.isPresent()) {
+                // Update existing preference
+                UserEmailPreferences preference = existingPreferenceOpt.get();
+                preference.setIsSubscribed(dto.getIsSubscribed());
+                userEmailPreferencesRepo.save(preference);
+            } else {
+                // Create new preference
+                UserEmailPreferences newPreference = new UserEmailPreferences();
+                newPreference.setUser(user);
+                newPreference.setEmailType(dto.getEmailType());
+                newPreference.setIsSubscribed(dto.getIsSubscribed());
+                userEmailPreferencesRepo.save(newPreference);
+            }
+        }
+
+    }
 
 
 
 
+@Override
+    public void clearAllPreferencesForUser(Integer userId) {
+        if (!userRepo.existsById(userId)) {
+            throw new UserNotFoundException("User not found with ID: " + userId);
+        }
+        userEmailPreferencesRepo.deleteByUserId(userId);
+    }
+
+    @Override
+    public List<EmailPreferenceRequest> getPreferencesByUserId(Integer userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        List<UserEmailPreferences> preferences = userEmailPreferencesRepo.findAllByUserId(userId);
+
+        return preferences.stream()
+                .map(pref -> new EmailPreferenceRequest(pref.getEmailType(), pref.getIsSubscribed()))
+                .collect(Collectors.toList());    }
 
 
 
 
+    //Search History
 
+    @Override
+    public void saveSearchKeyword(SearchHistoryRequest request) {
+        SearchHistory history = new SearchHistory();
+        history.setUser(userRepo.findById(request.getUserId()).orElseThrow());
+        if (request.getProductId() != null) {
+            history.setProduct(productRepo.findById(request.getProductId()).orElse(null));
+        }
+        history.setKeyword(request.getKeyword());
+        history.setSearchedAt(LocalDateTime.now());
+        searchHistoryRepo.save(history);
+    }
 
+    @Override
+    public List<SearchHistoryResponse> getSearchHistoryByUserId(Integer userId) {
+        return searchHistoryRepo.findByUserIdOrderBySearchedAtDesc(userId).stream().map(h -> {
+            SearchHistoryResponse resp = new SearchHistoryResponse();
+            resp.setSearchId(h.getSearchId());
+            resp.setKeyword(h.getKeyword());
+            resp.setSearchedAt(h.getSearchedAt());
+            if (h.getProduct() != null) {
+                resp.setProductId(h.getProduct().getId());
+                resp.setProductName(h.getProduct().getName());
+            }
+            return resp;
+        }).toList();
+    }
+
+    @Override
+    public void clearSearchHistory(Integer userId) {
+        searchHistoryRepo.deleteByUserId(userId);
+    }
+
+    @Override
+    public SearchHistoryResponse viewProductFromSearch(Integer searchId) {
+        SearchHistory h = searchHistoryRepo.findById(searchId).orElseThrow();
+        if (h.getProduct() == null) throw new RuntimeException("No product associated with this search.");
+        SearchHistoryResponse resp = new SearchHistoryResponse();
+        resp.setSearchId(h.getSearchId());
+        resp.setKeyword(h.getKeyword());
+        resp.setSearchedAt(h.getSearchedAt());
+        resp.setProductId(h.getProduct().getId());
+        resp.setProductName(h.getProduct().getName());
+        resp. setProductImageUrl(h.getProduct().getImageAddress());
+        return resp;
+    }
 
 
 }
