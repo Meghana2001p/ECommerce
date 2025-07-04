@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.UniqueElements;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,9 +25,13 @@ public class Brand {
     @Column(name = "brand_name", nullable = false, unique = true)
     private String brandName;
 
-    @NotNull(message = "Category cannot be null")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", referencedColumnName = "category_id")
-    private Category category;
+    @NotNull(message = "Category list cannot be null")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "brand_category",
+            joinColumns = @JoinColumn(name = "brand_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<Category> categories;
 
 }

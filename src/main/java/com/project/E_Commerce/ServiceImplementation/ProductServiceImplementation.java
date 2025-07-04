@@ -3,10 +3,7 @@ package com.project.E_Commerce.ServiceImplementation;
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception.*;
 import com.project.E_Commerce.Mapper.*;
-import com.project.E_Commerce.Repository.ProductAttributeRepo;
-import com.project.E_Commerce.Repository.ProductAttributeValueRepo;
-import com.project.E_Commerce.Repository.ProductImageRepo;
-import com.project.E_Commerce.Repository.ProductRepo;
+import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +39,14 @@ public class ProductServiceImplementation implements ProductService {
     private ProductAttributeValueRepo productAttributeValueRepo;
 
 
+    @Autowired
+    private BrandRepo brandRepository;
+
+@Autowired
+private CategoryRepo categoryRepository;
+
+@Autowired
+private  RelatedProductRepo relatedProductRepo;
 
     public Product addProduct(Product product) {
         if (product == null) {
@@ -357,6 +362,283 @@ public class ProductServiceImplementation implements ProductService {
             throw new DataBaseException("Internal server error");
         } catch (Exception e) {
             logger.error("Unexpected error deleting attribute", e);
+            throw e;
+        }
+    }
+
+
+
+    //Brand
+
+    @Override
+    public Brand createBrand(Brand brand) {
+
+        if (brand == null) {
+            throw new IllegalArgumentException("Brand cannot be null");
+        }
+        try {
+            if (brandRepository.existsByBrandName(brand.getBrandName())) {
+                throw new IllegalArgumentException("Brand with name '" + brand.getBrandName() + "' already exists.");
+            }
+
+            return brandRepository.save(brand);
+        }
+        catch (DataAccessException e) {
+            logger.error("DB error creating brand  ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting attribute", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Brand updateBrand(Integer brandId, Brand updatedBrand) {
+        if(brandId==null)
+        {
+            throw  new IllegalArgumentException("Id should not be null");
+        }
+        try {
+            Brand existingBrand = brandRepository.findById(brandId)
+                    .orElseThrow(() -> new ProductNotFoundException("Brand not found with ID: "));
+
+            existingBrand.setBrandName(updatedBrand.getBrandName());
+            existingBrand.setCategories(updatedBrand.getCategories());
+
+            return brandRepository.save(existingBrand);
+        }
+        catch (DataAccessException e) {
+            logger.error("DB error update Brand  ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error updating the brand ", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Brand getBrandById(Integer brandId) {
+        if(brandId==null)
+        {
+            throw  new IllegalArgumentException("Id should not be null");
+        }
+        try {
+            return brandRepository.findById(brandId)
+                    .orElseThrow(() -> new ProductNotFoundException("Brand not found  " ));
+        }
+        catch (DataAccessException e) {
+            logger.error("DB error retreiving the brand  ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error retriving brand ", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<Brand> getAllBrands() {
+        try {
+            return brandRepository.findAll();
+        }
+        catch (DataAccessException e) {
+            logger.error("DB error retreiving the brand  ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error retriving brand ", e);
+            throw e;
+        }
+        }
+
+    @Override
+    public void deleteBrand(Integer brandId) {
+        if(brandId==null)
+        {
+            throw  new IllegalArgumentException("Id should not be null");
+        }
+        try {
+            Brand brand = brandRepository.findById(brandId)
+                    .orElseThrow(() -> new ProductNotFoundException("Brand not found with ID: " + brandId));
+            brandRepository.delete(brand);
+
+        }
+        catch (DataAccessException e) {
+            logger.error("DB error deleting  the brand  ID {}: {}", e.getMessage(), e);
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            logger.error("Unexpected error deleting  brand ", e);
+            throw e;
+        }
+    }
+
+
+
+    //Category
+
+    @Override
+    public Category createCategory(Category category) {
+        if(category==null)
+        {
+            throw new IllegalArgumentException("Category cannot be null");
+        }
+        try {
+            if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
+                throw new IllegalArgumentException("Category with this name already exists.");
+            }
+            return categoryRepository.save(category);
+        } catch (DataAccessException e) {
+            logger.error("Database error while creating category", e);
+            throw new DataBaseException("Internal server error");
+        }
+        catch (Exception e) {
+            logger.error("Unexpected error deleting  brand ", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Category updateCategory(Integer categoryId, Category updatedCategory) {
+        if(categoryId==null)
+        {
+            throw new IllegalArgumentException("Category  id cannot be null");
+        }
+        if(updatedCategory==null)
+        {
+            throw new IllegalArgumentException("Category cannot be null");
+        }
+        try {
+            Category existing = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ProductNotFoundException("Category not found"));
+
+            existing.setCategoryName(updatedCategory.getCategoryName());
+            existing.setParent(updatedCategory.getParent());
+
+            return categoryRepository.save(existing);
+        } catch (DataAccessException e) {
+            logger.error("Database error while updating category", e);
+            throw new DataBaseException("Internal server error");
+        }
+        catch (Exception e) {
+            logger.error("Unexpected error deleting  brand ", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Category getCategoryById(Integer categoryId) {
+        if(categoryId==null)
+        {
+            throw new IllegalArgumentException("Category  id cannot be null");
+        }
+        try {
+            return categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ProductNotFoundException("Category not found"));
+        } catch (DataAccessException e) {
+            logger.error("Database error while retrieving category", e);
+            throw new DataBaseException("Internal server error");
+        }
+        catch (Exception e) {
+            logger.error("Unexpected error deleting  brand ", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<Category> getAllCategories() {
+        try {
+            return categoryRepository.findAll();
+        } catch (DataAccessException e) {
+            logger.error("Database error while retrieving categories", e);
+            throw new DataBaseException("Internal server error");
+        }
+    }
+
+    @Override
+    public void deleteCategory(Integer categoryId) {
+        if(categoryId==null)
+        {
+            throw new IllegalArgumentException("Category  id cannot be null");
+        }
+        try {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ProductNotFoundException("Category not found"));
+            categoryRepository.delete(category);
+        } catch (DataAccessException e) {
+            logger.error("Database error while deleting category", e);
+            throw new DataBaseException("Internal server error");
+        }
+    }
+
+
+    //Realted Products
+
+
+    @Override
+    public RelatedProduct createRelatedProduct(RelatedProduct relatedProduct) {
+        try {
+            return relatedProductRepo.save(relatedProduct);
+        } catch (DataAccessException e) {
+            throw new DataBaseException("DB error while creating related product");
+        } catch (Exception e) {
+            logger.error("Unexpected error while creating related product", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public RelatedProduct updateRelatedProduct(Integer id, RelatedProduct updated) {
+        try {
+            RelatedProduct existing = relatedProductRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Related product not found"));
+
+            existing.setProduct(updated.getProduct());
+            existing.setRelatedProduct(updated.getRelatedProduct());
+            existing.setRelationshipType(updated.getRelationshipType());
+            existing.setIsActive(updated.getIsActive());
+
+            return relatedProductRepo.save(existing);
+        } catch (DataAccessException e) {
+            throw new DataBaseException("DB error while updating related product");
+        } catch (Exception e) {
+            logger.error("Unexpected error while updating related product", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public RelatedProduct getRelatedProductById(Integer id) {
+        try {
+            return relatedProductRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Related product not found"));
+        } catch (DataAccessException e) {
+            throw new DataBaseException("DB error while retrieving related product");
+        } catch (Exception e) {
+            logger.error("Unexpected error while retrieving related product", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<RelatedProduct> getAllRelatedProducts() {
+        try {
+            return relatedProductRepo.findAll();
+        } catch (DataAccessException e) {
+            throw new DataBaseException("DB error while retrieving all related products");
+        } catch (Exception e) {
+            logger.error("Unexpected error while retrieving all related products", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public void deleteRelatedProduct(Integer id) {
+        try {
+            RelatedProduct rp = relatedProductRepo.findById(id)
+                    .orElseThrow(() -> new ProductNotFoundException("Related product not found"));
+            relatedProductRepo.delete(rp);
+        } catch (DataAccessException e) {
+            throw new DataBaseException("DB error while deleting related product");
+        } catch (Exception e) {
+            logger.error("Unexpected error while deleting related product", e);
             throw e;
         }
     }

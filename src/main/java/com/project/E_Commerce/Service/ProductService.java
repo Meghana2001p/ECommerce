@@ -25,11 +25,42 @@ public interface ProductService {
     ProductAttribute updateAttribute(int attributeId, ProductAttribute updated);
     ProductAttribute getAttributeById(int attributeId);
     String deleteAttribute(int attributeId);
+
+
     //Product Attribute Value
     ProductAttributeValue addAttributeValue(ProductAttributeValue value);
     ProductAttributeValue updateAttributeValue(Integer id, ProductAttributeValue updatedValue);
     ProductAttributeValue getAttributeValueById(Integer id);
     String deleteAttributeValue(Integer id);
+
+   //Brand
+   Brand createBrand(Brand brand);
+    Brand updateBrand(Integer brandId, Brand brand);
+    Brand getBrandById(Integer brandId);
+    List<Brand> getAllBrands();
+    void deleteBrand(Integer brandId);
+
+
+    //Category
+    Category createCategory(Category category);
+    Category updateCategory(Integer categoryId, Category category);
+    Category getCategoryById(Integer categoryId);
+    List<Category> getAllCategories();
+    void deleteCategory(Integer categoryId);
+
+
+    //RelatedProduct
+
+    RelatedProduct createRelatedProduct(RelatedProduct relatedProduct);
+    RelatedProduct updateRelatedProduct(Integer id, RelatedProduct updated);
+    RelatedProduct getRelatedProductById(Integer id);
+    List<RelatedProduct> getAllRelatedProducts();
+    void deleteRelatedProduct(Integer id);
+
+    //Product for the display
+
+
+
 
 
 

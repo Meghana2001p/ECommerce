@@ -1,10 +1,13 @@
 package com.project.E_Commerce.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(
@@ -16,6 +19,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"brands", "parent"})
+
 public class Category {
 
     @Id
@@ -32,4 +37,8 @@ public class Category {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", referencedColumnName = "category_id")
     private Category parent;
+
+    @ManyToMany(mappedBy = "categories")
+    @JsonIgnoreProperties({"brands", "parent"})
+    private List<Brand> brands;
 }
