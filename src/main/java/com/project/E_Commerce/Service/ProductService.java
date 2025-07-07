@@ -1,6 +1,10 @@
 package com.project.E_Commerce.Service;
 
 import com.project.E_Commerce.Entity.*;
+import com.project.E_Commerce.dto.ProductDetailDTO;
+import com.project.E_Commerce.dto.ProductList;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 
@@ -19,7 +23,7 @@ public interface ProductService {
     List<ProductImage> getImagesByProductId(int productId);
     String deleteProductImage(int imageId);
 
-//    //Product Attribute
+   //Product Attribute
 
     ProductAttribute addAttribute(ProductAttribute attribute);
     ProductAttribute updateAttribute(int attributeId, ProductAttribute updated);
@@ -57,8 +61,11 @@ public interface ProductService {
     List<RelatedProduct> getAllRelatedProducts();
     void deleteRelatedProduct(Integer id);
 
-    //Product for the display
+ //list of all the products and the specific product details in that too
 
+    List<ProductList> getAllAvailableProducts(Integer userId, Pageable pageable);
+
+    ProductDetailDTO getProductDetailById(Integer productId, Integer userId);
 
 
 

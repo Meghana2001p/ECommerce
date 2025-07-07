@@ -1,7 +1,18 @@
 package com.project.E_Commerce.Repository;
 
 import com.project.E_Commerce.Entity.Cart;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface CartRepo extends JpaRepository<Cart,Integer> {
+
+    @Query("""
+        SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END
+        FROM CartItem c
+        WHERE c.user.id = :userId AND c.product.id = :productId
+    """)
+    boolean existsByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
 }

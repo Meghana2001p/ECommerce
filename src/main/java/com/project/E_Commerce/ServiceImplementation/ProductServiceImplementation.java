@@ -5,6 +5,7 @@ import com.project.E_Commerce.Exception.*;
 import com.project.E_Commerce.Mapper.*;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.ProductService;
+import com.project.E_Commerce.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,8 +40,7 @@ public class ProductServiceImplementation implements ProductService {
     private ProductAttributeRepo productAttributeRepo;
 
     @Autowired
-    private ProductAttributeValueRepo productAttributeValueRepo;
-
+   private ProductAttributeValueRepo productAttributeValueRepo;
 
     @Autowired
     private BrandRepo brandRepository;
@@ -47,6 +50,21 @@ private CategoryRepo categoryRepository;
 
 @Autowired
 private  RelatedProductRepo relatedProductRepo;
+
+@Autowired
+private ProductDiscountRepo productDiscountRepo;
+
+@Autowired
+private ReviewRepo reviewRepo;
+
+@Autowired
+private CartRepo cartRepo;
+
+@Autowired
+private WishlistRepo wishlistRepo;
+
+
+
 
     public Product addProduct(Product product) {
         if (product == null) {
@@ -642,6 +660,166 @@ private  RelatedProductRepo relatedProductRepo;
             throw e;
         }
     }
+
+    @Override
+    public List<ProductList> getAllAvailableProducts(Integer userId,Pageable pageable) {
+
+        List<Product> products = productRepo.findAll();
+
+        return products.stream().map(p ->
+        {
+            //for calculating the discount
+            BigDecimal discountPercent = getActiveDiscountPercent(p.getId());
+            BigDecimal discountPrice = applyDiscount(p.getPrice(), discountPercent);
+//get the ratings
+
+            Double avgRating = reviewRepo.findAverageRatingByProductId(p.getId());
+            Integer reviewCount = reviewRepo.countByProductId(p.getId());
+//wishlist or cart stat
+            boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, p.getId());
+            boolean inCart = cartRepo.existsByUserIdAndProductId(userId, p.getId());
+            return new ProductList(
+                    p.getId(),
+                    p.getName(),
+                    p.getBrand().getBrandName(),
+                    p.getPrice(),
+                    discountPrice,
+                    discountPrice != null ? discountPercent.intValue() : 0,
+                    avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
+                    reviewCount,
+                    p.getIsAvailable(),
+                    null,
+                    inWishlist,
+                    inCart);
+        }).toList();
+    }
+
+
+
+
+
+
+
+
+
+    @Override
+    public ProductDetailDTO getProductDetailById(Integer productId, Integer userId) {
+Product p = productRepo.findByIdWithBrand(productId)
+        .orElseThrow(()->new ProductNotFoundException("Product Not Found"));
+//image urls
+List<String> imageUrls= productImageRepo.findByProductId(productId)
+        .stream().map(ProductImage::getImageUrl).toList();
+
+//Attributes(size/color)
+
+        List<ProductAttributeValue> attrList = productAttributeValueRepo.findByProductId(productId);
+        List<ProductAttributeDTO> attributes = attrList.stream().map(a ->
+                new ProductAttributeDTO(a.getAttribute().getName(), a.getValue())
+        ).toList();
+
+
+        List<String> sizes = attrList.stream()
+                .filter(a -> a.getAttribute().getName().equalsIgnoreCase("Size"))
+                .map(ProductAttributeValue::getValue).distinct().toList();
+
+        List<String> colors = attrList.stream()
+                .filter(a -> a.getAttribute().getName().equalsIgnoreCase("Color"))
+                .map(ProductAttributeValue::getValue).distinct().toList();
+//offers
+
+        List<String> offers = productDiscountRepo.findActiveDiscounts(productId)
+                .stream().map(d -> d.getDiscount().getName()).toList();
+
+
+   //relatedProducts
+
+        List<RelatedProductDTO> related = relatedProductRepo.findByProductIdAndIsActiveTrue(productId)
+                .stream().map(r -> {
+                    Product rel = r.getRelatedProduct();
+                    return new RelatedProductDTO(
+                            rel.getId(),
+                            rel.getName(),
+                            rel.getImageAddress(),
+                            rel.getPrice(),
+                            r.getRelationshipType().name()
+                    );
+                }).toList();
+
+//review Products
+        List<ReviewDTO> reviews = reviewRepo.findByProductId(productId).stream()
+                .map(r -> new ReviewDTO(
+                        r.getUser().getName(),
+                        r.getRating(),
+                        r.getComment(),
+                        r.getCreatedAt()
+                )).toList();
+
+        Double avgRating = reviewRepo.findAverageRatingByProductId(productId);
+        Integer reviewCount = reviewRepo.countByProductId(productId);
+
+
+//wishlist and cart status
+
+        boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, productId);
+        boolean inCart = cartRepo.existsByUserIdAndProductId(userId, productId);
+
+        //Discount
+        BigDecimal discountPercent = getActiveDiscountPercent(productId);
+        BigDecimal discountedPrice = applyDiscount(p.getPrice(), discountPercent);
+        return new ProductDetailDTO(
+                p.getId(),
+                p.getName(),
+                p.getDescription(),
+                p.getSku(),
+                p.getBrand().getBrandName(),
+                p.getPrice(),
+                discountedPrice,
+                discountPercent != null ? discountPercent.intValue() : 0,
+                p.getIsAvailable(),
+                imageUrls,
+                attributes,
+                sizes,
+                colors,
+                offers,
+                "7 days return available",
+                "Delivered in 3–5 days",
+                related,
+                avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
+                reviewCount,
+                reviews,
+                inWishlist,
+                inCart
+        );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+    private BigDecimal getActiveDiscountPercent(Integer productId) {
+        List<ProductDiscount> discounts = productDiscountRepo.findActiveDiscounts(productId);
+        if (discounts.isEmpty()) return null;
+        return discounts.get(0).getDiscount().getDiscountPercent();
+    }
+
+    private BigDecimal applyDiscount(BigDecimal price, BigDecimal percent) {
+        if (percent == null) return price;
+        return price.subtract(price.multiply(percent).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+    }
+
+
 
 }
 

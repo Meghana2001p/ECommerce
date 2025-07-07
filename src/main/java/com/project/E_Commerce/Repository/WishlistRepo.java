@@ -67,5 +67,14 @@ public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
 """)
     List<WishlistResponse> findWishlistDetailsByUserId(@Param("userId") int userId);
 
+
+    @Query("""
+    SELECT CASE WHEN COUNT(w) > 0 THEN true ELSE false END
+    FROM Wishlist w
+    WHERE w.user.id = :userId AND w.product.id = :productId
+""")
+    boolean existsByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
+
+
 }
 

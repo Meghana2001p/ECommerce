@@ -32,4 +32,6 @@ public interface ProductAttributeValueRepo extends JpaRepository<ProductAttribut
     @Query("DELETE FROM ProductAttributeValue pav WHERE pav.product.id = :productId")
     void deleteAllByProductId(@Param("productId") Integer productId);
 
+    @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.product.id = :productId")
+    List<ProductAttributeValue> findByProductId(Integer productId);
 }

@@ -2,10 +2,14 @@ package com.project.E_Commerce.Controller;
 
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Service.ProductService;
+import com.project.E_Commerce.dto.ProductDetailDTO;
+import com.project.E_Commerce.dto.ProductList;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -239,16 +243,32 @@ return ResponseEntity.ok(addedProduct);
     }
 
 
-    //Product to display the list to the viewers
 
 
-
-
+    @GetMapping("/view/all")
+    public ResponseEntity<List<ProductList>> getAllProductsForView(
+            @RequestParam Integer userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<ProductList> result = productService.getAllAvailableProducts(userId, pageable);
+        return ResponseEntity.ok(result);
+    }
 
 
 
 
     //Product to display when u click on the product the detailes information
+    @GetMapping("/view/{productId}")
+    public ResponseEntity<ProductDetailDTO> getProductDetail(
+            @PathVariable Integer productId,
+            @RequestParam Integer userId
+    ) {
+        ProductDetailDTO dto = productService.getProductDetailById(productId, userId);
+        return ResponseEntity.ok(dto);
+    }
+
 
 
 
