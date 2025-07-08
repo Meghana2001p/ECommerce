@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "coupon")
@@ -40,7 +41,7 @@ public class Coupon {
     @Future(message = "Expiry date must be in the future")
     @Column(name = "expiry_date", nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate expiryDate;
+    private LocalDateTime expiryDate;
 
     @NotNull(message = "Usage limit is required")
     @Min(value = 1, message = "Usage limit must be at least 1")

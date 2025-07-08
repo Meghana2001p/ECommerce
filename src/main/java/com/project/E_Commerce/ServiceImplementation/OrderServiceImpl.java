@@ -1,64 +1,349 @@
-//package com.project.E_Commerce.ServiceImplementation;
-//
-//import com.project.E_Commerce.Entity.*;
-//import com.project.E_Commerce.Exception.*;
-//import com.project.E_Commerce.Mapper.*;
-//import com.project.E_Commerce.Service.CartService;
-//import com.project.E_Commerce.Service.OrderService;
-//import com.project.E_Commerce.dto.*;
-//import jakarta.transaction.Transactional;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Service;
-//
-//import java.math.BigDecimal;
-//import java.time.LocalDateTime;
-//import java.util.List;
-//import java.util.UUID;
-//
-//@Service
-//@RequiredArgsConstructor
-//
-//public class OrderServiceImpl implements OrderService {
-//
-//    @Autowired
-//    private OrderMapper orderMapper;
-//
-//
-//    @Autowired
-//    private DeliveryStatusMapper deliveryStatusMapper;
-//
-//    @Autowired
-//    private CartService cartService;
-//
-//    @Autowired
-//    private CartMapper cartMapper;
-//    @Autowired
-//    private CartItemMapper cartItemMapper;
-//
-//    @Autowired
-//    private AppliedCouponMapper appliedCouponMapper;
-//
-//
-//    @Autowired
-//    private OrderItemMapper orderItemMapper;
-//
-//    @Autowired
-//    private GiftOrderMapper giftOrderMapper;
-//    @Autowired
-//    private PaymentMapper paymentMapper;
-//
-//
-//    @Autowired
-//    private NotificationQueueMapper notificationMapper;
-//
-//    @Autowired
-//    private OrderStatusHistoryMapper orderStatusHistoryMapper;
-//
-//
-//    //the user is gonna place the order and the data is gonna be stored in the order table
-//    //and also  the response is gonna be there
-//    //and the data is gonna be stored in the database of the delivery status
+package com.project.E_Commerce.ServiceImplementation;
+
+import com.project.E_Commerce.Entity.*;
+import com.project.E_Commerce.Exception.*;
+import com.project.E_Commerce.Mapper.*;
+import com.project.E_Commerce.Repository.*;
+import com.project.E_Commerce.Service.CartService;
+import com.project.E_Commerce.Service.OrderService;
+import com.project.E_Commerce.dto.*;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class OrderServiceImpl implements OrderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+
+
+    @Autowired
+    private OrderRepo orderRepo;
+
+    @Autowired
+    private DeliveryStatusRepo deliveryStatusRepo;
+
+    @Autowired
+    private CartService cartService;
+
+    @Autowired
+    private CartRepo cartRepo;
+
+    @Autowired
+    private CartItemRepo cartItemRepo;
+
+    @Autowired
+    private AppliedCouponRepo appliedCouponRepo;
+
+
+    @Autowired
+    private OrderItemRepo orderItemRepo;
+
+    @Autowired
+    private  GiftOrderRepo giftOrderRepo;
+
+    @Autowired
+    private ProductRepo productRepo;
+
+    @Autowired
+    private NotificationQueueRepo notificationQueueRepo;
+
+    @Autowired
+    private OrderStatusHistoryRepo orderStatusHistoryRepo;
+
+    @Autowired
+    private InventoryRepo inventoryRepo;
+
+    @Autowired
+    private PaymentRepo paymentRepo;
+
+
+
+
+
+  @Transactional
+    @Override
+    public OrderPlacedResponseDto placeOrder(Order orderRequest) {
+      if(orderRequest==null)
+      {
+          throw new IllegalArgumentException("Order request should not be null");
+      }
+      try {
+          if (orderRequest.getUser().getUserId() == null) {
+              throw new IllegalArgumentException("User ID cannot be null");
+          }
+
+          // Get cart summary
+          CartAmountSummaryDto summary = cartService.calculateCartSummary(orderRequest.getUser().getUserId());
+          if (summary.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+              throw new OrderCouldNotBePlacedException("Cart is empty");
+          }
+
+          // Create order
+          orderRequest.setOrderDate(LocalDateTime.now());
+          orderRequest.setCreatedAt(LocalDateTime.now());
+          orderRequest.setOrderStatus(Order.OrderStatus.PENDING);
+          orderRequest.setTotalAmount(summary.getTotalAmount());
+
+          Order savedOrder = orderRepo.save(orderRequest);
+
+          // Get cart and items
+          Cart cart = cartRepo.findByUserId(orderRequest.getUser().getUserId())
+                  .orElseThrow(() -> new CartNotFoundException("Cart not found"));
+
+          List<CartItem> cartItems = cartItemRepo.findByCartId(cart.getId());
+          if (cartItems.isEmpty()) throw new CartNotFoundException("No items in cart");
+
+          for (CartItem item : cartItems) {
+              // Save OrderItem
+              OrderItem orderItem = new OrderItem();
+              orderItem.setOrder(savedOrder);
+              orderItem.setProduct(item.getProduct());
+              orderItem.setQuantity(item.getQuantity());
+              orderItem.setPrice(item.getPrice());
+              orderItemRepo.save(orderItem);
+
+              // Deduct inventory
+              Inventory inventory = inventoryRepo.findByProductId(item.getProduct().getId())
+                      .orElseThrow(() -> new IllegalStateException("Inventory not found for product: " + item.getProduct().getId()));
+
+              int remaining = inventory.getStockQuantity() - item.getQuantity();
+              if (remaining < 0) {
+                  throw new IllegalArgumentException("Insufficient stock for product: " + item.getProduct().getName());
+              }
+
+              inventory.setStockQuantity(remaining);
+              inventory.setInStock(remaining > 0);
+              inventory.setLastUpdated(LocalDateTime.now());
+              inventoryRepo.save(inventory);
+          }
+
+          // Save payment
+          String trackingNumber = "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+          Payment payment = new Payment();
+          payment.setOrder(savedOrder);
+          payment.setAmount(savedOrder.getTotalAmount());
+          payment.setPaidAt(LocalDateTime.now());
+          payment.setStatus(Payment.PaymentStatus.PENDING);
+          payment.setPaymentMethod(Payment.PaymentMethod.valueOf(orderRequest.getPaymentMethod().name()));
+          payment.setTransactionId(trackingNumber);
+          paymentRepo.save(payment);
+
+          // Save gift order if applicable
+          if (orderRequest.isGift()) {
+              GiftOrder giftOrder = new GiftOrder();
+              giftOrder.setOrder(savedOrder);
+              giftOrder.setGiftMessage("Happy Shopping!");
+              giftOrder.setGiftWrapping(true);
+              giftOrder.setHidePrice(true);
+              giftOrderRepo.save(giftOrder);
+          }
+
+          // Create delivery status
+          DeliveryStatus deliveryStatus = new DeliveryStatus();
+          deliveryStatus.setOrder(savedOrder);
+          deliveryStatus.setStatus(DeliveryStatus.DeliveryState.PENDING);
+          deliveryStatus.setUpdatedAt(LocalDateTime.now());
+          deliveryStatus.setTrackingNumber(trackingNumber);
+          deliveryStatus.setCarrier("Blue-dart");
+          deliveryStatus.setEstimatedDeliveryDate(LocalDateTime.now().plusDays(5));
+          deliveryStatus.setDeliveryType(DeliveryStatus.DeliveryType.STANDARD);
+          deliveryStatusRepo.save(deliveryStatus);
+
+          // Cleanup: clear cart & coupon
+          cartItemRepo.deleteAll(cartItems);
+          appliedCouponRepo.deleteByCartId(cart.getId());
+
+          // Notification
+          NotificationQueue notification = new NotificationQueue();
+          notification.setUser(orderRequest.getUser());
+          notification.setType(NotificationQueue.NotificationType.EMAIL);
+          notification.setMessage("🎉 Your order #" + savedOrder.getId() + " has been placed! Track ID: " + trackingNumber);
+          notification.setStatus(NotificationQueue.NotificationStatus.PENDING);
+          notification.setScheduledAt(LocalDateTime.now());
+          notificationQueueRepo.save(notification);
+
+          return new OrderPlacedResponseDto(
+                  "Order placed successfully!",
+                  savedOrder.getId(),
+                  trackingNumber,
+                  deliveryStatus.getEstimatedDeliveryDate(),
+                  savedOrder.getOrderStatus(),
+                  savedOrder.getTotalAmount()
+          );
+      }catch (DataAccessException e) {
+          logger.error("Database access while   Placing Order   : {}", e.getMessage(), e); // logs full stack trace
+
+          throw new DataBaseException("Internal server error");
+      }
+      catch (Exception e) {
+          log.error("Unexpected error while   Placing Order   ", e);
+          throw e;
+      }
+
+  }
+    @Override
+    public String updateDeliveryStatusByAgent(DeliveryStatusAgentUpdateDto dto) {
+        if(dto==null)
+        {
+            throw new IllegalArgumentException("Delivery Status should not be null");
+        }
+      try {
+          int updated = deliveryStatusRepo.updateDeliveryStatusByAgent(dto.getOrderId(), dto.getStatus(), LocalDateTime.now());
+          if (updated <= 0) {
+              return "Delivery status update failed for Order ID: " + dto.getOrderId();
+          }
+          return "Delivery status updated successfully for Order ID: " + dto.getOrderId();
+      }catch (DataAccessException e) {
+          logger.error("Database access while  updating the delivery by the Agent   : {}", e.getMessage(), e); // logs full stack trace
+
+          throw new DataBaseException("Internal server error");
+      }
+      catch (Exception e) {
+          log.error("Unexpected error while while  updating the delivery by the Agent   ", e);
+          throw e;
+      }
+    }
+
+
+    @Override
+    public void updateDeliveryStatusByAdmin(DeliveryStatusAdminUpdateDto dto) {
+        if(dto==null)
+        {
+            throw new IllegalArgumentException("Delivery Status should not be null");
+        }
+
+      try {
+
+          int updated = deliveryStatusRepo.updateDeliveryStatusByAdmin(dto.getOrderId(), dto.getStatus(), dto.getCarrier());
+          if (updated <= 0) {
+              throw new DataUpdateException("Delivery status update failed");
+          }
+
+          if (dto.getStatus() == DeliveryStatus.DeliveryState.DELIVERED) {
+              Order order = orderRepo.findById(dto.getOrderId())
+                      .orElseThrow(() -> new RuntimeException("Order not found"));
+
+              OrderStatusHistory history = new OrderStatusHistory();
+              history.setOrder(order);
+              history.setStatus(OrderStatusHistory.OrderStatus.DELIVERED);
+              history.setUpdatedAt(LocalDateTime.now());
+              orderStatusHistoryRepo.save(history);
+
+              NotificationQueue notification = new NotificationQueue();
+              notification.setUser(order.getUser());
+              notification.setType(NotificationQueue.NotificationType.EMAIL);
+              notification.setMessage("📦 Your order #" + order.getId() + " has been delivered. Thank you!");
+              notification.setStatus(NotificationQueue.NotificationStatus.PENDING);
+              notification.setScheduledAt(LocalDateTime.now());
+              notificationQueueRepo.save(notification);
+          }
+      }catch (DataAccessException e) {
+          logger.error("Database access while  updating the delivery by the Admin   : {}", e.getMessage(), e); // logs full stack trace
+
+          throw new DataBaseException("Internal server error");
+      }
+      catch (Exception e) {
+          log.error("Unexpected error while while  updating the delivery by the Admin   ", e);
+          throw e;
+      }
+
+    }
+
+    @Override
+    public String updateOrderByUser(UserOrderUpdateDto dto) {
+
+        if(dto==null)
+        {
+            throw new IllegalArgumentException("Update Order should not be null");
+        }
+      try {
+          Order order = orderRepo.findById(dto.getOrderId())
+                  .orElseThrow(() -> new RuntimeException("Order not found"));
+
+          if (Boolean.TRUE.equals(dto.getCancelOrder()) &&
+                  (order.getOrderStatus() == Order.OrderStatus.SHIPPED || order.getOrderStatus() == Order.OrderStatus.DELIVERED)) {
+              throw new OrderCannotCancelException("Order is already shipped or delivered.");
+          }
+
+          order.setOrderStatus(Order.OrderStatus.CANCELLED);
+          orderRepo.save(order);
+
+          OrderStatusHistory history = new OrderStatusHistory();
+          history.setOrder(order);
+          history.setStatus(OrderStatusHistory.OrderStatus.CANCELLED);
+          history.setUpdatedAt(LocalDateTime.now());
+          orderStatusHistoryRepo.save(history);
+
+          return "Order cancelled successfully.";
+      }
+      catch (DataAccessException e) {
+          logger.error("Database access while  updating the Order by the user    : {}", e.getMessage(), e); // logs full stack trace
+
+          throw new DataBaseException("Internal server error");
+      }
+      catch (Exception e) {
+          log.error("Unexpected error while while  updating the Order  by the user  ", e);
+          throw e;
+      }
+    }
+
+
+
+    @Override
+    public Order getOrderById(int orderId) {
+
+
+        if(orderId<=0)
+        {
+            throw new IllegalArgumentException("Delivery Status should not be null");
+        }
+      try {
+          return orderRepo.findById(orderId)
+                  .orElseThrow(() -> new RuntimeException("Order not found"));
+      }
+      catch (DataAccessException e) {
+          logger.error("Database access while  getting the order data  : {}", e.getMessage(), e); // logs full stack trace
+
+          throw new DataBaseException("Internal server error");
+      }
+      catch (Exception e) {
+          log.error("Unexpected error while while  getting the order data ", e);
+          throw e;
+      }
+    }
+
+    @Override
+    public List<Order> getAllOrders() {
+        try {
+            return orderRepo.findAll();
+
+        } catch (DataAccessException e) {
+            logger.error("Database access while  getting  all the order data  : {}", e.getMessage(), e); // logs full stack trace
+
+            throw new DataBaseException("Internal server error");
+        } catch (Exception e) {
+            log.error("Unexpected error while while  getting  all the order data ", e);
+            throw e;
+        }
+    }
+}
+
+    //the user is gonna place the order and the data is gonna be stored in the order table
+    //and also  the response is gonna be there
+    //and the data is gonna be stored in the database of the delivery status
 //    @Override
 //    @Transactional
 //    public OrderPlacedResponseDto placeOrder(Order order) {

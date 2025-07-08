@@ -1,6 +1,6 @@
 package com.project.E_Commerce.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,5 +23,12 @@ public class CartItemDto {
     private int quantity;
     private BigDecimal totalPrice;    // price × quantity
 
+    public CartItemDto(Integer id, String name, String imageAddress, Integer quantity, BigDecimal price) {
+        this.productId = id;
+        this.productName = name;
+        this.imageUrl = imageAddress;
+        this.quantity = quantity;
+        this.price = price;
+    }
 }
 

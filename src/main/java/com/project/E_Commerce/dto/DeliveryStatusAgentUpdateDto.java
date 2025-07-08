@@ -1,5 +1,6 @@
 package com.project.E_Commerce.dto;
 
+import com.project.E_Commerce.Entity.DeliveryStatus;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ public class DeliveryStatusAgentUpdateDto {
     private Integer orderId;
 
     @NotNull(message = "Delivery status is required")
-    private DeliveryState status;
+    private DeliveryStatus.DeliveryState status;
 
     private String trackingNumber;
 
@@ -24,9 +25,7 @@ public class DeliveryStatusAgentUpdateDto {
 
 
 
-    public enum DeliveryState {
-        PENDING, SHIPPED, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
-    }
+
 
 
 

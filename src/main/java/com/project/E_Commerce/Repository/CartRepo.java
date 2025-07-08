@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CartRepo extends JpaRepository<Cart,Integer> {
 
@@ -15,4 +17,7 @@ public interface CartRepo extends JpaRepository<Cart,Integer> {
         WHERE c.user.id = :userId AND c.product.id = :productId
     """)
     boolean existsByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
+    @Query("SELECT c FROM Cart c WHERE c.user.userId = :userId")
+    Optional<Cart> findByUserId(@Param("userId") Integer userId);
+
 }

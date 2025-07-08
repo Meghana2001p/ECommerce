@@ -62,6 +62,7 @@ public class Order {
     @Column(name = "total_amount", precision = 30, scale = 20, nullable = false)
     private BigDecimal totalAmount;
 
+
     public enum OrderStatus {
         PENDING,
         PROCESSING,

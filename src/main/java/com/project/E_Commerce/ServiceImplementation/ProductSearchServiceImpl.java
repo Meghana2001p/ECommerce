@@ -35,6 +35,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
 
     @Override
     public List<Product> getFilteredProducts(ProductFilterRequest filter) {
+        validateFilterParameters(filter);
         try {
             Specification<Product> spec = (root, query, cb) -> {
                 List<Predicate> predicates = new java.util.ArrayList<>();

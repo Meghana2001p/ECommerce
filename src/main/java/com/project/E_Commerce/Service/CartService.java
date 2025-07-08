@@ -6,6 +6,8 @@
     import com.project.E_Commerce.Entity.Coupon;
     import com.project.E_Commerce.dto.CartAmountSummaryDto;
     import com.project.E_Commerce.dto.CartItemDto;
+    import com.project.E_Commerce.dto.CouponResponseDto;
+
     import java.util.List;
 
     //CartService
@@ -18,8 +20,8 @@
         //3rd add teh coupon details
         //4th add the applied coupon
 
-        Cart addToCart(Cart cart);//just the id and teh userId
-        CartItem addToCartItem(CartItem cartItem);//original Items into the cart
+        Cart createCart(Cart cart);//just the id and teh userId
+        CartItem addCartItem(CartItem cartItem);//original Items into the cart
         List<CartItemDto>getAllCartItemsById(int user_id);
         String removeCartItem(int cart_item_id);
 
@@ -31,10 +33,10 @@
         //show available coupons
         //add coupon and show the discount price
         //remove coupon and remove the discount price
-        Coupon addCoupons(Coupon coupon);
-        List<Coupon>getAllAvailableCoupons();
-        AppliedCoupon ApplyCoupon(AppliedCoupon appliedCoupon);
-        String removeCoupon(int appliedCoupon_Id);
+        Coupon createCoupon(Coupon coupon);
+        List<CouponResponseDto>getAllAvailableCoupons();
+        AppliedCoupon applyCoupon(AppliedCoupon appliedCoupon);
+        String removeAppliedCoupon(int appliedCoupon_Id);
         void clearCart(int user_id);
 
 

@@ -7,10 +7,7 @@ import com.project.E_Commerce.dto.ProductFilterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,11 +16,25 @@ import java.util.List;
 public class ProductSearchController {
     @Autowired
    private ProductSearchService productSearchService;
-
     @PostMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestBody ProductFilterRequest filter) {
+    public ResponseEntity<List<Product>> searchProducts(
+            @RequestBody ProductFilterRequest filter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    )
+
+    {
+        // Override values in filter from URL
+        filter.setPage(page);
+        filter.setSize(size);
+        filter.setSortBy(sortBy);
+        filter.setSortDirection(sortDirection);
+
         List<Product> products = productSearchService.getFilteredProducts(filter);
         return ResponseEntity.ok(products);
     }
+
 
 }
