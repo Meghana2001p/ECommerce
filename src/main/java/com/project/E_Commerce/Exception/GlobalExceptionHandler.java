@@ -413,6 +413,29 @@ public ResponseEntity<ErrorResponse> handleServiceException(
     }
 
 
+
+
+
+    //OrderNotFoundException
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            OrderNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+
+
+
+
+
     // Generic exception handler
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception exception, HttpServletRequest request) {

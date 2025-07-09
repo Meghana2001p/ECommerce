@@ -71,7 +71,7 @@ public class UserServiceImplementation implements UserService {
                 user.setStatus(User.Status.ACTIVE);
             }
             User createdUser = userRepo.save(user);
-            if (createdUser.getUserId() == null && createdUser.getUserId() <= 0) {
+            if (createdUser.getId() == null && createdUser.getId() <= 0) {
                 throw new DataCreationException("Failed to create user");
 
             }
@@ -190,21 +190,21 @@ public class UserServiceImplementation implements UserService {
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
         }
-        if (user.getUserId() == null) {
+        if (user.getId() == null) {
             throw new IllegalArgumentException("User ID must not be null for update");
         }
 
         // Check if user exists
         try {
-            Optional<User> existingUserOpt = userRepo.findById(user.getUserId());
+            Optional<User> existingUserOpt = userRepo.findById(user.getId());
             if (!existingUserOpt.isPresent()) {
-                throw new UserNotFoundException("User with ID " + user.getUserId() + " not found");
+                throw new UserNotFoundException("User with ID " + user.getId() + " not found");
             }
 
 
             // Run the JPQL update
             int result = userRepo.updateUserFields(
-                    user.getUserId(),
+                    user.getId(),
                     user.getName(),
                     user.getEmail(),
                     user.getPassword(),
@@ -214,16 +214,16 @@ public class UserServiceImplementation implements UserService {
             );
 
             if (result <= 0) {
-                throw new DataUpdateException("Failed to update user with ID: " + user.getUserId());
+                throw new DataUpdateException("Failed to update user with ID: " + user.getId());
             }
 
             // Fetch updated user to return
-            return userRepo.findById(user.getUserId()).orElseThrow(() ->
+            return userRepo.findById(user.getId()).orElseThrow(() ->
                     new UserNotFoundException("User not found after update")
             );
         }
         catch (DataAccessException e) {
-            log.error("Error updating the user", user.getUserId(),e.getMessage());
+            log.error("Error updating the user", user.getId(),e.getMessage());
             throw new DataBaseException("Internal Server Error");
         } catch (Exception e) {
             log.error("Unexpected error", e);
@@ -443,31 +443,30 @@ catch (DataAccessException e) {
     @Override
     public List<WishlistResponse> getWishlistByUser(int userId) {
         try {
-            List<Wishlist> items = wishlistRepo.findByUserUserId(userId);
+            List<Wishlist> items = wishlistRepo.findByUserId(userId);
             return items.stream()
                     .map(w -> new WishlistResponse(
                             w.getProduct().getId(),
-                            w.getProductName(),
-                            w.getProductImageUrl(),
-                            w.getAvailable(),
+                            w.getProduct().getName(),
+                            w.getProduct().getImageAddress(),
+                            w.getProduct().getIsAvailable(),
                             w.getCreatedAt()
                     ))
                     .toList();
-        }
-        catch (DataAccessException e) {
-            log.info("couldnot get the data", userId);
+        } catch (DataAccessException e) {
+            log.error("Could not get wishlist data for user {}: {}", userId, e.getMessage(), e);
             throw new DataBaseException("Internal Server Error");
-
         } catch (Exception e) {
             log.error("Error fetching Wishlist for user ID {}: {}", userId, e.getMessage(), e);
             throw e;
         }
     }
 
+
     @Override
     public String clearWishlist(int userId) {
         try {
-            wishlistRepo.deleteByUserUserId(userId);
+            wishlistRepo.deleteByUserId(userId);
             return "Wishlist cleared for user ID: " + userId;
         }catch (DataAccessException e) {
             log.info("Could not clear  the wishlist", userId);

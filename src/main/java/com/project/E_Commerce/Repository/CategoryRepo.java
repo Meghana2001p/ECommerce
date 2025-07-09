@@ -1,10 +1,7 @@
 package com.project.E_Commerce.Repository;
 
 import com.project.E_Commerce.Entity.Category;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.apache.ibatis.annotations.Param;
-import org.hibernate.sql.ast.tree.expression.JdbcParameter;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

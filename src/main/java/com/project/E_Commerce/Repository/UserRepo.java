@@ -2,7 +2,7 @@ package com.project.E_Commerce.Repository;
 
 import com.project.E_Commerce.Entity.User;
 import jakarta.transaction.Transactional;
-import org.apache.ibatis.annotations.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -24,19 +24,19 @@ import java.util.Optional;
 public interface UserRepo extends JpaRepository<User,Integer> {
 
     //  Login user based on email and password
-    @Query("select * from User u where u.email = :email and u.password= :password")
+    @Query("select  u from User u where u.email = :email and u.password= :password")
     Optional<User> findByEmailAndPassword(@Param("email") String email, @Param("password") String password);
 
     //  Check if user exists by email
-    @Query("select * from User u where u.email = :email")
+    @Query("select u from User u where u.email = :email")
     boolean existsByEmail(@Param("email")String email);
 
     //  Get user by email
-    @Query("select * from User u where u.email=:email")
+    @Query("select u from User u where u.email=:email")
     Optional<User> findByEmail(@Param("email")String email);
 
     //  Check if user is active
-    @Query("SELECT CASE WHEN u.isActive = true THEN true ELSE false END FROM User u WHERE u.userId = :userId")
+    @Query("SELECT CASE WHEN u.isActive = true THEN true ELSE false END FROM User u WHERE u.id = :userId")
     boolean isUserActive(Integer userId);
 
 
@@ -44,7 +44,7 @@ public interface UserRepo extends JpaRepository<User,Integer> {
     //  Deactivate user by setting isActive to false
     @Transactional
     @Modifying
-    @Query("UPDATE User u SET u.isActive = false WHERE u.userId = :userId")
+    @Query("UPDATE User u SET u.isActive = false WHERE u.id = :userId")
     int deactivateUser(Integer userId);
 
 
@@ -53,7 +53,7 @@ public interface UserRepo extends JpaRepository<User,Integer> {
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.name = :name, u.email = :email, u.password = :password, u.phoneNumber = :phoneNumber, " +
-            "u.role = :role, u.status = :status WHERE u.userId = :userId")
+            "u.role = :role, u.status = :status WHERE u.id = :userId")
     int updateUserFields(@Param("userId") Integer userId,
                          @Param("name") String name,
                          @Param("email") String email,
@@ -65,7 +65,7 @@ public interface UserRepo extends JpaRepository<User,Integer> {
 
     //DELETE
     @Modifying
-    @Query("DELETE FROM User u WHERE u.userId = :userId")
+    @Query("DELETE FROM User u WHERE u.id = :userId")
     int deleteByUserId(@Param("userId") Integer userId);
 
 }

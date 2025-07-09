@@ -2,7 +2,6 @@ package com.project.E_Commerce.ServiceImplementation;
 
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception.*;
-import com.project.E_Commerce.Mapper.*;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.CartService;
 import com.project.E_Commerce.Service.OrderService;
@@ -81,12 +80,12 @@ public class OrderServiceImpl implements OrderService {
           throw new IllegalArgumentException("Order request should not be null");
       }
       try {
-          if (orderRequest.getUser().getUserId() == null) {
+          if (orderRequest.getUser().getId() == null) {
               throw new IllegalArgumentException("User ID cannot be null");
           }
 
           // Get cart summary
-          CartAmountSummaryDto summary = cartService.calculateCartSummary(orderRequest.getUser().getUserId());
+          CartAmountSummaryDto summary = cartService.calculateCartSummary(orderRequest.getUser().getId());
           if (summary.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
               throw new OrderCouldNotBePlacedException("Cart is empty");
           }
@@ -100,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
           Order savedOrder = orderRepo.save(orderRequest);
 
           // Get cart and items
-          Cart cart = cartRepo.findByUserId(orderRequest.getUser().getUserId())
+          Cart cart = cartRepo.findByUserId(orderRequest.getUser().getId())
                   .orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
           List<CartItem> cartItems = cartItemRepo.findByCartId(cart.getId());
@@ -287,6 +286,17 @@ public class OrderServiceImpl implements OrderService {
           history.setUpdatedAt(LocalDateTime.now());
           orderStatusHistoryRepo.save(history);
 
+          List<OrderItem> orderItems = orderItemRepo.findByOrderId(order.getId());
+          for (OrderItem item : orderItems) {
+              Inventory inventory = inventoryRepo.findByProductId(item.getProduct().getId())
+                      .orElseThrow(() -> new IllegalStateException("Inventory not found for product: " + item.getProduct().getId()));
+
+              int updatedStock = inventory.getStockQuantity() + item.getQuantity();
+              inventory.setStockQuantity(updatedStock);
+              inventory.setInStock(true);
+              inventory.setLastUpdated(LocalDateTime.now());
+              inventoryRepo.save(inventory);
+          }
           return "Order cancelled successfully.";
       }
       catch (DataAccessException e) {

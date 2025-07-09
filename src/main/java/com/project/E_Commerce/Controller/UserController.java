@@ -55,7 +55,7 @@ public ResponseEntity<?> getAllUsers()
     List<User> users = userRepo.findAll();
     List<UserResponse> resp = users.stream()
             .map(u -> new UserResponse(
-                    u.getUserId(),
+                    u.getId(),
                     u.getName(),
                     u.getEmail(),
                     u.getRole().name(),

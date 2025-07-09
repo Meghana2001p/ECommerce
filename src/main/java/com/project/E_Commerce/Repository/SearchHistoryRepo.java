@@ -2,11 +2,11 @@ package com.project.E_Commerce.Repository;
 
 import com.project.E_Commerce.Entity.Product;
 import com.project.E_Commerce.Entity.SearchHistory;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.awt.print.Pageable;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface SearchHistoryRepo extends JpaRepository<SearchHistory,Integer> {
     //Get all search history
-    @Select("select s from SearchHistory s")
+    @Query("select s from SearchHistory s")
     List<SearchHistory> findAll();
 
     //Get history by user ID
@@ -28,11 +28,9 @@ public interface SearchHistoryRepo extends JpaRepository<SearchHistory,Integer> 
     List<Product> findProductsSearchedByUser(@Param("userId") Integer userId);
 
 
-    //Get history by session ID
-    List<SearchHistory> findBySessionId(String sessionId);
 
     // Get recent N searches for user with pagination
-    @Query("SELECT s FROM SearchHistory s WHERE s.userId = :userId ORDER BY s.searchedAt DESC")
+    @Query("SELECT s FROM SearchHistory s WHERE s.user.id = :userId ORDER BY s.searchedAt DESC")
     List<SearchHistory> findRecentSearchesByUserId(@Param("userId") int userId, Pageable pageable);
 
     @Query("SELECT DISTINCT s.keyword FROM SearchHistory s WHERE s.user.id = :userId ORDER BY s.searchedAt DESC")
@@ -40,11 +38,10 @@ public interface SearchHistoryRepo extends JpaRepository<SearchHistory,Integer> 
 
 
     // Delete by user ID
-    @Query("delete s from SearchHistory s where s.user.userId=: userId")
+    @Query("delete  from SearchHistory s where s.user.id=: userId")
     int  deleteByUserId(@Param("userId") Integer userId);
 
 
-    void deleteBySessionId(String sessionId);
 
     @Query("SELECT sh FROM SearchHistory sh WHERE sh.user.id = :userId ORDER BY sh.searchedAt DESC")
     List<SearchHistory> findByUserIdOrderBySearchedAtDesc(@Param("userId") Integer userId);

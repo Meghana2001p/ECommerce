@@ -4,7 +4,6 @@ package com.project.E_Commerce.ServiceImplementation;
 
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception.*;
-import com.project.E_Commerce.Mapper.*;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.CartService;
 import com.project.E_Commerce.dto.CartAmountSummaryDto;
@@ -12,7 +11,6 @@ import com.project.E_Commerce.dto.CartItemDto;
 import com.project.E_Commerce.dto.CouponResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +59,7 @@ public class CartServiceImpl implements CartService {
                 throw new IllegalArgumentException("Cart or user information cannot be null");
             }
 
-            User user = userRepo.findById(cart.getUser().getUserId())
+            User user = userRepo.findById(cart.getUser().getId())
                     .orElseThrow(() -> new UserNotFoundException("User not found exception"));
             cart.setUser(user);
             return cartRepo.save(cart);
