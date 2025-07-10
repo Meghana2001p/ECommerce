@@ -2,14 +2,13 @@ package com.project.E_Commerce.dto;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 public class DiscountDto {
-    private String code;
-    private String description;
-    private String type; // PERCENTAGE / FLAT
-    private Double value;
-    private LocalDateTime validFrom;
-    private LocalDateTime validTill;
+    private String name;
+    private BigDecimal discountPercent;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 }

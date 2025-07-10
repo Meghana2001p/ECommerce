@@ -21,4 +21,9 @@ public interface PriceHistoryRepo extends JpaRepository<PriceHistory,Integer> {
     @Query("SELECT p.newPrice FROM PriceHistory p WHERE p.product.id = :productId AND DATE(p.changedAt) = :date")
     Optional<BigDecimal> findPriceAtDate(@Param("productId") Integer productId, @Param("date") LocalDateTime date);
 
+
+    @Query("SELECT p FROM PriceHistory p WHERE p.product.id = :productId ORDER BY p.changedAt DESC")
+    List<PriceHistory> findByProductIdOrderByChangedAtDesc(@Param("productId") Integer productId);
+
+
 }

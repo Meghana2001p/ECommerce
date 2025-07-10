@@ -4,8 +4,7 @@ package com.project.E_Commerce.Service;
 //Payment, Refund, PriceHistory, Discount, ProductDiscount
 
 import com.project.E_Commerce.Entity.*;
-import com.project.E_Commerce.dto.DiscountDto;
-import com.project.E_Commerce.dto.PaymentRequestDto;
+import com.project.E_Commerce.dto.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,21 +13,21 @@ public interface PaymentService {
 
 
     // Payment Management
-    Payment makePayment(PaymentRequestDto dto);
-    Payment getPaymentByOrderId(Integer orderId);
-    List<Payment> getPaymentsByUserId(Integer userId);
+    PaymentResponseDto makePayment(PaymentCreateRequestDto dto);
+    PaymentResponseDto getPaymentByOrderId(Integer orderId);
+    List<UserPaymentSummaryDto> getPaymentsByUserId(Integer userId);
     void updatePaymentStatus(Integer paymentId, Payment.PaymentStatus status);
 
     // Refund Management
-    Refund initiateRefund(Integer orderId);
-    Refund getRefundById(Integer refundId);
-    List<Refund> getRefundsByUserId(Integer userId);
-    void updateRefundStatus(Integer refundId, Refund.RefundStatus status);
+    RefundResponseDto initiateRefund(Integer orderId);
+    RefundResponseDto getRefundById(Integer refundId);
+    List<RefundResponseDto> getRefundsByUserId(Integer userId);
+    RefundResponseDto updateRefundStatus(Integer refundId, Refund.RefundStatus status);
 
     // Price History Tracking
     void recordPriceChange(Integer productId, Double newPrice);
-    List<PriceHistory> getPriceHistory(Integer productId);
-    Double getPriceAtDate(Integer productId, LocalDateTime date);
+    List<PriceHistoryDto> getPriceHistory(Integer productId);
+    Double getPriceAtDate(Integer productId);
 
     // Discount Management
     Discount createDiscount(DiscountDto dto);

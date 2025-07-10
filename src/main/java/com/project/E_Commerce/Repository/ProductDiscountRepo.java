@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductDiscountRepo extends JpaRepository<ProductDiscount,Integer> {
@@ -25,4 +26,6 @@ public interface ProductDiscountRepo extends JpaRepository<ProductDiscount,Integ
 
   @Query("delete from ProductDiscount p where p.product.id = :productId")
     void deleteByProductId(Integer productId);
+
+
 }

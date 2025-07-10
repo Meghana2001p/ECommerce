@@ -2,7 +2,7 @@ package com.project.E_Commerce.Repository;
 
 import com.project.E_Commerce.Entity.Product;
 import org.springframework.data.repository.query.Param;
-import org.apache.ibatis.annotations.Select;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
