@@ -16,5 +16,13 @@ public interface ReviewRepo extends JpaRepository<Review,Integer> {
     @Query("SELECT COUNT(r) FROM Review r WHERE r.product.id = :productId")
     Integer countByProductId(@Param("productId") Integer productId);
 
-    List<Review> findByProductId(Integer productId);
+
+    @Query("select r from Review r where r.product.id=:productId")
+    List<Review> findByProduct(@Param("productId")Integer productId);
+
+//    @Query("select r from Review r where r.product.id=productId")
+//    List<Review> findByProduct(Integer productId);
+
+     @Query("select r from Review r where r.user.id=:userId")
+    List<Review> findByUser(Integer userId);
 }

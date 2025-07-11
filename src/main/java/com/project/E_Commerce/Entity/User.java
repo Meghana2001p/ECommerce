@@ -45,9 +45,7 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Status status;
 
 

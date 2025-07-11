@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 ////User,UserFavourite,Wishlist,UserEmailPreference,SearchHistory
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImplementation.class);
@@ -49,7 +48,7 @@ public class UserServiceImplementation implements UserService {
 
 
     @Override
-    public User createUser(User user) {
+    public UserResponse createUser(User user) {
         try {
             if (user == null) {
                 throw new IllegalArgumentException("User cannot be null");
@@ -61,21 +60,34 @@ public class UserServiceImplementation implements UserService {
             }
 
 
-            // Check if user already exists
             if (userRepo.existsByEmail(user.getEmail())) {
                 throw new UserAlreadyExists("User with email " + user.getEmail() + " already exists");
             }
+
 
             //if the user status is null
             if (user.getStatus() == null) {
                 user.setStatus(User.Status.ACTIVE);
             }
             User createdUser = userRepo.save(user);
+
+
+
+            UserResponse userResponse= new UserResponse();
+
+            userResponse.setStatus(createdUser.getStatus().name());
+            userResponse.setUserId(createdUser.getId());
+            userResponse.setName(createdUser.getName());
+            userResponse.setRole(createdUser.getRole().name());
+            userResponse.setEmail(createdUser.getEmail());
+            userResponse.setPhoneNumber(createdUser.getPhoneNumber());
+
+
             if (createdUser.getId() == null && createdUser.getId() <= 0) {
                 throw new DataCreationException("Failed to create user");
 
             }
-            return createdUser;
+            return userResponse;
         } catch (DataAccessException e)
 //In Spring’s exception hierarchy,
 // DataAccessException is the root unchecked exception for any problem
@@ -83,7 +95,7 @@ public class UserServiceImplementation implements UserService {
         {
             logger.error("Database access error while creating user: {}", e.getMessage(), e); // logs full stack trace
 
-            throw new DataBaseException("Internal Service error");
+            throw new DataBaseException("Internal Server error");
         } catch (Exception e) {
             log.error("Unexpected error", e);
             throw e; // Rethrow so global handler can manage it
@@ -110,7 +122,7 @@ public class UserServiceImplementation implements UserService {
         {
             logger.error("Database access error while creating user: {}", e.getMessage(), e); // logs full stack trace
 
-            throw new DataBaseException("Internal Service error");
+            throw new DataBaseException("Internal Server error");
         } catch (Exception e) {
             log.error("Unexpected error", e);
             throw e; // Rethrow so global handler can manage it

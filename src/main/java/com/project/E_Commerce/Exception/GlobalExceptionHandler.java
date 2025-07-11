@@ -412,10 +412,6 @@ public ResponseEntity<ErrorResponse> handleServiceException(
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-
-
-
-
     //OrderNotFoundException
 
     @ExceptionHandler(OrderNotFoundException.class)
@@ -429,8 +425,19 @@ public ResponseEntity<ErrorResponse> handleServiceException(
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    //ReviewNotFoundException
 
 
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleServiceException(
+            ReviewNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 
 
 

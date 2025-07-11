@@ -28,8 +28,8 @@ public interface UserRepo extends JpaRepository<User,Integer> {
     Optional<User> findByEmailAndPassword(@Param("email") String email, @Param("password") String password);
 
     //  Check if user exists by email
-    @Query("select u from User u where u.email = :email")
-    boolean existsByEmail(@Param("email")String email);
+    @Query("SELECT COUNT(*) > 0 FROM User WHERE email = :email")
+    Boolean existsByEmail(@Param("email")String email);
 
     //  Get user by email
     @Query("select u from User u where u.email=:email")

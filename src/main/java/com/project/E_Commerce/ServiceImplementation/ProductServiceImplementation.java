@@ -745,7 +745,7 @@ List<String> imageUrls= productImageRepo.findByProductId(productId)
                 }).toList();
 
 //review Products
-        List<ReviewDTO> reviews = reviewRepo.findByProductId(productId).stream()
+        List<ReviewDTO> reviews = reviewRepo.findByProduct(productId).stream()
                 .map(r -> new ReviewDTO(
                         r.getUser().getName(),
                         r.getRating(),

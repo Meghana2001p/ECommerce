@@ -10,7 +10,7 @@ import java.util.logging.Filter;
 public interface UserService {
 
     //user profile related-- create,login,update,get the profile
-    User createUser(User user);
+    UserResponse createUser(User user);
 
     User loginUser(String email, String password);
 
