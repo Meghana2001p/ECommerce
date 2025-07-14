@@ -1,6 +1,7 @@
 package com.project.E_Commerce.Service;
 
 import com.project.E_Commerce.Entity.*;
+import com.project.E_Commerce.dto.CategoryRequest;
 import com.project.E_Commerce.dto.ProductDetailDTO;
 import com.project.E_Commerce.dto.ProductList;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +47,7 @@ public interface ProductService {
 
 
     //Category
-    Category createCategory(Category category);
+    Category createCategory(CategoryRequest category);
     Category updateCategory(Integer categoryId, Category category);
     Category getCategoryById(Integer categoryId);
     List<Category> getAllCategories();

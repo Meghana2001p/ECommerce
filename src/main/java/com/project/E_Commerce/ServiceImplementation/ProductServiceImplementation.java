@@ -492,7 +492,7 @@ private WishlistRepo wishlistRepo;
     //Category
 
     @Override
-    public Category createCategory(Category category) {
+    public Category createCategory(CategoryRequest category) {
         if(category==null)
         {
             throw new IllegalArgumentException("Category cannot be null");
@@ -501,13 +501,21 @@ private WishlistRepo wishlistRepo;
             if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
                 throw new IllegalArgumentException("Category with this name already exists.");
             }
-            return categoryRepository.save(category);
+
+            Category newCategory= new Category();
+            newCategory.setCategoryName(category.getCategoryName());
+            Integer parentId = category.getParentId();
+          Category parent =  categoryRepository.findById(parentId)        .orElseThrow(() -> new NotFoundException("Parent category not found"));
+           newCategory.setParent(parent);
+
+            categoryRepository.save(newCategory);
+return newCategory;
         } catch (DataAccessException e) {
             logger.error("Database error while creating category", e);
             throw new DataBaseException("Internal server error");
         }
         catch (Exception e) {
-            logger.error("Unexpected error deleting  brand ", e);
+            logger.error("Unexpected error creating the category ", e);
             throw e;
         }
     }

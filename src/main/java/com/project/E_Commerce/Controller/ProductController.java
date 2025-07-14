@@ -2,6 +2,7 @@ package com.project.E_Commerce.Controller;
 
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Service.ProductService;
+import com.project.E_Commerce.dto.CategoryRequest;
 import com.project.E_Commerce.dto.ProductDetailDTO;
 import com.project.E_Commerce.dto.ProductList;
 import jakarta.validation.Valid;
@@ -180,7 +181,7 @@ return ResponseEntity.ok(addedProduct);
 
     // Create Category
     @PostMapping("/category/add")
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+    public ResponseEntity<Category> createCategory(@RequestBody CategoryRequest category) {
         Category created = productService.createCategory(category);
         return ResponseEntity.ok(created);
     }

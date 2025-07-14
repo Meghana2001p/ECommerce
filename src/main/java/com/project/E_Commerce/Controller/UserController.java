@@ -33,7 +33,7 @@ public class UserController {
     }
 
     //user
-  @GetMapping("/login")
+  @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody  @Valid LoginRequest req)
   {
       User user = userService.loginUser(req.getEmail(), req.getPassword());
@@ -68,12 +68,12 @@ public ResponseEntity<?> getAllUsers()
 }
 
 //admin
-@GetMapping("/user/{id}")
+@GetMapping("/{id}")
     public ResponseEntity<?> getOneUser(@PathVariable("id") Integer id)
 {
     Optional<User> user = userRepo.findById(id);
      User existingUser = user.get();
-     UserResponse response=new UserResponse(existingUser.getName(),existingUser.getEmail(),existingUser.getRole().name(),existingUser.getStatus().name(),existingUser.getPhoneNumber());
+     UserResponse response=new UserResponse(existingUser.getId(),existingUser.getName(),existingUser.getEmail(),existingUser.getRole().name(),existingUser.getStatus().name(),existingUser.getPhoneNumber());
      return  ResponseEntity.ok(response);
 
 }
@@ -137,7 +137,7 @@ public ResponseEntity<?> addFavourite(@PathVariable int userId, @PathVariable in
         return ResponseEntity.ok(message);
     }
 
-    @GetMapping("/Favourites/{userId}")
+    @GetMapping("/favourites/{userId}")
     public ResponseEntity<List<FavouriteProductResponse>> getUserFavourites(@PathVariable Integer userId) {
         List<FavouriteProductResponse> favourites = userService.getUserFavouritesResponse(userId);
         return ResponseEntity.ok(favourites);

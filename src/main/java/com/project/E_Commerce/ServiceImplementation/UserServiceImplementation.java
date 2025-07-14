@@ -46,6 +46,9 @@ public class UserServiceImplementation implements UserService {
    @Autowired
    private  SearchHistoryRepo searchHistoryRepo;
 
+   @Autowired
+   private CartRepo cartRepo;
+
 
     @Override
     public UserResponse createUser(User user) {
@@ -69,7 +72,16 @@ public class UserServiceImplementation implements UserService {
             if (user.getStatus() == null) {
                 user.setStatus(User.Status.ACTIVE);
             }
+            if(user.isActive()==false)
+            {
+                user.setActive(true);
+            }
             User createdUser = userRepo.save(user);
+            Cart cart = new Cart();
+            cart.setUser(createdUser);
+            cart.setCreatedAt(LocalDateTime.now());
+            cartRepo.save(cart);
+
 
 
 
@@ -139,7 +151,7 @@ public class UserServiceImplementation implements UserService {
 
             User user = existingUser.get();
 
-            if (!user.isActive()) {
+            if (user.isActive()==false) {
                 throw new UserDeactivationException("User with ID " + id + " is already deactivated");
             }
 
