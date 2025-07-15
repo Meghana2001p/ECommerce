@@ -2,9 +2,7 @@ package com.project.E_Commerce.Controller;
 
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Service.ProductService;
-import com.project.E_Commerce.dto.CategoryRequest;
-import com.project.E_Commerce.dto.ProductDetailDTO;
-import com.project.E_Commerce.dto.ProductList;
+import com.project.E_Commerce.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,10 +23,10 @@ public class ProductController
 
     //admin
 @PostMapping("/addProduct")
-public ResponseEntity<Product> createProduct(@RequestBody @Valid Product product)
+public ResponseEntity<?> createProduct(@RequestBody @Valid ProductRequest product)
 {
 Product addedProduct    =productService.addProduct(product);
-return ResponseEntity.ok(addedProduct);
+return ResponseEntity.ok("Product added successfully");
 }
 
 //admin update
@@ -90,9 +88,9 @@ return ResponseEntity.ok(addedProduct);
     }
 
     // Update attribute
-    @PutMapping("/attribute/update/{id}")
+    @PutMapping("/attribute/update/{attributeId}")
     public ResponseEntity<ProductAttribute> updateAttribute(
-            @RequestParam int attributeId,
+            @PathVariable int  attributeId,
             @Valid @RequestBody ProductAttribute attribute
     ) {
         return ResponseEntity.ok(productService.updateAttribute(attributeId, attribute));
@@ -106,7 +104,7 @@ return ResponseEntity.ok(addedProduct);
 
     // Delete
     @DeleteMapping("/attribute/delete/{attributeId}")
-    public ResponseEntity<String> deleteAttribute(@RequestParam int attributeId) {
+    public ResponseEntity<String> deleteAttribute(@PathVariable int attributeId) {
         return ResponseEntity.ok(productService.deleteAttribute(attributeId));
     }
 
@@ -148,14 +146,14 @@ return ResponseEntity.ok(addedProduct);
     //Brand
 
 
-    @PostMapping("/brand/add")
-    public ResponseEntity<Brand> createBrand(@RequestBody Brand brand) {
+    @PostMapping("/brand/create-brand")
+    public ResponseEntity<Brand> createBrand(@RequestBody BrandRequest brand) {
         Brand created = productService.createBrand(brand);
         return ResponseEntity.ok(created);
     }
 
     @PutMapping("/brand/update/{id}")
-    public ResponseEntity<Brand> updateBrand(@PathVariable Integer id, @RequestBody Brand brand) {
+    public ResponseEntity<Brand> updateBrand(@PathVariable Integer id, @RequestBody BrandRequest brand) {
         Brand updated = productService.updateBrand(id, brand);
         return ResponseEntity.ok(updated);
     }
@@ -202,8 +200,8 @@ return ResponseEntity.ok(addedProduct);
 
     //Get All Categories
     @GetMapping("/category/all")
-    public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = productService.getAllCategories();
+    public ResponseEntity<List<?>> getAllCategories() {
+        List<CategoryResponse> categories = productService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 

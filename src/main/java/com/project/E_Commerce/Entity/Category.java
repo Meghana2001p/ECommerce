@@ -20,7 +20,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties({"brands", "parent"})
-
 public class Category {
 
     @Id

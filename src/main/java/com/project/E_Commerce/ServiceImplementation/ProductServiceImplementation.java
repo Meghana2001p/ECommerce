@@ -19,7 +19,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 //Product, ProductImage, ProductAttribue, ProductAttributeValue, Brand, Category, RelatedProduct
 @Slf4j
@@ -65,17 +67,38 @@ private WishlistRepo wishlistRepo;
 
 
 
-    public Product addProduct(Product product) {
+    public Product addProduct(ProductRequest product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
         }
 
         try {
-            int res = productRepo.save(product).getId();
-            if (res <= 0) {
-                throw new DataCreationException("Product could not be added");
-            }
-            return product;
+            // 1. Get brand from DB
+            Brand brand = brandRepository.findById(product.getBrandId())
+                    .orElseThrow(() -> new NotFoundException("Brand not found"));
+
+            // 2. Create new Product
+            Product newproduct = new Product();
+            newproduct.setName(product.getName());
+            newproduct.setDescription(product.getDescription());
+            newproduct.setImageAddress(product.getImageAddress());
+            newproduct.setPrice(product.getPrice());
+            newproduct.setSku(product.getSku());
+            newproduct.setIsAvailable(product.getIsAvailable());
+            newproduct.setBrand(brand);
+
+            // 3. Add images
+            List<ProductImage> images = product.getImageUrls().stream().map(url -> {
+                ProductImage img = new ProductImage();
+                img.setImageUrl(url);
+                img.setProduct(newproduct); // set back-reference
+                return img;
+            }).collect(Collectors.toList());
+
+            newproduct.setImages(images);
+
+            // 4. Save product → will also save images if you set cascade correctly
+            return productRepo.save(newproduct);
         } catch (DataAccessException e) {
             logger.error("Database access error while creating product : {}", e.getMessage(), e); // logs full stack trace
 
@@ -388,14 +411,27 @@ private WishlistRepo wishlistRepo;
     //Brand
 
     @Override
-    public Brand createBrand(Brand brand) {
-
-        if (brand == null) {
+    public Brand createBrand(BrandRequest brandRequest) {
+        if (brandRequest == null) {
             throw new IllegalArgumentException("Brand cannot be null");
         }
         try {
-            if (brandRepository.existsByBrandName(brand.getBrandName())) {
-                throw new IllegalArgumentException("Brand with name '" + brand.getBrandName() + "' already exists.");
+            // Check if brand name already exists
+            if (brandRepository.existsByBrandName(brandRequest.getBrandName())) {
+                throw new IllegalArgumentException("Brand with name '" + brandRequest.getBrandName() + "' already exists.");
+            }
+            Brand brand = new Brand();
+            brand.setBrandName(brandRequest.getBrandName());
+
+            if (brandRequest.getCategoryIds() != null && !brandRequest.getCategoryIds().isEmpty()) {
+                List<Category> categories = categoryRepository.findAllById(brandRequest.getCategoryIds());
+                //the categoried size should be equal to the categories that is sent therough the request
+                if (categories.size() != brandRequest.getCategoryIds().size()) {
+                    throw new IllegalArgumentException("One or more category IDs are invalid");
+                }
+                brand.setCategories(categories);
+            } else {
+                throw new IllegalArgumentException("At least one category must be provided");
             }
 
             return brandRepository.save(brand);
@@ -410,7 +446,7 @@ private WishlistRepo wishlistRepo;
     }
 
     @Override
-    public Brand updateBrand(Integer brandId, Brand updatedBrand) {
+    public Brand updateBrand(Integer brandId, BrandRequest updatedBrand) {
         if(brandId==null)
         {
             throw  new IllegalArgumentException("Id should not be null");
@@ -420,8 +456,13 @@ private WishlistRepo wishlistRepo;
                     .orElseThrow(() -> new ProductNotFoundException("Brand not found with ID: "));
 
             existingBrand.setBrandName(updatedBrand.getBrandName());
-            existingBrand.setCategories(updatedBrand.getCategories());
-
+            if (updatedBrand.getCategoryIds() != null) {
+                List<Category> categories = categoryRepository.findAllById(updatedBrand.getCategoryIds());
+                if (categories.size() != updatedBrand.getCategoryIds().size()) {
+                    throw new IllegalArgumentException("Invalid category IDs");
+                }
+                existingBrand.setCategories(categories);
+            }
             return brandRepository.save(existingBrand);
         }
         catch (DataAccessException e) {
@@ -505,11 +546,15 @@ private WishlistRepo wishlistRepo;
             Category newCategory= new Category();
             newCategory.setCategoryName(category.getCategoryName());
             Integer parentId = category.getParentId();
-          Category parent =  categoryRepository.findById(parentId)        .orElseThrow(() -> new NotFoundException("Parent category not found"));
-           newCategory.setParent(parent);
-
+            if (parentId != null) {
+                Category parent = categoryRepository.findById(parentId)
+                        .orElseThrow(() -> new NotFoundException("Parent category not found"));
+                newCategory.setParent(parent);
+            } else {
+                newCategory.setParent(null);
+            }
             categoryRepository.save(newCategory);
-return newCategory;
+            return newCategory;
         } catch (DataAccessException e) {
             logger.error("Database error while creating category", e);
             throw new DataBaseException("Internal server error");
@@ -568,14 +613,30 @@ return newCategory;
     }
 
     @Override
-    public List<Category> getAllCategories() {
+    public List<CategoryResponse> getAllCategories() {
         try {
-            return categoryRepository.findAll();
+            List<Category> categories = categoryRepository.findAll();
+
+            List<CategoryResponse> responseList = new ArrayList<>();
+
+            for (Category category : categories) {
+                CategoryResponse response = new CategoryResponse();
+                response.setCategoryId(category.getCategoryId());
+                response.setCategoryName(category.getCategoryName());
+                response.setParentID(
+                        category.getParent() != null ? category.getParent().getCategoryId() : null
+                );
+                responseList.add(response);
+            }
+
+            return responseList;
+
         } catch (DataAccessException e) {
             logger.error("Database error while retrieving categories", e);
             throw new DataBaseException("Internal server error");
         }
     }
+
 
     @Override
     public void deleteCategory(Integer categoryId) {

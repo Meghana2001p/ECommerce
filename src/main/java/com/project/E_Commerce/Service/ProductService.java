@@ -1,9 +1,7 @@
 package com.project.E_Commerce.Service;
 
 import com.project.E_Commerce.Entity.*;
-import com.project.E_Commerce.dto.CategoryRequest;
-import com.project.E_Commerce.dto.ProductDetailDTO;
-import com.project.E_Commerce.dto.ProductList;
+import com.project.E_Commerce.dto.*;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -14,7 +12,7 @@ import java.util.List;
 public interface ProductService {
 
     //Product
-    Product addProduct(Product product);
+    Product addProduct(ProductRequest product);
     Product getProductById(Integer id);
     Product updateProduct(Integer id, Product updatedProduct);
     String deleteProduct(Integer id);
@@ -39,8 +37,8 @@ public interface ProductService {
     String deleteAttributeValue(Integer id);
 
    //Brand
-   Brand createBrand(Brand brand);
-    Brand updateBrand(Integer brandId, Brand brand);
+   Brand createBrand(BrandRequest brand);
+    Brand updateBrand(Integer brandId, BrandRequest brand);
     Brand getBrandById(Integer brandId);
     List<Brand> getAllBrands();
     void deleteBrand(Integer brandId);
@@ -50,7 +48,7 @@ public interface ProductService {
     Category createCategory(CategoryRequest category);
     Category updateCategory(Integer categoryId, Category category);
     Category getCategoryById(Integer categoryId);
-    List<Category> getAllCategories();
+    List<CategoryResponse> getAllCategories();
     void deleteCategory(Integer categoryId);
 
 
