@@ -31,7 +31,7 @@ public interface ProductService {
 
 
     //Product Attribute Value
-    ProductAttributeValue addAttributeValue(ProductAttributeValue value);
+    List<ProductAttributeValue>  addAttributeValue(ProductAttributeAssignmentRequest value);
     ProductAttributeValue updateAttributeValue(Integer id, ProductAttributeValue updatedValue);
     ProductAttributeValue getAttributeValueById(Integer id);
     String deleteAttributeValue(Integer id);

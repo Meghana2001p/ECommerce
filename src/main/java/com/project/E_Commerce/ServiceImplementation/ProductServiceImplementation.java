@@ -5,20 +5,17 @@ import com.project.E_Commerce.Exception.*;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.ProductService;
 import com.project.E_Commerce.dto.*;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,10 +69,15 @@ private WishlistRepo wishlistRepo;
             throw new IllegalArgumentException("Product cannot be null");
         }
 
+        if (productRepo.existsBySku(product.getSku())) {
+            throw new DuplicateResourceException("Product with SKU already exists");
+        }
         try {
             // 1. Get brand from DB
             Brand brand = brandRepository.findById(product.getBrandId())
                     .orElseThrow(() -> new NotFoundException("Brand not found"));
+
+
 
             // 2. Create new Product
             Product newproduct = new Product();
@@ -328,21 +330,44 @@ private WishlistRepo wishlistRepo;
     }
 
     //ProductAttribute
+
+    //the product that is going to have the attributes
+
     @Override
-    public ProductAttributeValue addAttributeValue(ProductAttributeValue value) {
-        if (value == null || value.getProduct() == null || value.getAttribute() == null) {
+    public List<ProductAttributeValue>  addAttributeValue(ProductAttributeAssignmentRequest request) {
+        if (request == null) {
             throw new IllegalArgumentException("Product and Attribute must not be null");
         }
 
         try {
-            boolean productExists = productRepo.existsById(value.getProduct().getId());
-            boolean attrExists = productAttributeValueRepo.existsById(value.getAttribute().getId());
+            Integer productId = request.getProductId();
 
-            if (!productExists) throw new ProductNotFoundException("Product not found");
-            if (!attrExists) throw new ProductNotFoundException("Attribute not found");
+            // Ensure product exists
+            Product product = productRepo.findById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
 
-            return productAttributeValueRepo.save(value);
-        } catch (DataAccessException e) {
+            for (ProductAttributeAssignmentRequest.AttributeValuePair pair : request.getAttributes()) {
+                Integer attrId = pair.getAttributeId();
+                String value = pair.getValue();
+
+                // Ensure attribute exists
+                ProductAttribute attribute = productAttributeRepo.findById(attrId)
+                        .orElseThrow(() -> new ProductNotFoundException("Attribute not found with ID: " + attrId));
+
+                // Check for existing value
+                boolean exists = productAttributeValueRepo.existsByProductIdAndAttributeId(productId, attrId);
+                if (exists) continue; // skip or overwrite based on your logic
+
+                ProductAttributeValue pav = new ProductAttributeValue();
+                pav.setProduct(product);
+                pav.setAttribute(attribute);
+                pav.setValue(value);
+
+                return productAttributeValueRepo.saveAll(pav);
+            }
+        }
+
+            catch (DataAccessException e) {
             logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
             throw new DataBaseException("Internal server error");
         } catch (Exception e) {
@@ -374,6 +399,8 @@ private WishlistRepo wishlistRepo;
             throw e;
         }
     }
+
+
 
     @Override
     public ProductAttributeValue getAttributeValueById(Integer id) {

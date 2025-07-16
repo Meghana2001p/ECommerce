@@ -32,4 +32,9 @@ public interface ProductRepo extends JpaRepository<Product,Integer> {
 
     @Query("select p from Product p")
     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+
+
+    @Query("SELECT COUNT(p) > 0 FROM Product p WHERE p.sku = :sku")
+    boolean existsBySku(@Param("sku") String sku);
+
 }

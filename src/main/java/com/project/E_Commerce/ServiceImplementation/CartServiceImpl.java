@@ -63,7 +63,7 @@ public class CartServiceImpl implements CartService {
                     .orElseThrow(() -> new UserNotFoundException("User not found exception"));
             cart.setUser(user);
             return cartRepo.save(cart);
-        }catch (DataAccessException e) {
+        }catch (DataAccessException e) {;
             logger.error("Database access error while creating product : {}", e.getMessage(), e); // logs full stack trace
 
             throw new DataBaseException("Internal server error");

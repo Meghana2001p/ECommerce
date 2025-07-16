@@ -35,4 +35,10 @@ public interface ProductAttributeValueRepo extends JpaRepository<ProductAttribut
 
     @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.product.id = :productId")
     List<ProductAttributeValue> findByProductId(Integer productId);
+
+    @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.product.id = :productId and pav.attributeId =: attributeId")
+    boolean existsByProductIdAndAttributeId(Integer productId, Integer attributeId);
+
+
+
 }
