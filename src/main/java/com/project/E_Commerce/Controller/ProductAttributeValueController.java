@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("attributeValue")
+@RequestMapping("/attributeValue")
 public class ProductAttributeValueController {
 
     //Product Attribute Value
@@ -23,23 +23,23 @@ public class ProductAttributeValueController {
     }
 
     // admin
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductAttributeValue> updateAttributeValue(
-            @RequestParam Integer id,
-            @Valid @RequestBody ProductAttributeValue value
+    @PutMapping("/")
+    public ResponseEntity<?> updateAttributeValue(@Valid @RequestBody ProductAttributeAssignmentRequest value
     ) {
-        return ResponseEntity.ok(productService.updateAttributeValue(id, value));
+        productService.updateAttributeValue(value);
+        return ResponseEntity.ok("Updated Successfully");
     }
 
     // admin
     @GetMapping("/{id}")
-    public ResponseEntity<ProductAttributeValue> getById(@PathVariable Integer id) {
+    public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(productService.getAttributeValueById(id));
     }
 
     //admin
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAttributeValue(@RequestParam Integer id) {
+    public ResponseEntity<String> deleteAttributeValue(@PathVariable("id") Integer id) {
+            System.out.println("Deleting ID: " + id);
         return ResponseEntity.ok(productService.deleteAttributeValue(id));
     }
 

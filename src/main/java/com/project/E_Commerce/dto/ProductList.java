@@ -9,8 +9,7 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+
 public class ProductList {
     private Integer id;
     private String name;
@@ -26,6 +25,21 @@ public class ProductList {
     private Boolean inWishlist;
     private Boolean inCart;
 
-    public ProductList(Integer id, @NotBlank(message = "Product name is required") @Size(max = 255, message = "Product name must be under 255 characters") String name, @NotNull(message = "Brand name cannot be null") String brandName, @NotNull(message = "Price is required") @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero") BigDecimal price, BigDecimal discountPrice, int i, double v, Integer reviewCount, Boolean isAvailable, Object o, boolean inWishlist, boolean inCart) {
+    public ProductList(Integer id,String name,String brandName,String thumbnailUrl,BigDecimal price ,BigDecimal discountedPrice,Integer discountPercentage,Double averageRating,Integer reviewCount, Boolean inStock
+   , String label)
+    { this.id=id;
+        this.name=name;
+        this.brandName=brandName;
+        this.thumbnailUrl=thumbnailUrl;
+        this.price=price;
+        this.discountedPrice = discountedPrice;
+        this.averageRating=averageRating;
+        this.reviewCount=reviewCount;
+        this.inStock = inStock;
+        this.label=label;
+
+
     }
+
+
 }

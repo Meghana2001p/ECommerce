@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductAttributeValueRepo extends JpaRepository<ProductAttributeValue,Integer> {
     // ✅ Get all values for a specific product
@@ -20,9 +21,7 @@ public interface ProductAttributeValueRepo extends JpaRepository<ProductAttribut
     @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.attribute.id = :attributeId")
     List<ProductAttributeValue> findAllByAttributeId(Integer attributeId);
 
-    // ✅ Get values for a product and attribute combination
-    @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.product.id = :productId AND pav.attribute.id = :attributeId")
-    List<ProductAttributeValue> findByProductIdAndAttributeId(Integer productId, Integer attributeId);
+
 
     // ✅ Check if value exists for a product & attribute
     @Query("SELECT COUNT(pav) > 0 FROM ProductAttributeValue pav WHERE pav.product.id = :productId AND pav.attribute.id = :attributeId AND pav.value = :value")
@@ -36,8 +35,11 @@ public interface ProductAttributeValueRepo extends JpaRepository<ProductAttribut
     @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.product.id = :productId")
     List<ProductAttributeValue> findByProductId(Integer productId);
 
-    @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.product.id = :productId and pav.attributeId =: attributeId")
-    boolean existsByProductIdAndAttributeId(Integer productId, Integer attributeId);
+    @Query("SELECT COUNT(pav) > 0 FROM ProductAttributeValue pav WHERE pav.product.id = :productId AND pav.attribute.id = :attributeId")
+    boolean existsByProductIdAndAttributeId(@Param("productId") Integer productId,
+                                            @Param("attributeId") Integer attributeId);
+
+    Optional<ProductAttributeValue> findByProductIdAndAttributeId(Integer productId, Integer attributeId);
 
 
 

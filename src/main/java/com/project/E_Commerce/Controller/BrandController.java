@@ -1,7 +1,9 @@
 package com.project.E_Commerce.Controller;
 
 import com.project.E_Commerce.Entity.Brand;
+import com.project.E_Commerce.Service.ProductService;
 import com.project.E_Commerce.dto.BrandRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +12,8 @@ import java.util.List;
 public class BrandController {
     //Brand
 
+    @Autowired
+    private ProductService productService;
 
     @PostMapping("/brand/create-brand")
     public ResponseEntity<Brand> createBrand(@RequestBody BrandRequest brand) {

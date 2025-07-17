@@ -2,6 +2,7 @@ package com.project.E_Commerce.ServiceImplementation;
 
 import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception.*;
+import com.project.E_Commerce.Mapper.ProductAttributeValueMapper;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.ProductService;
 import com.project.E_Commerce.dto.*;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 //Product, ProductImage, ProductAttribue, ProductAttributeValue, Brand, Category, RelatedProduct
@@ -61,7 +63,8 @@ private CartRepo cartRepo;
 @Autowired
 private WishlistRepo wishlistRepo;
 
-
+@Autowired
+private ProductAttributeValueMapper pavMapper;
 
 
     public Product addProduct(ProductRequest product) {
@@ -329,108 +332,111 @@ private WishlistRepo wishlistRepo;
         }
     }
 
-    //ProductAttribute
+
+
+
+    //ProductAttributeValue
 
     //the product that is going to have the attributes
 
     @Override
-    public List<ProductAttributeValue>  addAttributeValue(ProductAttributeAssignmentRequest request) {
+    public String addAttributeValue(ProductAttributeAssignmentRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Product and Attribute must not be null");
         }
 
-        try {
-            Integer productId = request.getProductId();
+        Integer productId = request.getProductId();
 
-            // Ensure product exists
-            Product product = productRepo.findById(productId)
-                    .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
 
-            for (ProductAttributeAssignmentRequest.AttributeValuePair pair : request.getAttributes()) {
-                Integer attrId = pair.getAttributeId();
-                String value = pair.getValue();
+        List<ProductAttributeValue> savedValues = new ArrayList<>();
 
-                // Ensure attribute exists
-                ProductAttribute attribute = productAttributeRepo.findById(attrId)
-                        .orElseThrow(() -> new ProductNotFoundException("Attribute not found with ID: " + attrId));
+        for (ProductAttributeAssignmentRequest.AttributeValuePair pair : request.getAttributes()) {
+            Integer attrId = pair.getAttributeId();
+            String value = pair.getValue();
 
-                // Check for existing value
-                boolean exists = productAttributeValueRepo.existsByProductIdAndAttributeId(productId, attrId);
-                if (exists) continue; // skip or overwrite based on your logic
+            ProductAttribute attribute = productAttributeRepo.findById(attrId)
+                    .orElseThrow(() -> new ProductNotFoundException("Attribute not found with ID: " + attrId));
 
-                ProductAttributeValue pav = new ProductAttributeValue();
-                pav.setProduct(product);
-                pav.setAttribute(attribute);
-                pav.setValue(value);
+            boolean exists = productAttributeValueRepo.existsByProductIdAndAttributeId(productId, attrId);
+            if (exists) {
+                throw new IllegalArgumentException("Attribute already exists for product: productId="
+                        + productId + ", attributeId=" + attrId);
+            }
 
-                return productAttributeValueRepo.saveAll(pav);
+
+            ProductAttributeValue pav = pavMapper.toEntity(pair, product, attribute);
+
+
+            ProductAttributeValue saved = productAttributeValueRepo.save(pav);
+            savedValues.add(saved);
+        }
+
+        return "Product Attribute Value added successfully";
+    }
+
+
+    @Override
+    public void updateAttributeValue(ProductAttributeAssignmentRequest request) {
+        if (request == null || request.getProductId() == null || request.getAttributes() == null) {
+            throw new IllegalArgumentException("Invalid request data");
+        }
+
+        Product product = productRepo.findById(request.getProductId())
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        for (ProductAttributeAssignmentRequest.AttributeValuePair pair : request.getAttributes()) {
+            ProductAttribute attribute = productAttributeRepo.findById(pair.getAttributeId())
+                    .orElseThrow(() -> new ProductNotFoundException("Attribute not found"));
+
+            Optional<ProductAttributeValue> optional = productAttributeValueRepo
+                    .findByProductIdAndAttributeId(product.getId(), attribute.getId());
+
+            if (optional.isPresent()) {
+                // Update existing value
+                ProductAttributeValue existing = optional.get();
+                existing.setValue(pair.getValue());
+                productAttributeValueRepo.save(existing);
+            } else {
+                // Insert new record using mapper
+                ProductAttributeValue newValue = pavMapper.toEntity(pair, product, attribute);
+                productAttributeValueRepo.save(newValue);
             }
         }
-
-            catch (DataAccessException e) {
-            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
-            throw new DataBaseException("Internal server error");
-        } catch (Exception e) {
-            logger.error("Unexpected error deleting attribute", e);
-            throw e;
-        }
-    }
-
-    @Override
-    public ProductAttributeValue updateAttributeValue(Integer id, ProductAttributeValue updated) {
-        if (id == null || updated == null) {
-            throw new IllegalArgumentException("Invalid input for update");
-        }
-
-        try {
-            ProductAttributeValue existing = productAttributeValueRepo.findById(id)
-                    .orElseThrow(() -> new ProductNotFoundException("Attribute value not found"));
-
-            existing.setValue(updated.getValue());
-            existing.setProduct(updated.getProduct());
-            existing.setAttribute(updated.getAttribute());
-
-            return productAttributeValueRepo.save(existing);
-        } catch (DataAccessException e) {
-            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
-            throw new DataBaseException("Internal server error");
-        } catch (Exception e) {
-            logger.error("Unexpected error deleting attribute", e);
-            throw e;
-        }
     }
 
 
 
+
     @Override
-    public ProductAttributeValue getAttributeValueById(Integer id) {
-        try {
-            return productAttributeValueRepo.findById(id)
+    public ProductAttributeValueResponse getAttributeValueById(Integer id) {
+        if (id==null) {
+            throw new IllegalArgumentException("Invalid  data");
+        }
+
+        ProductAttributeValue pav =   productAttributeValueRepo.findById(id)
                     .orElseThrow(() -> new ProductNotFoundException("Attribute value not found with ID: " + id));
-        }catch (DataAccessException e) {
-            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
-            throw new DataBaseException("Internal server error");
-        } catch (Exception e) {
-            logger.error("Unexpected error deleting attribute", e);
-            throw e;
-        }
+
+            return new ProductAttributeValueResponse
+                    (
+                    pav.getId(),
+                    pav.getValue(),
+                    pav.getProduct().getId(),
+                    pav.getAttribute().getId()
+            );
+
     }
 
     @Override
     public String deleteAttributeValue(Integer id) {
-        try {
+
             ProductAttributeValue val = productAttributeValueRepo.findById(id)
                     .orElseThrow(() -> new ProductNotFoundException("Attribute value not found with ID: " + id));
-            productAttributeValueRepo.delete(val);
+            productAttributeValueRepo.deleteById(id);
             return "Attribute value deleted successfully";
-        }
-        catch (DataAccessException e) {
-            logger.error("DB error deleting attribute ID {}: {}", e.getMessage(), e);
-            throw new DataBaseException("Internal server error");
-        } catch (Exception e) {
-            logger.error("Unexpected error deleting attribute", e);
-            throw e;
-        }
+
+
     }
 
 
@@ -757,7 +763,7 @@ private WishlistRepo wishlistRepo;
     }
 
     @Override
-    public List<ProductList> getAllAvailableProducts(Integer userId,Pageable pageable) {
+    public List<ProductList> getAllAvailableProducts(Pageable pageable) {
 
         List<Product> products = productRepo.findAll();
 
@@ -771,39 +777,35 @@ private WishlistRepo wishlistRepo;
             Double avgRating = reviewRepo.findAverageRatingByProductId(p.getId());
             Integer reviewCount = reviewRepo.countByProductId(p.getId());
 //wishlist or cart stat
-            boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, p.getId());
-            boolean inCart = cartRepo.existsByUserIdAndProductId(userId, p.getId());
+          //  boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, p.getId());
+            //boolean inCart = cartRepo.existsByUserIdAndProductId(userId, p.getId());
             return new ProductList(
                     p.getId(),
                     p.getName(),
                     p.getBrand().getBrandName(),
+                    p.getImageAddress(),
                     p.getPrice(),
                     discountPrice,
-                    discountPrice != null ? discountPercent.intValue() : 0,
+                    discountPercent != null ? discountPercent.intValue() : 0,
                     avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
                     reviewCount,
                     p.getIsAvailable(),
-                    null,
-                    inWishlist,
-                    inCart);
+                    null
+                  );
+            // // inWishlist,
+            //                    // inCart
         }).toList();
     }
 
 
 
-
-
-
-
-
-
     @Override
-    public ProductDetailDTO getProductDetailById(Integer productId, Integer userId) {
-Product p = productRepo.findByIdWithBrand(productId)
-        .orElseThrow(()->new ProductNotFoundException("Product Not Found"));
+    public ProductDetailDTO getProductDetailById(Integer productId) {
+        Product p = productRepo.findByIdWithBrand(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
 //image urls
-List<String> imageUrls= productImageRepo.findByProductId(productId)
-        .stream().map(ProductImage::getImageUrl).toList();
+        List<String> imageUrls = productImageRepo.findByProductId(productId)
+                .stream().map(ProductImage::getImageUrl).toList();
 
 //Attributes(size/color)
 
@@ -826,7 +828,7 @@ List<String> imageUrls= productImageRepo.findByProductId(productId)
                 .stream().map(d -> d.getDiscount().getName()).toList();
 
 
-   //relatedProducts
+        //relatedProducts
 
         List<RelatedProductDTO> related = relatedProductRepo.findByProductIdAndIsActiveTrue(productId)
                 .stream().map(r -> {
@@ -855,37 +857,38 @@ List<String> imageUrls= productImageRepo.findByProductId(productId)
 
 //wishlist and cart status
 
-        boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, productId);
-        boolean inCart = cartRepo.existsByUserIdAndProductId(userId, productId);
+        // boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, productId);
+        //boolean inCart = cartRepo.existsByUserIdAndProductId(userId, productId);
 
         //Discount
         BigDecimal discountPercent = getActiveDiscountPercent(productId);
         BigDecimal discountedPrice = applyDiscount(p.getPrice(), discountPercent);
-        return new ProductDetailDTO(
-                p.getId(),
-                p.getName(),
-                p.getDescription(),
-                p.getSku(),
-                p.getBrand().getBrandName(),
-                p.getPrice(),
-                discountedPrice,
-                discountPercent != null ? discountPercent.intValue() : 0,
-                p.getIsAvailable(),
-                imageUrls,
-                attributes,
-                sizes,
-                colors,
-                offers,
-                "7 days return available",
-                "Delivered in 3–5 days",
-                related,
-                avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
-                reviewCount,
-                reviews,
-                inWishlist,
-                inCart
-        );
+        return null;
 
+//                new ProductDetailDTO(
+//                p.getId(),
+//                p.getName(),
+//                p.getDescription(),
+//                p.getSku(),
+//                p.getBrand().getBrandName(),
+//                p.getPrice(),
+//                discountedPrice,
+//                discountPercent != null ? discountPercent.intValue() : 0,
+//                p.getIsAvailable(),
+//                imageUrls,
+//                attributes,
+//                sizes,
+//                colors,
+//                offers,
+//                "7 days return available",
+//                "Delivered in 3–5 days",
+//                related,
+//                avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
+//                reviewCount,
+//                reviews
+//
+//        inWishlist,
+//                inCart
 
 
 

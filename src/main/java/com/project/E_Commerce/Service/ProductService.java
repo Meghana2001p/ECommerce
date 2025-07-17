@@ -31,9 +31,12 @@ public interface ProductService {
 
 
     //Product Attribute Value
-    List<ProductAttributeValue>  addAttributeValue(ProductAttributeAssignmentRequest value);
-    ProductAttributeValue updateAttributeValue(Integer id, ProductAttributeValue updatedValue);
-    ProductAttributeValue getAttributeValueById(Integer id);
+    String addAttributeValue(ProductAttributeAssignmentRequest value);
+   // void updateAttributeValue(Integer id, ProductAttributeValue updatedValue);
+
+    void updateAttributeValue(ProductAttributeAssignmentRequest request);
+
+    ProductAttributeValueResponse getAttributeValueById(Integer id);
     String deleteAttributeValue(Integer id);
 
    //Brand
@@ -62,9 +65,9 @@ public interface ProductService {
 
  //list of all the products and the specific product details in that too
 
-    List<ProductList> getAllAvailableProducts(Integer userId, Pageable pageable);
+    List<ProductList> getAllAvailableProducts( Pageable pageable);
 
-    ProductDetailDTO getProductDetailById(Integer productId, Integer userId);
+    ProductDetailDTO getProductDetailById(Integer productId);
 
 
 

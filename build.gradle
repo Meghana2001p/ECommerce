@@ -46,9 +46,16 @@ dependencies {
 	implementation 'org.slf4j:slf4j-api:2.0.13'
 	implementation 'ch.qos.logback:logback-classic:1.5.11'
 	implementation 'ch.qos.logback:logback-core:1.5.11'
-	implementation 'org.modelmapper:modelmapper:3.1.1'
 
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+
+
+	// MapStruct core and processor
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+
 
 }
 
@@ -61,4 +68,7 @@ configurations.all {
 			details.useVersion '1.5.11'
 		}
 	}
+}
+tasks.withType(JavaCompile).configureEach {
+	options.annotationProcessorPath = configurations.annotationProcessor
 }

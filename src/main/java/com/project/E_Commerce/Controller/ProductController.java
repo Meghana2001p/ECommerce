@@ -55,12 +55,12 @@ return ResponseEntity.ok("Product added successfully");
 
     @GetMapping("/view/all")
     public ResponseEntity<List<ProductList>> getAllProductsForView(
-            @RequestParam Integer userId,
+
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "5") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        List<ProductList> result = productService.getAllAvailableProducts(userId, pageable);
+        List<ProductList> result = productService.getAllAvailableProducts(pageable);
         return ResponseEntity.ok(result);
     }
 
@@ -69,11 +69,9 @@ return ResponseEntity.ok("Product added successfully");
 
     //Product to display when u click on the product the detailes information
     @GetMapping("/view/{productId}")
-    public ResponseEntity<ProductDetailDTO> getProductDetail(
-            @PathVariable Integer productId,
-            @RequestParam Integer userId
-    ) {
-        ProductDetailDTO dto = productService.getProductDetailById(productId, userId);
+    public ResponseEntity<?> getProductDetail(
+            @PathVariable Integer productId) {
+        ProductDetailDTO dto = productService.getProductDetailById(productId);
         return ResponseEntity.ok(dto);
     }
 
