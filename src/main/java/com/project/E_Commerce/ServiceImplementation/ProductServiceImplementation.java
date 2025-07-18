@@ -20,6 +20,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 //Product, ProductImage, ProductAttribue, ProductAttributeValue, Brand, Category, RelatedProduct
@@ -65,6 +66,19 @@ private WishlistRepo wishlistRepo;
 
 @Autowired
 private ProductAttributeValueMapper pavMapper;
+
+
+@Autowired
+    private ProductImageRepo imageRepository;
+@Autowired
+    private InventoryRepo inventoryRepo;
+@Autowired
+    private DiscountRepo discountRepo;
+@Autowired
+    private CouponRepo couponRepo;
+
+@Autowired
+private UserRepo userRepo;
 
 
     public Product addProduct(ProductRequest product) {
@@ -783,6 +797,7 @@ private ProductAttributeValueMapper pavMapper;
                     p.getId(),
                     p.getName(),
                     p.getBrand().getBrandName(),
+                    p.getDescription(),
                     p.getImageAddress(),
                     p.getPrice(),
                     discountPrice,
@@ -800,112 +815,261 @@ private ProductAttributeValueMapper pavMapper;
 
 
     @Override
-    public ProductDetailDTO getProductDetailById(Integer productId) {
-        Product p = productRepo.findByIdWithBrand(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
-//image urls
-        List<String> imageUrls = productImageRepo.findByProductId(productId)
-                .stream().map(ProductImage::getImageUrl).toList();
+    public ProductDetail getProductDetailById(Integer productId) {
 
-//Attributes(size/color)
+        ProductWithBrandProjection product = productRepo.findWithBrand(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        List<ProductAttributeValue> attrList = productAttributeValueRepo.findByProductId(productId);
-        List<ProductAttributeDTO> attributes = attrList.stream().map(a ->
-                new ProductAttributeDTO(a.getAttribute().getName(), a.getValue())
-        ).toList();
+// Map to ProductDetail DTO manually here
 
 
-        List<String> sizes = attrList.stream()
-                .filter(a -> a.getAttribute().getName().equalsIgnoreCase("Size"))
-                .map(ProductAttributeValue::getValue).distinct().toList();
+        // 2️⃣ Build ProductDetailDTO manually
+//        ProductDetail dto = new ProductDetail();
+//        dto.setProductId(product.getProductId()); // Assuming product.getId() is correct
+//        dto.setName(product.getName());
+//        dto.setDescription(product.getDescription());
+//        dto.setSku(product.getSku());
+//        dto.setPrice(product.getPrice());
+//        dto.setIsAvailable(product.getIsAvailable());
+//        dto.setBrandName(product.getBrandName());
 
-        List<String> colors = attrList.stream()
-                .filter(a -> a.getAttribute().getName().equalsIgnoreCase("Color"))
-                .map(ProductAttributeValue::getValue).distinct().toList();
-//offers
-
-        List<String> offers = productDiscountRepo.findActiveDiscounts(productId)
-                .stream().map(d -> d.getDiscount().getName()).toList();
-
-
-        //relatedProducts
-
-        List<RelatedProductDTO> related = relatedProductRepo.findByProductIdAndIsActiveTrue(productId)
-                .stream().map(r -> {
-                    Product rel = r.getRelatedProduct();
-                    return new RelatedProductDTO(
-                            rel.getId(),
-                            rel.getName(),
-                            rel.getImageAddress(),
-                            rel.getPrice(),
-                            r.getRelationshipType().name()
-                    );
-                }).toList();
-
-//review Products
-        List<ReviewDTO> reviews = reviewRepo.findByProduct(productId).stream()
-                .map(r -> new ReviewDTO(
-                        r.getUser().getName(),
-                        r.getRating(),
-                        r.getComment(),
-                        r.getCreatedAt()
-                )).toList();
-
-        Double avgRating = reviewRepo.findAverageRatingByProductId(productId);
-        Integer reviewCount = reviewRepo.countByProductId(productId);
+        ProductDetail dto1 = pavMapper.toProductDetail(product);
 
 
-//wishlist and cart status
+//        // 3️⃣ Set image URLs
+//        List<ProductImage> images = imageRepository.findByProductIdOrderByIsPrimary(productId);
+//        List<String> imageUrls = images.stream()
+//                .map(ProductImage::getImageUrl)
+//                .toList();
+//        dto1.setImageUrls(imageUrls);
 
-        // boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, productId);
-        //boolean inCart = cartRepo.existsByUserIdAndProductId(userId, productId);
+        List<ProductImage> images = imageRepository.findByProductIdOrderByIsPrimary(productId);
+        dto1.setImageUrls(pavMapper.mapImagesToUrls(images));
 
-        //Discount
-        BigDecimal discountPercent = getActiveDiscountPercent(productId);
-        BigDecimal discountedPrice = applyDiscount(p.getPrice(), discountPercent);
-        return null;
-
-//                new ProductDetailDTO(
-//                p.getId(),
-//                p.getName(),
-//                p.getDescription(),
-//                p.getSku(),
-//                p.getBrand().getBrandName(),
-//                p.getPrice(),
-//                discountedPrice,
-//                discountPercent != null ? discountPercent.intValue() : 0,
-//                p.getIsAvailable(),
-//                imageUrls,
-//                attributes,
-//                sizes,
-//                colors,
-//                offers,
-//                "7 days return available",
-//                "Delivered in 3–5 days",
-//                related,
-//                avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
-//                reviewCount,
-//                reviews
-//
-//        inWishlist,
-//                inCart
+//        // 4️⃣ Set attributes
+//        List<ProductAttributeValue> pavs = productAttributeValueRepo.findByProductId(productId);
+//        List<ProductAttributeResponse> attributeDTOs = pavs.stream().map(pav -> {
+//            ProductAttributeResponse attrDTO = new ProductAttributeResponse();
+//            attrDTO.setAttributeName(pav.getAttribute().getName());
+//            attrDTO.setValue(pav.getValue());
+//            return attrDTO;
+//        }).toList();
+//        dto.setAttributes(attributeDTOs);
 
 
 
+        List<ProductAttributeValue> pavs = productAttributeValueRepo.findByProductId(productId);
+        dto1.setAttributes(pavMapper.mapAttributes(pavs));
 
 
 
+//        // 5️⃣ Set inventory
+//        inventoryRepo.findByProductId(productId).ifPresent(inv -> {
+//            InventoryResponse invDTO = new InventoryResponse();
+//            invDTO.setInStock(inv.getInStock());
+//            invDTO.setStockQuantity(inv.getStockQuantity());
+//            invDTO.setLastUpdated(inv.getLastUpdated());
+//            dto.setInventory(invDTO);
+//        });
+
+        inventoryRepo.findByProductId(productId).ifPresent(inv -> {
+            dto1.setInventory(pavMapper.toInventoryResponse(inv));
+        });
 
 
+//        // 6️⃣ Set active discount
+//        List<Discount> discounts = discountRepo.findActiveDiscounts();
+//        if (!discounts.isEmpty()) {
+//            Discount discount = discounts.get(0); // Example: apply first
+//            DiscountResponse discountDTO = new DiscountResponse();
+//            discountDTO.setName(discount.getName());
+//            discountDTO.setDiscountPercent(discount.getDiscountPercent());
+//            discountDTO.setStartDate(discount.getStartDate());
+//            discountDTO.setEndDate(discount.getEndDate());
+//            discountDTO.setIsActive(true);
+//            dto.setActiveDiscount(discountDTO);
+//        }
+
+        List<Discount> discounts = discountRepo.findActiveDiscounts();
+        if (!discounts.isEmpty()) {
+            Discount discount = discounts.get(0); // Example: apply first
+            dto1.setActiveDiscount(pavMapper.toActiveDiscountResponse(discount));
+        }
 
 
+//        // 7️⃣ Set reviews
+//        List<Review> reviews = reviewRepo.findByProductId(productId);
+//        List<ReviewResponse> reviewDTOs = reviews.stream().map(r -> {
+//            ReviewResponse reviewDTO = new ReviewResponse();
+//            reviewDTO.setComment(r.getComment());
+//            reviewDTO.setRating(r.getRating());
+//            reviewDTO.setCreatedAt(r.getCreatedAt());
+//            reviewDTO.setUserId(r.getUser().getId());
+//            reviewDTO.setUserName(r.getUser().getName());
+//            return reviewDTO;
+//        }).toList();
+//        dto.setReviews(reviewDTOs);
+
+        List<Review> reviews = reviewRepo.findByProductId(productId);
+        dto1.setReviews(pavMapper.toReviewResponseList(reviews));
 
 
+        // 8️⃣ Set average rating
+        Double avgRating = reviewRepo.findAverageRating(productId);
+        dto1.setAverageRating(avgRating != null ? avgRating : 0.0);
+
+//        // 9️⃣ Set related products
+//        List<RelatedProduct> related = relatedProductRepo.findActiveRelatedByProductId(productId);
+//        List<RelatedProductResponse> relatedDTOs = related.stream().map(rel -> {
+//            Product relatedProduct = rel.getRelatedProduct();
+//            RelatedProductResponse rpDTO = new RelatedProductResponse();
+//            rpDTO.setProductId(relatedProduct.getId());
+//            rpDTO.setName(relatedProduct.getName());
+//            rpDTO.setPrice(relatedProduct.getPrice());
+//            rpDTO.setImageUrl(relatedProduct.getImageAddress());
+//            rpDTO.setRelationshipType(rel.getRelationshipType().name());
+//            return rpDTO;
+//        }).toList();
+//        dto.setRelatedProducts(relatedDTOs);
+        List<RelatedProduct> related = relatedProductRepo.findActiveRelatedByProductId(productId);
+        dto1.setRelatedProducts(pavMapper.toRelatedProductResponseList(related));
 
 
+//        // 🔟 Set available coupons
+//        List<Coupon> coupons = couponRepo.findActiveCoupons();
+//        List<CouponResponse> couponDTOs = coupons.stream().map(c -> {
+//            CouponResponse couponDTO = new CouponResponse();
+//            couponDTO.setCode(c.getCode());
+//            couponDTO.setDiscountAmount(c.getDiscountAmount());
+//            couponDTO.setDiscountPercent(c.getDiscountPercent());
+//            couponDTO.setExpiryDate(c.getExpiryDate());
+//            couponDTO.setUsageLimit(c.getUsageLimit());
+//            return couponDTO;
+//        }).toList();
+//        dto.setAvailableCoupons(couponDTOs);
 
+        List<Coupon> coupons = couponRepo.findActiveCoupons();
+        dto1.setAvailableCoupons(pavMapper.toCouponResponseList(coupons));
+
+
+        // 🔁 Optional: Set delivery info (if needed in future)
+    /*
+    deliveryStatusRepository.findLatestByOrderId(orderId).ifPresent(delivery -> {
+        DeliveryInfoResponse deliveryInfo = new DeliveryInfoResponse();
+        deliveryInfo.setCarrier(delivery.getCarrier());
+        deliveryInfo.setDeliveryType(delivery.getDeliveryType());
+        deliveryInfo.setEstimatedDeliveryDate(delivery.getEstimatedDeliveryDate());
+        deliveryInfo.setStatus(delivery.getStatus());
+        deliveryInfo.setTrackingNumber(delivery.getTrackingNumber());
+        dto.setDeliveryInfo(deliveryInfo);
+    });
+    */
+
+
+        return dto1;
+    }
+
+
+    @Override
+    public List<ProductList> getAllProductsAfterLogin(int userId, int page) {
+
+        userRepo.findById(userId)
+                .orElseThrow(()->new UserNotFoundException("user doesnot exists"));
+
+        List<Product> products = productRepo.findAll();
+
+        Set<Integer> wishlistProductIds = wishlistRepo.findProductIdsByUserId(userId);
+        Set<Integer> cartProductIds = cartRepo.findProductIdsByUserId(userId);
+
+
+        return products.stream().map(p ->
+        {
+            //for calculating the discount
+            BigDecimal discountPercent = getActiveDiscountPercent(p.getId());
+            BigDecimal discountPrice = applyDiscount(p.getPrice(), discountPercent);
+//get the ratings
+
+            Double avgRating = reviewRepo.findAverageRatingByProductId(p.getId());
+            Integer reviewCount = reviewRepo.countByProductId(p.getId());
+//wishlist or cart stat
+            boolean inWishlist = wishlistProductIds.contains(p.getId());
+            boolean inCart = cartProductIds.contains(p.getId());
+            return new ProductList(
+                    p.getId(),
+                    p.getName(),
+                    p.getBrand().getBrandName(),
+                    p.getDescription(),
+                    p.getImageAddress(),
+                    p.getPrice(),
+                    discountPrice,
+                    discountPercent != null ? discountPercent.intValue() : 0,
+                    avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
+                    reviewCount,
+                    p.getIsAvailable(),
+                    null,
+                    inWishlist,
+                    inCart );
+        }).toList();
 
     }
+
+    @Override
+    public ProductDetail getProductByIdAndUserId(int userId, int page, int productId) {
+
+        // 1️⃣ Fetch product and brand projection
+        ProductWithBrandProjection product = productRepo.findWithBrand(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // 2️⃣ Map basic product + brand info
+        ProductDetail dto = pavMapper.toProductDetail(product);
+
+        // 3️⃣ Set image URLs
+        List<ProductImage> images = imageRepository.findByProductIdOrderByIsPrimary(productId);
+        dto.setImageUrls(pavMapper.mapImagesToUrls(images));
+
+        // 4️⃣ Set attributes
+        List<ProductAttributeValue> pavs = productAttributeValueRepo.findByProductId(productId);
+        dto.setAttributes(pavMapper.mapAttributes(pavs));
+
+        // 5️⃣ Set inventory
+        inventoryRepo.findByProductId(productId)
+                .ifPresent(inv -> dto.setInventory(pavMapper.toInventoryResponse(inv)));
+
+        // 6️⃣ Set active discount
+        List<Discount> discounts = discountRepo.findActiveDiscounts();
+        if (!discounts.isEmpty()) {
+            dto.setActiveDiscount(pavMapper.toActiveDiscountResponse(discounts.get(0)));
+        }
+
+        // 7️⃣ Set reviews
+        List<Review> reviews = reviewRepo.findByProductId(productId);
+        dto.setReviews(pavMapper.toReviewResponseList(reviews));
+
+        // 8️⃣ Set average rating
+        Double avgRating = reviewRepo.findAverageRating(productId);
+        dto.setAverageRating(avgRating != null ? avgRating : 0.0);
+
+        // 9️⃣ Set related products
+        List<RelatedProduct> related = relatedProductRepo.findActiveRelatedByProductId(productId);
+        dto.setRelatedProducts(pavMapper.toRelatedProductResponseList(related));
+
+        // 🔟 Set available coupons
+        List<Coupon> coupons = couponRepo.findActiveCoupons();
+        dto.setAvailableCoupons(pavMapper.toCouponResponseList(coupons));
+
+        // 🔁  Set wishlist/cart flags (user-specific)
+        if (userId > 0) {
+            Set<Integer> wishlistProductIds = wishlistRepo.findProductIdsByUserId(userId);
+            Set<Integer> cartProductIds = cartRepo.findProductIdsByUserId(userId);
+            dto.setInWishlist(wishlistProductIds.contains(productId));
+            dto.setInCart(cartProductIds.contains(productId));
+        }
+
+        return dto;
+    }
+
+
+
     private BigDecimal getActiveDiscountPercent(Integer productId) {
         List<ProductDiscount> discounts = productDiscountRepo.findActiveDiscounts(productId);
         if (discounts.isEmpty()) return null;

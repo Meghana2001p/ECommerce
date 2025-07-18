@@ -32,8 +32,7 @@ public interface ProductAttributeValueRepo extends JpaRepository<ProductAttribut
     @Query("DELETE FROM ProductAttributeValue pav WHERE pav.product.id = :productId")
     void deleteAllByProductId(@Param("productId") Integer productId);
 
-    @Query("SELECT pav FROM ProductAttributeValue pav WHERE pav.product.id = :productId")
-    List<ProductAttributeValue> findByProductId(Integer productId);
+
 
     @Query("SELECT COUNT(pav) > 0 FROM ProductAttributeValue pav WHERE pav.product.id = :productId AND pav.attribute.id = :attributeId")
     boolean existsByProductIdAndAttributeId(@Param("productId") Integer productId,
@@ -41,6 +40,11 @@ public interface ProductAttributeValueRepo extends JpaRepository<ProductAttribut
 
     Optional<ProductAttributeValue> findByProductIdAndAttributeId(Integer productId, Integer attributeId);
 
+    @Query(
+            value = "SELECT * FROM product_attribute_value WHERE product_id = :productId",
+            nativeQuery = true
+    )
+    List<ProductAttributeValue> findByProductId(@Param("productId") Integer productId);
 
 
 }

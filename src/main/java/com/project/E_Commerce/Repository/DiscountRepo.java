@@ -23,6 +23,16 @@ public interface DiscountRepo  extends JpaRepository<Discount,Integer>
 
   @Query("SELECT d FROM Discount d WHERE d.isActive = true")
   List<Discount> findAllByIsActiveTrue();
+  @Query(
+          value = """
+         SELECT * FROM discount 
+         WHERE is_active = true 
+         AND start_date <= CURRENT_TIMESTAMP 
+         AND end_date >= CURRENT_TIMESTAMP
+         """,
+          nativeQuery = true
+  )
+  List<Discount> findActiveDiscounts();
 
 
 }

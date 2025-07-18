@@ -28,4 +28,12 @@ public interface ProductImageRepo extends JpaRepository<ProductImage, Integer> {
 
     // ✅ Check if image URL exists for any product (optional uniqueness enforcement)
     boolean existsByImageUrl(String imageUrl);
+
+
+    @Query(
+            value = "SELECT * FROM product_image WHERE product_id = :productId ORDER BY is_primary DESC",
+            nativeQuery = true
+    )
+    List<ProductImage> findByProductIdOrderByIsPrimary(@Param("productId") Integer productId);
+
 }

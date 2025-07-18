@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
@@ -34,8 +35,8 @@ public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
 
 
     // ✅ Check if a wishlist entry exists
-    @Query("SELECT COUNT(w) > 0 FROM Wishlist w WHERE w.user.id = :userId AND w.product.id = :productId")
-    boolean existsByUserIdAndProductId(@Param("userId") int userId, @Param("productId") int productId);
+   // @Query("SELECT COUNT(w) > 0 FROM Wishlist w WHERE w.user.id = :userId AND w.product.id = :productId")
+    boolean existsByUserId(@Param("userId") int userId);
 
     // ✅ Find wishlist entry for a user and product
     @Query("SELECT w FROM Wishlist w WHERE w.user.id = :userId AND w.product.id = :productId")
@@ -79,5 +80,7 @@ public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
     boolean existsByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
 
 
+    @Query(value = "SELECT product_id FROM wishlist WHERE user_id = :userId", nativeQuery = true)
+    Set<Integer> findProductIdsByUserId(@Param("userId") Integer userId);
 }
 

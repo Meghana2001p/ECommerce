@@ -28,6 +28,7 @@ Product addedProduct    =productService.addProduct(product);
 return ResponseEntity.ok("Product added successfully");
 }
 
+
 //admin update
     @PutMapping("/update-product")
     public ResponseEntity<?> updateProduct( int productID,   @Valid @RequestBody Product product)
@@ -35,6 +36,7 @@ return ResponseEntity.ok("Product added successfully");
         Product updatedProduct    = productService.updateProduct(productID,product);
         return ResponseEntity.ok(updatedProduct);
     }
+
 
 //admin delete
 
@@ -45,8 +47,8 @@ return ResponseEntity.ok("Product added successfully");
         return ResponseEntity.ok(message);
     }
 
-    @GetMapping("/product/{id}")
 
+    @GetMapping("/product/{id}")
     public ResponseEntity<?> getProductById(@RequestParam int productId) {
  Product product= productService.getProductById(productId);
         return ResponseEntity.ok(product);
@@ -69,15 +71,33 @@ return ResponseEntity.ok("Product added successfully");
 
     //Product to display when u click on the product the detailes information
     @GetMapping("/view/{productId}")
-    public ResponseEntity<?> getProductDetail(
-            @PathVariable Integer productId) {
-        ProductDetailDTO dto = productService.getProductDetailById(productId);
+    public ResponseEntity<?> getProductDetailsById(@PathVariable Integer productId)
+    {
+        ProductDetail dto = productService.getProductDetailById(productId);
         return ResponseEntity.ok(dto);
     }
 
 
 
+    //view when logged in
+    @GetMapping("/view/user/{userId}")
+    public ResponseEntity<?> getAllProductsAfterLogin(@PathVariable("userId") int userId
+                                                      , @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "5") int size)
+    {
+        List<ProductList> result = productService.getAllProductsAfterLogin(userId,page);
+        return ResponseEntity.ok(result);
+
+    }
 
 
+    //view when logged in
+    @GetMapping("/view/user/{userId}/{productId}")
+    public ResponseEntity<?> getProductDetailsByIdAndUserId(@PathVariable("userId") int userId
+            , @RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "5") int size,@PathVariable("productId") int productId)
+    {
+        ProductDetail result = productService.getProductByIdAndUserId(userId,page,productId);
+        return ResponseEntity.ok(result);
+
+    }
 
 }

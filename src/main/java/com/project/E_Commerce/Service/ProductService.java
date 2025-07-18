@@ -13,96 +13,92 @@ public interface ProductService {
 
     //Product
     Product addProduct(ProductRequest product);
+
     Product getProductById(Integer id);
+
     Product updateProduct(Integer id, Product updatedProduct);
+
     String deleteProduct(Integer id);
 
     //Product Image
     String addProductImage(ProductImage image);
+
     List<ProductImage> getImagesByProductId(int productId);
+
     String deleteProductImage(int imageId);
 
-   //Product Attribute
+    //Product Attribute
 
     ProductAttribute addAttribute(ProductAttribute attribute);
+
     ProductAttribute updateAttribute(int attributeId, ProductAttribute updated);
+
     ProductAttribute getAttributeById(int attributeId);
+
     String deleteAttribute(int attributeId);
 
 
     //Product Attribute Value
     String addAttributeValue(ProductAttributeAssignmentRequest value);
-   // void updateAttributeValue(Integer id, ProductAttributeValue updatedValue);
+    // void updateAttributeValue(Integer id, ProductAttributeValue updatedValue);
 
     void updateAttributeValue(ProductAttributeAssignmentRequest request);
 
     ProductAttributeValueResponse getAttributeValueById(Integer id);
+
     String deleteAttributeValue(Integer id);
 
-   //Brand
-   Brand createBrand(BrandRequest brand);
+    //Brand
+    Brand createBrand(BrandRequest brand);
+
     Brand updateBrand(Integer brandId, BrandRequest brand);
+
     Brand getBrandById(Integer brandId);
+
     List<Brand> getAllBrands();
+
     void deleteBrand(Integer brandId);
 
 
     //Category
     Category createCategory(CategoryRequest category);
+
     Category updateCategory(Integer categoryId, Category category);
+
     Category getCategoryById(Integer categoryId);
+
     List<CategoryResponse> getAllCategories();
+
     void deleteCategory(Integer categoryId);
 
 
     //RelatedProduct
 
     RelatedProduct createRelatedProduct(RelatedProduct relatedProduct);
+
     RelatedProduct updateRelatedProduct(Integer id, RelatedProduct updated);
+
     RelatedProduct getRelatedProductById(Integer id);
+
     List<RelatedProduct> getAllRelatedProducts();
+
     void deleteRelatedProduct(Integer id);
 
- //list of all the products and the specific product details in that too
+    //list of all the products and the specific product details in that too
 
-    List<ProductList> getAllAvailableProducts( Pageable pageable);
+    List<ProductList> getAllAvailableProducts(Pageable pageable);
 
-    ProductDetailDTO getProductDetailById(Integer productId);
+    ProductDetail getProductDetailById(Integer productId);
 
+    List<ProductList> getAllProductsAfterLogin(int userId, int page);
 
+    ProductDetail getProductByIdAndUserId(int userId, int page, int productId);
 
-
-
+//    List<ProductList> getAllAvailableProducts(Pageable pageable);
 //
-//    ProductAttribute addProductAttribute(ProductAttribute attribute);
-//    List<ProductAttribute> getAllAttributes();
-//    ProductAttribute getAttributeById(int id);
+//    ProductDetail getProductDetailById(Integer productId);
 //
-//    //Product Attribute Value
-//    ProductAttributeValue addProductAttributeValue(ProductAttributeValue value);
-//    List<ProductAttributeValue> getAttributeValuesByProductId(int productId);
-//    String deleteAttributeValue(int id);
-//    ProductAttributeValue updateProductAttributeValue(ProductAttributeValue value);
+//    List<ProductList> getAllProductsAfterLogin(int userId, int page);
 //
-//    //Brand
-//    Brand addBrand(Brand brand);
-//    List<Brand> getAllBrands();
-//    Brand getBrandById(int id);
-//    Brand updateBrand(Brand brand);
-//    String deleteBrand(int id);
-//
-//    //Category
-//    Category addCategory(Category category);
-//    List<Category> getAllCategories();
-//    Category getCategoryById(int id);
-//    Category updateCategory(Category category);
-//    boolean deleteCategory(int id);
-//
-//    //Related Product
-//    RelatedProduct addRelatedProduct(RelatedProduct relatedProduct);
-//    List<RelatedProduct> getRelatedProductsByProductId(int productId);
-//    String deleteRelatedProduct(int relationId);
-//    List<RelatedProduct> getRelatedProductsByType(int productId, RelatedProduct.RelationshipType type);
-//    String hardDeleteRelation(int productId, int relatedProductId, RelatedProduct.RelationshipType type);
-
+//   ProductList getSpecificProductDetailsByIdandUserId(int userId, int page,int productId);
 }

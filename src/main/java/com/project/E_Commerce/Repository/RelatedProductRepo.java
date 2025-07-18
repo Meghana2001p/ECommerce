@@ -13,4 +13,11 @@ public interface RelatedProductRepo extends JpaRepository<RelatedProduct,Integer
     @Query("Select rp from RelatedProduct rp where rp.product.id=:productId")
      List<RelatedProduct> findByProductIdAndIsActiveTrue(Integer productId);
 
+    @Query(
+            value = "SELECT * FROM related_product WHERE product_id = :productId AND is_active = true",
+            nativeQuery = true
+    )
+    List<RelatedProduct> findActiveRelatedByProductId(@Param("productId") Integer productId);
+
+
 }

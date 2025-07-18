@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Repository
 public interface DeliveryStatusRepo extends JpaRepository<DeliveryStatus,Integer> {
@@ -28,5 +29,15 @@ public interface DeliveryStatusRepo extends JpaRepository<DeliveryStatus,Integer
             @Param("status") DeliveryStatus.DeliveryState status,
             @Param("carrier") String carrier
     );
+    @Query(
+            value = """
+         SELECT * FROM delivery_status 
+         WHERE order_id = :orderId 
+         ORDER BY updated_at DESC 
+         LIMIT 1
+         """,
+            nativeQuery = true
+    )
+    Optional<DeliveryStatus> findLatestByOrderId(@Param("orderId") Integer orderId);
 
 }

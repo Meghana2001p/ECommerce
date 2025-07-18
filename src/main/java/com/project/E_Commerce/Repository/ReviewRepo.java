@@ -25,4 +25,17 @@ public interface ReviewRepo extends JpaRepository<Review,Integer> {
 
      @Query("select r from Review r where r.user.id=:userId")
     List<Review> findByUser(Integer userId);
+
+
+    @Query(
+            value = "SELECT * FROM review WHERE product_id = :productId",
+            nativeQuery = true
+    )
+    List<Review> findByProductId(@Param("productId") Integer productId);
+    @Query(
+            value = "SELECT AVG(rating) FROM review WHERE product_id = :productId",
+            nativeQuery = true
+    )
+    Double findAverageRating(@Param("productId") Integer productId);
+
 }
