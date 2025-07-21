@@ -12,9 +12,7 @@ public class DiscountResponse {
 
     private String name;
     private BigDecimal discountPercent;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private Boolean isActive;
+       private BigDecimal discountedPrice;
 
 
     public DiscountResponse() {

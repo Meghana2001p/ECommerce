@@ -1,11 +1,13 @@
 package com.project.E_Commerce.Repository;
 
+import com.project.E_Commerce.Entity.Discount;
 import com.project.E_Commerce.Entity.ProductDiscount;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,11 +23,29 @@ public interface ProductDiscountRepo extends JpaRepository<ProductDiscount,Integ
     """)
     List<ProductDiscount> findActiveDiscounts(@Param("productId") Integer productId);
 
-  @Query("select p from ProductDiscount  p  where p.product.id=: productId")
-    ProductDiscount findByProductId(@Param("productId")  Integer productId);
+    @Query("SELECT d.discountPercent " +
+            "FROM ProductDiscount pd " +
+            "JOIN pd.discount d " +
+            "WHERE pd.product.id = :productId AND d.isActive = true")
+    Optional<BigDecimal> findDiscountPercentByProductId(@Param("productId") Integer productId);
+
+
+
 
   @Query("delete from ProductDiscount p where p.product.id = :productId")
     void deleteByProductId(Integer productId);
 
+
+    ProductDiscount findByProductId(Integer productId);
+
+
+
+
+
+
+    @Query(value = "SELECT d.* FROM discount d " +
+            "JOIN product_discount pd ON d.id = pd.discount_id " +
+            "WHERE pd.product_id = :productId", nativeQuery = true)
+    Optional<Discount> findDiscountDetailsByProductId(@Param("productId") Integer productId);
 
 }

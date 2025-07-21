@@ -63,7 +63,6 @@ public interface ProductAttributeValueMapper {
 
 
 
-  @Mapping(target = "isActive", constant = "true")
   DiscountResponse toActiveDiscountResponse(Discount discount);
 
 

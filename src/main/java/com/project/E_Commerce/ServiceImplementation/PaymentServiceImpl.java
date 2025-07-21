@@ -5,6 +5,7 @@ import com.project.E_Commerce.Exception.DataBaseException;
 import com.project.E_Commerce.Exception.NotFoundException;
 import com.project.E_Commerce.Exception.OrderNotFoundException;
 import com.project.E_Commerce.Exception.ProductNotFoundException;
+import com.project.E_Commerce.Mapper.DiscountMapper;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.EmailService;
 import com.project.E_Commerce.Service.PaymentService;
@@ -62,6 +63,9 @@ private EmailNotificationRepo emailNotificationRepo;
 
 @Autowired
 private EmailService emailService;
+
+@Autowired
+private DiscountMapper discountMapper;
 
 
 
@@ -424,39 +428,23 @@ private EmailService emailService;
 
 
     @Override
-    public Discount createDiscount(DiscountDto dto) {
+    public Discount createDiscount(DiscountRequest dto) {
         if (dto == null) {
-            throw new IllegalArgumentException("Discount DTO must not be null");
+            throw new IllegalArgumentException("Discount details  must not be null");
+        }
+// Check for duplicate discount name (case-insensitive)
+        Optional<Discount> existingDiscount = discountRepo.findByNameIgnoreCase(dto.getName());
+        if (existingDiscount.isPresent()) {
+            throw new IllegalArgumentException("A discount with the same name already exists.");
         }
 
-        try {
-            Discount discount = new Discount();
-            discount.setName(dto.getName());
-            discount.setDiscountPercent(dto.getDiscountPercent());
-            discount.setStartDate(dto.getStartDate());
-            discount.setEndDate(dto.getEndDate());
-            discount.setIsActive(true);
+     Discount discount= discountMapper.toEntity(dto);
 
             return discountRepo.save(discount);
 
-        } catch (DataAccessException e) {
-            log.error("Database error while creating discount: {}", e.getMessage(), e);
-            throw new DataBaseException("Internal server error while creating discount");
-        } catch (Exception e) {
-            log.error("Unexpected error while creating discount", e);
-            throw e;
-        }
+
     }
 
-    @Override
-    public Discount getDiscountByCode(String code) {
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("Discount code must not be blank");
-        }
-
-        return discountRepo.findByName(code)
-                .orElseThrow(() -> new NotFoundException("Discount with code '" + code + "' not found"));
-    }
 
     @Override
     public List<Discount> getAllActiveDiscounts() {
@@ -469,24 +457,16 @@ private EmailService emailService;
     }
 
     @Override
-    public void expireDiscount(Integer id) {
-        Discount discount = discountRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Discount not found with ID: " + id));
+    public void deleteDiscount(Integer id) {
 
-        discount.setIsActive(false);
-        discountRepo.save(discount);
+        if(id == null || id<=0)
+        {
+            throw new IllegalArgumentException("Invalid input");
+        }
+        discountRepo.deleteById(id);
+
     }
 
-    @Override
-    public boolean validateDiscount(String code, Integer userId) {
-        Discount discount = discountRepo.findByName(code)
-                .orElseThrow(() -> new NotFoundException("Discount not found with code: " + code));
-
-        LocalDateTime now = LocalDateTime.now();
-        return discount.getIsActive() &&
-                now.isAfter(discount.getStartDate()) &&
-                now.isBefore(discount.getEndDate());
-    }
 
 
 
@@ -494,8 +474,19 @@ private EmailService emailService;
     //Product Discount
 
     @Override
-    public void assignDiscountToProduct(Integer productId, Integer discountId) {
-        try {
+    public void assignDiscountToProduct(ProductDiscountRequest request) {
+      if(request==null)
+      {
+          throw new IllegalArgumentException("Request cannot be null");
+      }
+     int discountId=  request.getDiscountId();
+       int  productId= request.getProductId();
+
+       if(discountId<=0||productId<=0)
+       {
+           throw  new IllegalArgumentException("Data are invalid");
+       }
+
             Product product = productRepo.findById(productId)
                     .orElseThrow(() -> new NotFoundException("Product not found with ID: " + productId));
 
@@ -503,18 +494,17 @@ private EmailService emailService;
                     .orElseThrow(() -> new NotFoundException("Discount not found with ID: " + discountId));
 
             ProductDiscount productDiscount = new ProductDiscount();
+
+
             productDiscount.setProduct(product);
-            productDiscount.setDiscount(discount);
+           if( discount.getIsActive())
+           {
+               productDiscount.setDiscount(discount);
+           }
 
             productDiscountRepo.save(productDiscount);
 
-        } catch (DataAccessException e) {
-            log.error("Database error while assigning discount: {}", e.getMessage(), e);
-            throw new DataBaseException("Internal server error while assigning discount to product");
-        } catch (Exception e) {
-            log.error("Unexpected error while assigning discount to product", e);
-            throw e;
-        }
+
     }
 
     @Override

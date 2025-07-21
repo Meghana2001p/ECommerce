@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 
 @Data
 
+@Builder
 public class ProductList {
     private Integer id;
     private String name;
@@ -60,6 +61,10 @@ public class ProductList {
         this.label=label;
         this.inWishlist=inWishlist;
         this.inCart=inCart;
+
+    }
+
+    public ProductList() {
 
     }
 }

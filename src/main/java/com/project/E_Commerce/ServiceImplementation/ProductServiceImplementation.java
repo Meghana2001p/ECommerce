@@ -793,22 +793,23 @@ private UserRepo userRepo;
 //wishlist or cart stat
           //  boolean inWishlist = wishlistRepo.existsByUserIdAndProductId(userId, p.getId());
             //boolean inCart = cartRepo.existsByUserIdAndProductId(userId, p.getId());
-            return new ProductList(
-                    p.getId(),
-                    p.getName(),
-                    p.getBrand().getBrandName(),
-                    p.getDescription(),
-                    p.getImageAddress(),
-                    p.getPrice(),
-                    discountPrice,
-                    discountPercent != null ? discountPercent.intValue() : 0,
-                    avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
-                    reviewCount,
-                    p.getIsAvailable(),
-                    null
-                  );
-            // // inWishlist,
-            //                    // inCart
+
+            ProductList productList = new ProductList();
+
+            productList.setId(p.getId());
+            productList.setName(p.getName());
+            productList.setBrandName(p.getBrand().getBrandName());
+            productList.setDescription(p.getDescription());
+            productList.setThumbnailUrl(p.getImageAddress()); // Assuming this is imageAddress
+            productList.setPrice(p.getPrice());
+            productList.setDiscountedPrice(discountPrice);
+            productList.setDiscountPercentage(discountPercent != null ? discountPercent.intValue() : 0);
+            productList.setAverageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
+            productList.setReviewCount(reviewCount);
+            productList.setInStock(p.getIsAvailable());
+            productList.setLabel(null); // Set as needed
+
+            return productList;
         }).toList();
     }
 
@@ -890,11 +891,47 @@ private UserRepo userRepo;
 //            dto.setActiveDiscount(discountDTO);
 //        }
 
-        List<Discount> discounts = discountRepo.findActiveDiscounts();
-        if (!discounts.isEmpty()) {
-            Discount discount = discounts.get(0); // Example: apply first
-            dto1.setActiveDiscount(pavMapper.toActiveDiscountResponse(discount));
-        }
+//============================discount=============================//
+
+//        List<Discount> discounts = discountRepo.findActiveDiscounts();
+//        if (!discounts.isEmpty()) {
+//            Discount discount = discounts.get(0);
+//            discount.getDiscountPercent();// Example: apply first
+//            dto1.setActiveDiscount(pavMapper.toActiveDiscountResponse(discount));
+//        }
+
+      Optional<Discount> discount = productDiscountRepo.findDiscountDetailsByProductId(productId);
+     Product product1= productRepo.findById(productId).orElseThrow(()->new ProductNotFoundException("product not found"));
+   BigDecimal price= product1.getPrice();
+   if(discount.isPresent())
+   {
+      Discount existingDiscount=  discount.get();
+       BigDecimal discountPer=  existingDiscount.getDiscountPercent();
+
+       BigDecimal appliedPrice= applyDiscount(price,discountPer);
+                 DiscountResponse discountDTO = new DiscountResponse();
+                 discountDTO.setName(existingDiscount.getName());
+                 discountDTO.setDiscountPercent(discountPer);
+                 discountDTO.setDiscountedPrice(appliedPrice);
+       dto1.setActiveDiscount(discountDTO);
+
+//return  discountDTO;
+   }else {
+       dto1.setActiveDiscount(null); // No discount
+   }
+
+
+
+
+//============================discount=============================//
+
+
+
+
+
+
+
+
 
 
 //        // 7️⃣ Set reviews
@@ -1071,9 +1108,9 @@ private UserRepo userRepo;
 
 
     private BigDecimal getActiveDiscountPercent(Integer productId) {
-        List<ProductDiscount> discounts = productDiscountRepo.findActiveDiscounts(productId);
+        Optional<BigDecimal> discounts = productDiscountRepo.findDiscountPercentByProductId(productId);
         if (discounts.isEmpty()) return null;
-        return discounts.get(0).getDiscount().getDiscountPercent();
+        return  discounts.get();
     }
 
     private BigDecimal applyDiscount(BigDecimal price, BigDecimal percent) {

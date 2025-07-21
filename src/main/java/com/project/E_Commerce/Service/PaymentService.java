@@ -30,14 +30,18 @@ public interface PaymentService {
     Double getPriceAtDate(Integer productId);
 
     // Discount Management
-    Discount createDiscount(DiscountDto dto);
-    Discount getDiscountByCode(String code);
+    Discount createDiscount(DiscountRequest dto);
     List<Discount> getAllActiveDiscounts();
-    void expireDiscount(Integer id);
-    boolean validateDiscount(String code, Integer userId);
+    void deleteDiscount(Integer id);
+
+
+
+
 
     // Product Discount Management
-    void assignDiscountToProduct(Integer productId, Integer discountId);
+    void assignDiscountToProduct(ProductDiscountRequest request);
     ProductDiscount getDiscountForProduct(Integer productId);
     void removeDiscountFromProduct(Integer productId);
+
+
 }

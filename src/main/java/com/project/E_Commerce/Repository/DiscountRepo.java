@@ -35,4 +35,28 @@ public interface DiscountRepo  extends JpaRepository<Discount,Integer>
   List<Discount> findActiveDiscounts();
 
 
+    Optional<Discount> findByNameIgnoreCase(String name);
+
+  List<Discount> findAllByIsActiveTrueAndEndDateBefore(LocalDateTime now);
+
+ 
+
+  @Query(value = """
+    SELECT d.discount_percent
+    FROM discount d
+    JOIN product_discount pd ON d.id = pd.discount_id
+    WHERE pd.product_id = :productId
+      AND d.is_active = true
+      AND d.start_date <= NOW()
+      AND d.end_date >= NOW()
+    LIMIT 1
+""", nativeQuery = true)
+  Optional<Discount> findDiscountDetailsByProductId(Integer productId);
+
+
+
+
+
+
+
 }

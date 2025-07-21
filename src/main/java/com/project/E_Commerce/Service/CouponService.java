@@ -5,7 +5,8 @@ import com.project.E_Commerce.Entity.Coupon;
 import com.project.E_Commerce.Entity.Discount;
 import com.project.E_Commerce.dto.CartItemDto;
 import com.project.E_Commerce.dto.CouponDto;
-import com.project.E_Commerce.dto.DiscountDto;
+import com.project.E_Commerce.dto.DiscountRequest;
+
 
 import java.util.List;
 
@@ -26,8 +27,8 @@ public interface CouponService {
     // --------------------------------------------
     // 2. Discount Management
     // --------------------------------------------
-    Discount createDiscount(DiscountDto dto);
-    Discount updateDiscount(Integer discountId, DiscountDto dto);
+    Discount createDiscount(DiscountRequest dto);
+    Discount updateDiscount(Integer discountId, DiscountRequest dto);
     void deleteDiscount(Integer discountId);
     Discount getDiscountById(Integer id);
     List<Discount> getAllDiscounts();
