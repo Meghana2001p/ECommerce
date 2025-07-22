@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 public class CouponResponse {
     private String code;
     private BigDecimal discountAmount;
-    private BigDecimal discountPercent;
     private LocalDateTime expiryDate;
     private Integer usageLimit;
 

@@ -6,7 +6,9 @@
     import com.project.E_Commerce.Entity.Coupon;
     import com.project.E_Commerce.dto.CartAmountSummaryDto;
     import com.project.E_Commerce.dto.CartItemDto;
-    import com.project.E_Commerce.dto.CouponResponseDto;
+    import com.project.E_Commerce.dto.CouponRequest;
+    import com.project.E_Commerce.dto.CouponResponse;
+    import jakarta.validation.Valid;
 
     import java.util.List;
 
@@ -34,17 +36,17 @@
         //add coupon and show the discount price
         //remove coupon and remove the discount price
         Coupon createCoupon(Coupon coupon);
-        List<CouponResponseDto>getAllAvailableCoupons();
-        AppliedCoupon applyCoupon(AppliedCoupon appliedCoupon);
-        String removeAppliedCoupon(int appliedCoupon_Id);
-        void clearCart(int user_id);
+        List<CouponResponse>getAllAvailableCoupons();
+        void updateCouponById(Integer couponId, @Valid CouponRequest request);
+        void deleteCouponById(Integer couponId);
+
+//        AppliedCoupon applyCoupon(AppliedCoupon appliedCoupon);
+//        String removeAppliedCoupon(int appliedCoupon_Id);
+//        void clearCart(int user_id);
 
 
         //calculating the price now
         CartAmountSummaryDto  calculateCartSummary(int userId);
-
-
-
 
 
     }

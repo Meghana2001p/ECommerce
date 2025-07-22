@@ -1,7 +1,6 @@
 package com.project.E_Commerce.Repository;
 
 import com.project.E_Commerce.Entity.Wishlist;
-import com.project.E_Commerce.dto.WishlistResponse;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
     import org.springframework.data.jpa.repository.Modifying;
@@ -52,23 +51,6 @@ public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
     @Query("DELETE FROM Wishlist w WHERE w.user.id = :userId")
     void deleteByUserId(@Param("userId") int userId);
 
-    @Query("""
-    SELECT new com.project.E_Commerce.dto.WishlistResponse(
-        p.id,
-        p.name,
-        p.imageAddress,
-        p.description,
-        p.price,
-        p.isAvailable,
-        b.brandName,
-        w.createdAt
-    )
-    FROM Wishlist w
-    JOIN w.product p
-    JOIN p.brand b
-    WHERE w.user.id = :userId
-""")
-    List<WishlistResponse> findWishlistDetailsByUserId(@Param("userId") int userId);
 
 
 
@@ -82,5 +64,10 @@ public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
 
     @Query(value = "SELECT product_id FROM wishlist WHERE user_id = :userId", nativeQuery = true)
     Set<Integer> findProductIdsByUserId(@Param("userId") Integer userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Wishlist w WHERE w.user.id = :userId AND w.product.id = :productId")
+    void deleteByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
 }
 

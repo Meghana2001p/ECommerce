@@ -3,6 +3,7 @@ import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +87,7 @@ public interface ProductAttributeValueMapper {
   List<RelatedProductResponse> toRelatedProductResponseList(List<RelatedProduct> related);
 
 
-  CouponResponse toCouponResponse(Coupon coupon);
 
-  List<CouponResponse> toCouponResponseList(List<Coupon> coupons);
+
+  List<CouponResponse1> toCouponResponseList(List<Coupon> coupons);
 }

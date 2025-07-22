@@ -4,7 +4,7 @@ import com.project.E_Commerce.Entity.AppliedCoupon;
 import com.project.E_Commerce.Entity.Coupon;
 import com.project.E_Commerce.Entity.Discount;
 import com.project.E_Commerce.dto.CartItemDto;
-import com.project.E_Commerce.dto.CouponDto;
+import com.project.E_Commerce.dto.CouponRequest;
 import com.project.E_Commerce.dto.DiscountRequest;
 
 
@@ -16,8 +16,8 @@ public interface CouponService {
 
     // 1. Coupon Management
     // --------------------------------------------
-    Coupon createCoupon(CouponDto dto);
-    Coupon updateCoupon(Integer couponId, CouponDto dto);
+    Coupon createCoupon(CouponRequest dto);
+    Coupon updateCoupon(Integer couponId, CouponRequest dto);
     void deleteCoupon(Integer couponId);
     Coupon getCouponByCode(String code);
     Coupon getCouponById(Integer id);

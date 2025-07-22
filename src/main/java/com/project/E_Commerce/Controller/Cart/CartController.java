@@ -1,13 +1,9 @@
-package com.project.E_Commerce.Controller;
+package com.project.E_Commerce.Controller.Cart;
 
-import com.project.E_Commerce.Entity.AppliedCoupon;
 import com.project.E_Commerce.Entity.Cart;
 import com.project.E_Commerce.Entity.CartItem;
-import com.project.E_Commerce.Entity.Coupon;
 import com.project.E_Commerce.Service.CartService;
-import com.project.E_Commerce.dto.CartAmountSummaryDto;
 import com.project.E_Commerce.dto.CartItemDto;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

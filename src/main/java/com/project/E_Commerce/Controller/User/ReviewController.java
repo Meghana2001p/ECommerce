@@ -1,9 +1,8 @@
-package com.project.E_Commerce.Controller;
+package com.project.E_Commerce.Controller.User;
 
+import com.project.E_Commerce.Service.ReviewService;
 import com.project.E_Commerce.dto.ReviewRequestDto;
 import com.project.E_Commerce.dto.ReviewResponse;
-import com.project.E_Commerce.dto.ReviewResponseDto;
-import com.project.E_Commerce.Service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,13 +1,13 @@
 package com.project.E_Commerce.Service;
 
 import com.project.E_Commerce.dto.ReviewRequestDto;
-import com.project.E_Commerce.dto.ReviewResponseDto;
-
+import com.project.E_Commerce.dto.ReviewResponse;
+import org.springframework.stereotype.Service;
 import java.util.List;
 
 public interface ReviewService {
-    ReviewResponseDto addReview(ReviewRequestDto dto);
-    List<ReviewResponseDto> getReviewsByProductId(Integer productId);
-    List<ReviewResponseDto> getReviewsByUserId(Integer userId);
-    void deleteReview(Integer reviewId);
+    ReviewResponse addReview(ReviewRequestDto dto);
+    List<ReviewResponse> getReviewsByProductId(Integer productId);
+  List<ReviewResponse> getReviewsByUserId(Integer userId);
+   void deleteReview(Integer reviewId);
 }

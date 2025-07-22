@@ -1,7 +1,6 @@
-package com.project.E_Commerce.Controller;
+package com.project.E_Commerce.Controller.Order;
 
 import com.project.E_Commerce.Entity.Payment;
-import com.project.E_Commerce.Entity.ProductDiscount;
 import com.project.E_Commerce.Service.PaymentService;
 import com.project.E_Commerce.dto.*;
 import lombok.RequiredArgsConstructor;

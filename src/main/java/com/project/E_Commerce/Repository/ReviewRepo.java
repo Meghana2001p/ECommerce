@@ -38,4 +38,8 @@ public interface ReviewRepo extends JpaRepository<Review,Integer> {
     )
     Double findAverageRating(@Param("productId") Integer productId);
 
+    @Query("SELECT r FROM Review r JOIN FETCH r.user WHERE r.id = :id")
+    Review findByIdWithUser(@Param("id") Integer id);
+
+
 }

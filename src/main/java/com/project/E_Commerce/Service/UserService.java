@@ -42,15 +42,8 @@ public interface UserService {
 
 
 
-//User Wishlist
 
-    String addToWishlist(int userId, int productId);
 
-    String removeFromWishlist(int userId, int productId);
-
-    List<WishlistResponse> getWishlistByUser(int userId);
-
-    String clearWishlist(int userId);
 
     //EmailPreferences
 

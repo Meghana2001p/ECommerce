@@ -1,4 +1,4 @@
-package com.project.E_Commerce.Controller;
+package com.project.E_Commerce.Controller.User;
 
 import com.project.E_Commerce.Entity.User;
 import com.project.E_Commerce.Repository.UserRepo;

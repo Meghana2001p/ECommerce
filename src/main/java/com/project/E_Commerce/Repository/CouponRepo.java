@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface CouponRepo extends JpaRepository<Coupon,Integer> {
 
     @Query("select c from Coupon c where c.code =:code ")
-    Optional<Object> findByCode(@Param("code") String code);
+    Optional<Coupon> findByCode(@Param("code") String code);
 
 
     @Query(

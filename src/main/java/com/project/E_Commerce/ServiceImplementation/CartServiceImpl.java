@@ -8,7 +8,8 @@ import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.CartService;
 import com.project.E_Commerce.dto.CartAmountSummaryDto;
 import com.project.E_Commerce.dto.CartItemDto;
-import com.project.E_Commerce.dto.CouponResponseDto;
+import com.project.E_Commerce.dto.CouponRequest;
+import com.project.E_Commerce.dto.CouponResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -18,14 +19,17 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.nio.channels.ScatteringByteChannel;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CartServiceImpl implements CartService {
+public  class CartServiceImpl implements CartService {
 
     private static final Logger logger = LoggerFactory.getLogger(CartServiceImpl.class);
 
@@ -188,7 +192,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public Coupon createCoupon(Coupon coupon) {
-        try {
+
             if (coupon == null || coupon.getCode() == null) {
                 throw new IllegalArgumentException("Coupon code cannot be null");
             }
@@ -198,109 +202,60 @@ public class CartServiceImpl implements CartService {
             }
 
             return couponRepo.save(coupon);
-        }
-        catch (DataAccessException e) {
-            logger.error("Database access while creating the coupon  : {}", e.getMessage(), e); // logs full stack trace
 
-            throw new DataBaseException("Internal server error");
-        }
-        catch (Exception e) {
-            log.error("Unexpected error while creating the coupon by Id  ", e);
-            throw e;
-        }
+
+    }
+
+
+    @Override
+    public List<CouponResponse> getAllAvailableCoupons() {
+        return couponRepo.findAll().stream().map(coupon -> {
+            CouponResponse response = new CouponResponse();
+            response.setCode(coupon.getCode());
+            response.setDiscountAmount(coupon.getDiscountAmount());
+            response.setExpiryDate(coupon.getExpiryDate());
+            response.setUsageLimit(coupon.getUsageLimit());
+            return response;
+        }).collect(Collectors.toList());
     }
 
     @Override
-    public List<CouponResponseDto> getAllAvailableCoupons() {
-        try {
-            return couponRepo.findAll().stream()
-                    .filter(c -> c.getExpiryDate().isAfter(LocalDateTime.now()))
-                    .map(c -> new CouponResponseDto(
-                            c.getCode(),
-                            c.getDiscountPercent(),
-                            c.getDiscountAmount(),
-                            c.getExpiryDate()))
-                    .toList();
+    public void updateCouponById(Integer couponId, CouponRequest dto)
+    {
+        if(couponId<=0)
+        {
+            throw  new IllegalArgumentException("Coupon id is invalid");
         }
-        catch (DataAccessException e) {
-            logger.error("Database access while getting all AvailableCoupons  : {}", e.getMessage(), e); // logs full stack trace
+        Coupon existingCoupon = couponRepo.findById(couponId)
+                .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
 
-            throw new DataBaseException("Internal server error");
-        }
-        catch (Exception e) {
-            log.error("Unexpected error while getting all AvailableCoupons  ", e);
-            throw e;
+        // Check if the new code is already taken by another coupon
+        Optional<Coupon> existingWithSameCode = couponRepo.findByCode(dto.getCode());
+        if (existingWithSameCode.isPresent() && !existingWithSameCode.get().getId().equals(couponId)) {
+            throw new IllegalArgumentException("Coupon code already exists");
         }
 
-        }
+        existingCoupon.setCode(dto.getCode());
+        existingCoupon.setDiscountAmount(dto.getDiscountAmount());
+        existingCoupon.setExpiryDate(dto.getExpiryDate());
+        existingCoupon.setUsageLimit(dto.getUsageLimit());
 
-    @Override
-    public AppliedCoupon applyCoupon(AppliedCoupon appliedCoupon) {
-        try {
-            Coupon coupon = couponRepo.findById(appliedCoupon.getCoupon().getId())
-                    .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
-
-            if ((coupon.getDiscountAmount() != null && coupon.getDiscountPercent() != null) ||
-                    (coupon.getDiscountAmount() == null && coupon.getDiscountPercent() == null)) {
-                throw new InvalidCouponException("Only one type of discount must be set");
-            }
-
-            return appliedCouponRepo.save(appliedCoupon);
-        }catch (DataAccessException e) {
-            logger.error("Database access while applying the coupon   : {}", e.getMessage(), e); // logs full stack trace
-
-            throw new DataBaseException("Internal server error");
-        }
-        catch (Exception e) {
-            log.error("Unexpected error while applying the coupon  ", e);
-            throw e;
-        }
+        couponRepo.save(existingCoupon);
     }
 
     @Override
-    public String removeAppliedCoupon(int appliedCouponId) {
-        if (appliedCouponId <= 0) {
-            throw new IllegalArgumentException("Invalid applied coupon ID");
+    public void deleteCouponById(Integer couponId) {
+        if(couponId<=0)
+        {
+            throw  new IllegalArgumentException("Coupon id is invalid");
         }
+        Coupon coupon = couponRepo.findById(couponId)
+                .orElseThrow(() -> new CouponNotFoundException("Coupon not found with ID: " + couponId));
 
-        try {
-            if (!appliedCouponRepo.existsById(appliedCouponId)) {
-                throw new CouponNotFoundException("Coupon not applied");
-            }
-            appliedCouponRepo.deleteById(appliedCouponId);
-            return "Coupon removed successfully";
-        }catch (DataAccessException e) {
-            logger.error("Database access while removing  the coupon   : {}", e.getMessage(), e); // logs full stack trace
-
-            throw new DataBaseException("Internal server error");
-        }
-        catch (Exception e) {
-            log.error("Unexpected error while removing the coupon  ", e);
-            throw e;
-        }
+        couponRepo.delete(coupon);
     }
 
-    @Override
-    public void clearCart(int userId) {
-        if (userId <= 0) {
-            throw new IllegalArgumentException("Invalid user ID");
-        }
 
-        try {
-            List<CartItem> items = cartItemRepo.findByCartUserId(userId);
-            if (items.isEmpty()) {
-                throw new CartNotFoundException("No items found in cart for this user");
-            }
-            cartItemRepo.deleteAll(items);
-
-        } catch (DataAccessException e) {
-            logger.error("Database access error while clearing cart for user ID {}: {}", userId, e.getMessage(), e);
-            throw new DataBaseException("Internal server error");
-        } catch (Exception e) {
-            logger.error("Unexpected error while clearing cart for user ID {}", userId, e);
-            throw e;
-        }
-    }
 
 
     @Override
@@ -332,12 +287,12 @@ public class CartServiceImpl implements CartService {
                 if (coupon != null) {
                     couponCode = coupon.getCode();
 
-                    if (coupon.getDiscountPercent() != null) {
-                        discount = subtotal.multiply(coupon.getDiscountPercent())
-                                .divide(BigDecimal.valueOf(100));
-                    } else if (coupon.getDiscountAmount() != null) {
-                        discount = coupon.getDiscountAmount();
-                    }
+//                    if (coupon.getDiscountPercent() != null) {
+//                        discount = subtotal.multiply(coupon.getDiscountPercent())
+//                                .divide(BigDecimal.valueOf(100));
+//                    } else if (coupon.getDiscountAmount() != null) {
+//                        discount = coupon.getDiscountAmount();
+//                    }
                 }
             }
 

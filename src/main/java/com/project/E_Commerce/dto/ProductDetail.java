@@ -18,12 +18,11 @@ public class ProductDetail
         private String brandName;
         private List<String> imageUrls;
         private List<ProductAttributeResponse> attributes;
-        private InventoryResponse inventory;
         private DiscountResponse activeDiscount;
         private List<ReviewResponse> reviews;
         private Double averageRating;
         private List<RelatedProductResponse> relatedProducts;
-        private List<CouponResponse> availableCoupons;
+        private List<CouponResponse1> availableCoupons;
         private DeliveryInfoResponse deliveryInfo;
 
 
@@ -34,10 +33,10 @@ public class ProductDetail
 
         public ProductDetail(Integer productId, String name, String description, String sku, BigDecimal price,
                              Boolean isAvailable, String brandName, List<String> imageUrls,
-                             List<ProductAttributeResponse> attributes, InventoryResponse inventory,
+                             List<ProductAttributeResponse> attributes,
                              DiscountResponse activeDiscount, List<ReviewResponse> reviews,
                              Double averageRating, List<RelatedProductResponse> relatedProducts,
-                             List<CouponResponse> availableCoupons, DeliveryInfoResponse deliveryInfo) {
+                             List<CouponResponse1> availableCoupons, DeliveryInfoResponse deliveryInfo) {
                 this.productId = productId;
                 this.name = name;
                 this.description = description;
@@ -47,7 +46,6 @@ public class ProductDetail
                 this.brandName = brandName;
                 this.imageUrls = imageUrls;
                 this.attributes = attributes;
-                this.inventory = inventory;
                 this.activeDiscount = activeDiscount;
                 this.reviews = reviews;
                 this.averageRating = averageRating;
@@ -67,12 +65,11 @@ public class ProductDetail
                 String brandName,
                 List<String> imageUrls,
                 List<ProductAttributeResponse> attributes,
-                InventoryResponse inventory,
                 DiscountResponse activeDiscount,
                 List<ReviewResponse> reviews,
                 Double averageRating,
                 List<RelatedProductResponse> relatedProducts,
-                List<CouponResponse> availableCoupons,
+                List<CouponResponse1> availableCoupons,
                 DeliveryInfoResponse deliveryInfo,
                 Boolean inWishlist,
                 Boolean inCart) {
@@ -86,7 +83,6 @@ public class ProductDetail
                 this.brandName = brandName;
                 this.imageUrls = imageUrls;
                 this.attributes = attributes;
-                this.inventory = inventory;
                 this.activeDiscount = activeDiscount;
                 this.reviews = reviews;
                 this.averageRating = averageRating;

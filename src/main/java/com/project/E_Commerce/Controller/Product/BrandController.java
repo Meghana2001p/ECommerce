@@ -1,4 +1,4 @@
-package com.project.E_Commerce.Controller;
+package com.project.E_Commerce.Controller.Product;
 
 import com.project.E_Commerce.Entity.Brand;
 import com.project.E_Commerce.Service.ProductService;
