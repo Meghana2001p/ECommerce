@@ -25,7 +25,7 @@ public class ProductList {
     private Boolean inStock;
     private String label; // Optional, e.g., "New", "Best Seller"
     private Boolean inWishlist;
-    private Boolean inCart;
+    private Boolean isLiked;
 
     public ProductList(Integer id,String name,String brandName,String description,String thumbnailUrl,BigDecimal price ,BigDecimal discountedPrice,Integer discountPercentage,Double averageRating,Integer reviewCount, Boolean inStock
    , String label)
@@ -46,7 +46,7 @@ public class ProductList {
     }
 
 
-    public ProductList(Integer id, @NotBlank(message = "Product name is required") @Size(max = 255, message = "Product name must be under 255 characters") String name, @NotNull(message = "Brand name cannot be null") String brandName, @NotBlank(message = "Description is required") String description, @NotBlank(message = "Image address is required") String imageAddress, @NotNull(message = "Price is required") @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero") BigDecimal price, BigDecimal discountPrice, int discountPercentage, double averageRating, Integer reviewCount, Boolean isAvailable, String label, boolean inWishlist, boolean inCart) {
+    public ProductList(Integer id, @NotBlank(message = "Product name is required") @Size(max = 255, message = "Product name must be under 255 characters") String name, @NotNull(message = "Brand name cannot be null") String brandName, @NotBlank(message = "Description is required") String description, @NotBlank(message = "Image address is required") String imageAddress, @NotNull(message = "Price is required") @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero") BigDecimal price, BigDecimal discountPrice, int discountPercentage, double averageRating, Integer reviewCount, Boolean isAvailable, String label, boolean inWishlist, boolean isLiked) {
 
         this.id=id;
         this.name=name;
@@ -60,7 +60,7 @@ public class ProductList {
         this.inStock = inStock;
         this.label=label;
         this.inWishlist=inWishlist;
-        this.inCart=inCart;
+        this.isLiked=isLiked;
 
     }
 

@@ -38,7 +38,7 @@ public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
     boolean existsByUserId(@Param("userId") int userId);
 
     // ✅ Find wishlist entry for a user and product
-    @Query("SELECT w FROM Wishlist w WHERE w.user.id = :userId AND w.product.id = :productId")
+//    @Query("SELECT w FROM Wishlist w WHERE w.user.id = :userId AND w.product.id = :productId")
     Optional<Wishlist> findByUserIdAndProductId(@Param("userId") int userId, @Param("productId") int productId);
 
     // ✅ Get all wishlist entries for a user
@@ -68,6 +68,6 @@ public interface WishlistRepo extends JpaRepository<Wishlist,Integer> {
     @Modifying
     @Transactional
     @Query("DELETE FROM Wishlist w WHERE w.user.id = :userId AND w.product.id = :productId")
-    void deleteByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
+    int deleteByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
 }
 

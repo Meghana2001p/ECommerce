@@ -7,17 +7,24 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface RelatedProductRepo extends JpaRepository<RelatedProduct,Integer> {
-    @Query("Select rp from RelatedProduct rp where rp.product.id=:productId")
-     List<RelatedProduct> findByProductIdAndIsActiveTrue(Integer productId);
+public interface RelatedProductRepo extends JpaRepository<RelatedProduct,Integer>
+{
 
-    @Query(
-            value = "SELECT * FROM related_product WHERE product_id = :productId AND is_active = true",
-            nativeQuery = true
-    )
-    List<RelatedProduct> findActiveRelatedByProductId(@Param("productId") Integer productId);
+    // Get all related products for a given main product
+    List<RelatedProduct> findByProductId(Integer productId);
 
+    // Check if a specific relationship exists
+    Optional<RelatedProduct> findByProductIdAndRelatedProductId(Integer productId, Integer relatedProductId);
 
+    // Delete a specific relation
+    int  deleteByProductIdAndRelatedProductId(Integer productId, Integer relatedProductId);
+
+    List<RelatedProduct> findActiveRelatedByProductId(Integer productId);
+
+    Optional<RelatedProduct> findByProductIdAndRelatedProductIdAndRelationshipType(Integer productId,
+                                                                                   Integer relatedProductId,
+                                                                                   RelatedProduct.RelationshipType relationshipType);
 }

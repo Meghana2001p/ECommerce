@@ -124,25 +124,6 @@ public ResponseEntity<?> updateByUser( @PathVariable("id") Integer id, @RequestB
 
 
 
-//UserFavourite  of the User all accessed by user
-@PostMapping("/addFavourite/{userId}/{productId}")
-public ResponseEntity<?> addFavourite(@PathVariable int userId, @PathVariable int productId) {
-    String message = userService.addToFavourites(userId, productId);
-    return ResponseEntity.ok(message);
-}
-
-    @DeleteMapping("/removeFavourite/{userId}/{productId}")
-    public ResponseEntity<?> removeFavourite(@PathVariable int userId, @PathVariable int productId) {
-        String message = userService.removeFromFavourites(userId, productId);
-        return ResponseEntity.ok(message);
-    }
-
-    @GetMapping("/favourites/{userId}")
-    public ResponseEntity<List<FavouriteProductResponse>> getUserFavourites(@PathVariable Integer userId) {
-        List<FavouriteProductResponse> favourites = userService.getUserFavouritesResponse(userId);
-        return ResponseEntity.ok(favourites);
-    }
-
 
 //UserEmailPrefernces
 

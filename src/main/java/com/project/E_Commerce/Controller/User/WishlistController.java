@@ -2,9 +2,12 @@ package com.project.E_Commerce.Controller.User;
 
 import com.project.E_Commerce.Service.UserWishlistService;
 import com.project.E_Commerce.dto.WishlistRequest;
+import com.project.E_Commerce.dto.WishlistResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/wishlist")
@@ -20,17 +23,21 @@ public class WishlistController {
         return ResponseEntity.ok(message);
     }
   //remove from the wishlist
-    @DeleteMapping("/{userId}/{productId}")
+    @DeleteMapping("/{productId}")
     public ResponseEntity<String> removeFromWishlist(
             @PathVariable Integer userId,
             @PathVariable Integer productId) {
 
-        userWishlistService.removeFromWishlist(userId, productId);
-        return ResponseEntity.ok("Product removed from wishlist");
+        String message=     userWishlistService.removeFromWishlist(userId, productId);
+        return ResponseEntity.ok(message);
     }
 
     //get  the product Details in the wishlist
 
-
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<?>> getWishlistByUserId(@PathVariable int userId) {
+        List<WishlistResponse> wishlistProducts = userWishlistService.getWishlistProductsByUserId(userId);
+        return ResponseEntity.ok(wishlistProducts);
+    }
 
 }

@@ -5,6 +5,7 @@ import com.project.E_Commerce.Exception.*;
 import com.project.E_Commerce.Mapper.ProductAttributeValueMapper;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.ProductService;
+import com.project.E_Commerce.Service.RelatedProductService;
 import com.project.E_Commerce.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +80,12 @@ private ProductAttributeValueMapper pavMapper;
 
 @Autowired
 private UserRepo userRepo;
+
+@Autowired
+private  UserFavouriteRepo userFavouriteRepo;
+
+@Autowired
+private RelatedProductService relatedProductService;
 
 
     public Product addProduct(ProductRequest product) {
@@ -726,7 +733,6 @@ private UserRepo userRepo;
             existing.setProduct(updated.getProduct());
             existing.setRelatedProduct(updated.getRelatedProduct());
             existing.setRelationshipType(updated.getRelationshipType());
-            existing.setIsActive(updated.getIsActive());
 
             return relatedProductRepo.save(existing);
         } catch (DataAccessException e) {
@@ -965,8 +971,8 @@ private UserRepo userRepo;
 //            return rpDTO;
 //        }).toList();
 //        dto.setRelatedProducts(relatedDTOs);
-        List<RelatedProduct> related = relatedProductRepo.findActiveRelatedByProductId(productId);
-        dto1.setRelatedProducts(pavMapper.toRelatedProductResponseList(related));
+        List<RelatedProductResponse> related = relatedProductService.getRelatedProductsByProductId(productId);
+        dto1.setRelatedProducts(related);
 
 
 //        // 🔟 Set available coupons
@@ -1024,7 +1030,7 @@ private UserRepo userRepo;
         List<Product> products = productRepo.findAll();
 
         Set<Integer> wishlistProductIds = wishlistRepo.findProductIdsByUserId(userId);
-        Set<Integer> cartProductIds = cartRepo.findProductIdsByUserId(userId);
+        Set<Integer> favouriteProductIds = userFavouriteRepo.findProductIdsByUserId(userId);
 
 
         return products.stream().map(p ->
@@ -1038,7 +1044,7 @@ private UserRepo userRepo;
             Integer reviewCount = reviewRepo.countByProductId(p.getId());
 //wishlist or cart stat
             boolean inWishlist = wishlistProductIds.contains(p.getId());
-            boolean inCart = cartProductIds.contains(p.getId());
+            boolean inLiked = favouriteProductIds.contains(p.getId());
 
             ProductList productList = new ProductList();
 
@@ -1055,7 +1061,7 @@ private UserRepo userRepo;
             productList.setInStock(p.getIsAvailable());
             productList.setLabel(null); // Set as needed
           productList.setInWishlist(inWishlist);
-          productList.setInCart(inCart);
+          productList.setIsLiked(inLiked);
             return productList;
 
 
@@ -1123,9 +1129,9 @@ private UserRepo userRepo;
         // 🔁  Set wishlist/cart flags (user-specific)
         if (userId > 0) {
             Set<Integer> wishlistProductIds = wishlistRepo.findProductIdsByUserId(userId);
-            Set<Integer> cartProductIds = cartRepo.findProductIdsByUserId(userId);
+            Set<Integer> cartProductIds = userFavouriteRepo.findProductIdsByUserId(userId);
             dto.setInWishlist(wishlistProductIds.contains(productId));
-            dto.setInCart(cartProductIds.contains(productId));
+            dto.setLiked(cartProductIds.contains(productId));
         }
 
         return dto;

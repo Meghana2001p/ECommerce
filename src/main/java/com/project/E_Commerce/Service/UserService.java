@@ -25,23 +25,6 @@ public interface UserService {
     String changePassword(int userId, ChangePasswordRequest request);
 
 
-//UserFavourites
-
-    // ✅ Add a product to user's favourites
-    String addToFavourites(int userId, int productId);
-
-    // ✅ Remove a product from user's favourites (soft delete)
-    String removeFromFavourites(int userId, int productId);
-
-    // ✅ Get all liked favourites for a user
-    List<FavouriteProductResponse> getUserFavouritesResponse(int userId);
-
-
-
-
-
-
-
 
 
 

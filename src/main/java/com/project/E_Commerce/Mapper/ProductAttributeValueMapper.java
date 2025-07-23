@@ -77,12 +77,6 @@ public interface ProductAttributeValueMapper {
   List<ReviewResponse> toReviewResponseList(List<Review> reviews);
 
 
-  @Mapping(source = "relatedProduct.id", target = "productId")
-  @Mapping(source = "relatedProduct.name", target = "name")
-  @Mapping(source = "relatedProduct.price", target = "price")
-  @Mapping(source = "relatedProduct.imageAddress", target = "imageUrl")
-  @Mapping(source = "relationshipType", target = "relationshipType")
-  RelatedProductResponse toRelatedProductResponse(RelatedProduct rel);
 
   List<RelatedProductResponse> toRelatedProductResponseList(List<RelatedProduct> related);
 

@@ -28,7 +28,7 @@ public class ProductDetail
 
         //in cart and the wishlist
         private Boolean inWishlist;
-        private Boolean inCart;
+        private Boolean liked;
 
 
         public ProductDetail(Integer productId, String name, String description, String sku, BigDecimal price,
@@ -72,7 +72,7 @@ public class ProductDetail
                 List<CouponResponse1> availableCoupons,
                 DeliveryInfoResponse deliveryInfo,
                 Boolean inWishlist,
-                Boolean inCart) {
+                Boolean liked) {
 
                 this.productId = productId;
                 this.name = name;
@@ -90,6 +90,6 @@ public class ProductDetail
                 this.availableCoupons = availableCoupons;
                 this.deliveryInfo = deliveryInfo;
                 this.inWishlist = inWishlist;
-                this.inCart = inCart;
+                this.liked = liked;
         }
 }

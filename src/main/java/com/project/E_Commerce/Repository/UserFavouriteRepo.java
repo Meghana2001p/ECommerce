@@ -2,6 +2,7 @@ package com.project.E_Commerce.Repository;
 
 import com.project.E_Commerce.Entity.UserFavourite;
 import com.project.E_Commerce.dto.FavouriteProductResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,42 +11,27 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UserFavouriteRepo extends JpaRepository<UserFavourite,Integer> {
 
-    @Query("""
-    SELECT new com.project.E_Commerce.dto.FavouriteProductResponse(
-        p.id,
-        p.name,
-        p.description,
-        p.imageAddress,
-        p.price,
-        p.isAvailable,
-        b.brandName
-    )
-    FROM UserFavourite uf
-    JOIN uf.product p
-    JOIN p.brand b
-    WHERE uf.user.id = :userId AND uf.isLiked = true
-""")
-    List<FavouriteProductResponse> findFavouriteProductDetailsByUserId(@Param("userId") Integer userId);
 
 
     // 2. Check if product is favourited by user
     @Query("SELECT uf FROM UserFavourite uf WHERE uf.user.id = :userId AND uf.product.id = :productId")
     Optional<UserFavourite> findByUserIdAndProductId(Integer userId, Integer productId);
 
-    // 3. Insert is handled by save() from JpaRepository
 
-    // 4. Update like status (toggle)
-    @Modifying
-    @Query("UPDATE UserFavourite uf SET uf.isLiked = :isLiked WHERE uf.user.id = :userId AND uf.product.id = :productId")
-    int updateFavouriteStatus(@Param("userId") int userId, @Param("productId") int productId, @Param("isLiked") boolean isLiked);
 
-    // 5. Delete by user and product
+    List<UserFavourite> findByUserId(Integer userId);
+
+
     @Modifying
-    @Query("DELETE FROM UserFavourite uf WHERE uf.user.id = :userId AND uf.product.id = :productId")
-    void deleteByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
+    @Transactional
+    int deleteByUserIdAndProductId(Integer userId, Integer productId);
+
+    @Query(value = "SELECT product_id FROM user_favourite WHERE user_id = :userId", nativeQuery = true)
+    Set<Integer> findProductIdsByUserId(@Param("userId") Integer userId);
 
 }

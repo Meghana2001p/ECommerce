@@ -1,5 +1,7 @@
 package com.project.E_Commerce.Service;
 
+import com.project.E_Commerce.dto.WishlistResponse;
+
 import java.util.List;
 
 public interface UserWishlistService
@@ -8,4 +10,5 @@ public interface UserWishlistService
 
     String  removeFromWishlist(int userId,int productId);
 
+    List<WishlistResponse> getWishlistProductsByUserId(int userId);
 }

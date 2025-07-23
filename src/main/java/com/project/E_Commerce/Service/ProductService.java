@@ -84,6 +84,7 @@ public interface ProductService {
 
     void deleteRelatedProduct(Integer id);
 
+
     //list of all the products and the specific product details in that too
 
     List<ProductList> getAllAvailableProducts(Pageable pageable);

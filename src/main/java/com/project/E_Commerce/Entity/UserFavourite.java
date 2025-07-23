@@ -31,11 +31,4 @@ public class UserFavourite {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "is_liked", nullable = false)
-    private Boolean isLiked = true;
-
-    @PastOrPresent(message = "Added time can't be in the future")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "added_at", nullable = false)
-    private LocalDateTime addedAt = LocalDateTime.now();
 }

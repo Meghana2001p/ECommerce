@@ -1,12 +1,10 @@
 package com.project.E_Commerce.ServiceImplementation;
 
-import com.project.E_Commerce.Entity.Product;
-import com.project.E_Commerce.Entity.ProductImage;
-import com.project.E_Commerce.Entity.User;
-import com.project.E_Commerce.Entity.Wishlist;
+import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception1.ResourceAlreadyExistsException;
+import com.project.E_Commerce.Repository.UserFavouriteRepo;
 import com.project.E_Commerce.Repository.*;
-import com.project.E_Commerce.Service.UserWishlistService;
+import com.project.E_Commerce.Service.*;
 import com.project.E_Commerce.dto.WishlistResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,10 +15,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class WishlistServiceImpl implements UserWishlistService {
+public class UserFavouriteServiceImpl implements UserFavouriteService {
 
     @Autowired
-    private WishlistRepo wishlistRepo;
+    private UserFavouriteRepo favouriteRepo;
 
     @Autowired
     private UserRepo userRepo;
@@ -38,61 +36,49 @@ public class WishlistServiceImpl implements UserWishlistService {
     private ProductImageRepo productImageRepo;
 
     @Override
-    public String addToWishlist(int userId, int productId)
-    {
+    public String addToFavourites(int userId, int productId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        User user = userRepo.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Product product = productRepo.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
-        Optional<Wishlist> existingWishlist = wishlistRepo.findByUserIdAndProductId(userId, productId);
-        if (existingWishlist.isPresent()) {
-         throw new ResourceAlreadyExistsException("Product already exists in the wishlist");
+        Optional<UserFavourite> existing = favouriteRepo.findByUserIdAndProductId(userId, productId);
+        if (existing.isPresent()) {
+            throw new ResourceAlreadyExistsException("Product already marked as favourite");
         }
-        Wishlist wishlist = new Wishlist();
-        wishlist.setUser(user);
-        wishlist.setProduct(product);
-        wishlistRepo.save(wishlist);
 
-        return "Product added to the wishlist";
+        UserFavourite favourite = new UserFavourite();
+        favourite.setUser(user);
+        favourite.setProduct(product);
+        favouriteRepo.save(favourite);
+        return "Product added to favourites";
     }
 
     @Override
-    public String removeFromWishlist(int userId, int productId) {
-        if (!userRepo.existsById(userId)) {
-            throw new IllegalArgumentException("User not found");
-        }
+    public String removeFromFavourites(int userId, int productId) {
+        if (!userRepo.existsById(userId)) throw new IllegalArgumentException("User not found");
+        if (!productRepo.existsById(productId)) throw new IllegalArgumentException("Product not found");
 
-        if (!productRepo.existsById(productId)) {
-            throw new IllegalArgumentException("Product not found");
+        Optional<UserFavourite> existing = favouriteRepo.findByUserIdAndProductId(userId, productId);
+        if (existing.isPresent()) {
+            int deleted = favouriteRepo.deleteByUserIdAndProductId(userId, productId);
+            if (deleted > 0) return "Product removed from favourites";
         }
-        Optional<Wishlist> existingWishlist = wishlistRepo.findByUserIdAndProductId(userId, productId);
-        if (existingWishlist.isPresent()) {
-
-         int res= wishlistRepo.deleteByUserIdAndProductId(userId, productId);
-         if(res>0)
-         {
-            return "Product removed successfully from the  wishlist";}
-        }
-            return "Product doesnot exist in the wishlist";
-
+        return "Product was not in favourites";
     }
 
     @Override
-    public List<WishlistResponse> getWishlistProductsByUserId(int userId) {
-        // Step 1: Get all Wishlist entries for the user
-        List<Wishlist> wishlistItems = wishlistRepo.findByUserId(userId);
-
-        // Step 2: Extract products from the wishlist
-        List<Product> products = wishlistItems.stream()
-                .map(Wishlist::getProduct)
+    public List<WishlistResponse> getFavouritedProductsByUserId(int userId) {
+        List<UserFavourite> favItems = favouriteRepo.findByUserId(userId);
+        List<Product> products = favItems.stream()
+                .map(UserFavourite::getProduct)
                 .toList();
 
-        // Step 3: Map to WishlistResponse DTOs
         return products.stream().map(p -> {
             BigDecimal discountPercent = getActiveDiscountPercent(p.getId());
             BigDecimal discountedPrice = applyDiscount(p.getPrice(), discountPercent);
             Double avgRating = reviewRepo.findAverageRatingByProductId(p.getId());
             Integer reviewCount = reviewRepo.countByProductId(p.getId());
-
             List<String> imageUrls = productImageRepo.findByProductId(p.getId())
                     .stream()
                     .map(ProductImage::getImageUrl)
@@ -116,23 +102,13 @@ public class WishlistServiceImpl implements UserWishlistService {
         }).toList();
     }
 
-
     private BigDecimal getActiveDiscountPercent(Integer productId) {
-        Optional<BigDecimal> discounts = productDiscountRepo.findDiscountPercentByProductId(productId);
-        if (discounts.isEmpty()) return null;
-        return  discounts.get();
+        return productDiscountRepo.findDiscountPercentByProductId(productId).orElse(null);
     }
 
     private BigDecimal applyDiscount(BigDecimal price, BigDecimal percent) {
         if (percent == null) return price;
         return price.subtract(price.multiply(percent).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
     }
-
-
-
-
-
-
-
-
 }
+
