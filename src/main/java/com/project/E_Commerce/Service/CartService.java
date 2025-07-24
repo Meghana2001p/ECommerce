@@ -22,7 +22,6 @@
         //3rd add teh coupon details
         //4th add the applied coupon
 
-        Cart createCart(Cart cart);//just the id and teh userId
         CartItem addCartItem(CartItem cartItem);//original Items into the cart
         List<CartItemDto>getAllCartItemsById(int user_id);
         String removeCartItem(int cart_item_id);

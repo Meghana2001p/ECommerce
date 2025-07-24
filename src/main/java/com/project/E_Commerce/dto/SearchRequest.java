@@ -15,6 +15,6 @@ public class SearchRequest {
     private Integer page;
     private List<String> sizes;
     private String sortBy;
-    private Double ratings;
+    private Integer ratings;
     private String color;
 }
