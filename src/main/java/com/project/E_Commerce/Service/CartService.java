@@ -4,10 +4,7 @@
     import com.project.E_Commerce.Entity.Cart;
     import com.project.E_Commerce.Entity.CartItem;
     import com.project.E_Commerce.Entity.Coupon;
-    import com.project.E_Commerce.dto.CartAmountSummaryDto;
-    import com.project.E_Commerce.dto.CartItemDto;
-    import com.project.E_Commerce.dto.CouponRequest;
-    import com.project.E_Commerce.dto.CouponResponse;
+    import com.project.E_Commerce.dto.*;
     import jakarta.validation.Valid;
 
     import java.util.List;
@@ -22,9 +19,18 @@
         //3rd add teh coupon details
         //4th add the applied coupon
 
-        CartItem addCartItem(CartItem cartItem);//original Items into the cart
-        List<CartItemDto>getAllCartItemsById(int user_id);
-        String removeCartItem(int cart_item_id);
+
+        void addProductToCart(CartRequest request);
+        void removeProductFromCart(Integer userId, Integer productId);
+        CartResponse viewCart(Integer userId);
+
+
+
+
+
+
+
+
 
 
        //what are all the things that happens in a cart

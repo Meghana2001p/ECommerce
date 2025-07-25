@@ -6,10 +6,8 @@ import com.project.E_Commerce.Entity.*;
 import com.project.E_Commerce.Exception.*;
 import com.project.E_Commerce.Repository.*;
 import com.project.E_Commerce.Service.CartService;
-import com.project.E_Commerce.dto.CartAmountSummaryDto;
-import com.project.E_Commerce.dto.CartItemDto;
-import com.project.E_Commerce.dto.CouponRequest;
-import com.project.E_Commerce.dto.CouponResponse;
+import com.project.E_Commerce.dto.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -19,10 +17,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -55,156 +52,286 @@ public  class CartServiceImpl implements CartService {
     @Autowired
     private InventoryRepo inventoryRepo;
 
-    @Override
-    public Cart createCart(Cart cart)
-    {
-        try {
-            if (cart == null || cart.getUser() == null) {
-                throw new IllegalArgumentException("Cart or user information cannot be null");
-            }
+    @Autowired
+    private ProductDiscountRepo productDiscountRepo;
 
-            User user = userRepo.findById(cart.getUser().getId())
-                    .orElseThrow(() -> new UserNotFoundException("User not found exception"));
-            cart.setUser(user);
-            return cartRepo.save(cart);
-        }catch (DataAccessException e) {
-            logger.error("Database access error while creating product : {}", e.getMessage(), e); // logs full stack trace
-
-            throw new DataBaseException("Internal server error");
-        }
-        catch (Exception e) {
-            log.error("Unexpected error while inserting the product ", e);
-            throw e;
-        }
-    }
 
     @Override
-    public CartItem addCartItem(CartItem cartItem) {
-        try {
-            if (cartItem == null || cartItem.getCart() == null || cartItem.getProduct() == null) {
-                throw new IllegalArgumentException("CartItem, cart, or product information cannot be null");
-            }
-
-            Cart cart = cartRepo.findById(cartItem.getCart().getId())
-                    .orElseThrow(() -> new CartNotFoundException("Cart not found"));
-
-            Product product = productRepo.findById(cartItem.getProduct().getId())
-                    .orElseThrow(() -> new ProductNotFoundException("Product not found"));
-
-            if (product.getIsAvailable() == null || !product.getIsAvailable()) {
-                throw new ProductNotFoundException("Product is not available");
-            }
-
-            //check whether the product is in Stock or not
-            Inventory inventory = inventoryRepo.findByProductId(product.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Inventory not found for this product"));
-
-            int availableQty = inventory.getStockQuantity();
-            int requestedQty = cartItem.getQuantity();
-
-            CartItem existing = cartItemRepo.findByCartIdAndProductId(cart.getId(), product.getId()).orElse(null);
-
-            int totalRequested = requestedQty + (existing != null ? existing.getQuantity() : 0);
-
-            if (availableQty < totalRequested) {
-                throw new IllegalArgumentException("Only " + availableQty + " items in stock");
-            }
-
-            cartItem.setCart(cart);
-            cartItem.setProduct(product);
-            cartItem.setPrice(product.getPrice());
-
-
-
-            CartItem existingItem = cartItemRepo.findByCartIdAndProductId(
-                    cart.getId(), product.getId()).orElse(null);
-
-            if (existingItem != null) {
-                existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity());
-                return cartItemRepo.save(existingItem);
-            } else {
-                return cartItemRepo.save(cartItem);
-            }
-        }catch (DataAccessException e) {
-            logger.error("Database access error while creating cart Item  : {}", e.getMessage(), e); // logs full stack trace
-
-            throw new DataBaseException("Internal server error");
+    public void addProductToCart(CartRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Invalid data");
         }
-        catch (Exception e) {
-            log.error("Unexpected error while inserting the product ", e);
-            throw e;
+
+        Cart cart = cartRepo.findByUserId(request.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+
+
+        Product product = productRepo.findById(request.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (productRepo.isAvaliable(product.getId())) {
+            CartItem item = cartItemRepo.findByCartIdAndProductId(cart.getId(), product.getId())
+                    .map(existingItem -> {
+                        existingItem.setQuantity(existingItem.getQuantity() + request.getQuantity());
+                        return existingItem;
+                    })
+                    .orElseGet(() -> {
+                        CartItem newItem = new CartItem();
+                        newItem.setCart(cart);
+                        newItem.setProduct(product);
+                        newItem.setQuantity(request.getQuantity());
+                        newItem.setPrice(product.getPrice());
+                        return newItem;
+                    });
+
+            cartItemRepo.save(item);
         }
     }
 
     @Override
-    public List<CartItemDto> getAllCartItemsById(int userId) {
-        if (userId <= 0) {
-            throw new IllegalArgumentException("User ID must be positive");
+    public void removeProductFromCart(Integer userId, Integer productId) {
+        if (userId <= 0 || productId <= 0) {
+            throw new IllegalArgumentException("Invalid data");
         }
-        try {
-            List<CartItem> items = cartItemRepo.findByCartUserId(userId);
-            if (items.isEmpty()) {
-                throw new CartNotFoundException("No items in cart");
-            }
-            return items.stream()
-                    .map(item -> new CartItemDto(
-                            item.getId(),
-                            item.getProduct().getName(),
-                            item.getProduct().getImageAddress(),
-                            item.getQuantity(),
-                            item.getPrice()))
-                    .toList();
-        }
-        catch (DataAccessException e) {
-            logger.error("Database access error retrieveng the cart Items : {}", e.getMessage(), e); // logs full stack trace
+        Cart cart = cartRepo.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-            throw new DataBaseException("Internal server error");
-        }
-        catch (Exception e) {
-            log.error("Unexpected error while getting the cart Items by Id  ", e);
-            throw e;
-        }
+        CartItem item = cartItemRepo.findByCartIdAndProductId(cart.getId(), productId)
+                .orElseThrow(() -> new RuntimeException("Product not in cart"));
+
+        cartItemRepo.delete(item);
     }
+
+
+
+
+    public CartSummaryResponse calculateCartSummary(List<CartItemProjection> cartItems) {
+        BigDecimal subTotal = BigDecimal.ZERO;
+        BigDecimal totalCouponDiscount = BigDecimal.ZERO;
+        int totalQuantity = 0;
+        Set<Integer> uniqueProducts = new HashSet<>();
+
+        for (CartItemProjection item : cartItems) {
+            BigDecimal price = item.getCartItemPrice() != null ? item.getCartItemPrice() : item.getOriginalPrice();
+
+            if (item.getDiscountPercent() != null) {
+                BigDecimal discountAmount = price.multiply(item.getDiscountPercent().divide(BigDecimal.valueOf(100)));
+                price = price.subtract(discountAmount);
+            }
+
+            BigDecimal totalPriceForThisItem = price.multiply(BigDecimal.valueOf(item.getQuantity()));
+            subTotal = subTotal.add(totalPriceForThisItem);
+            totalQuantity += item.getQuantity();
+            uniqueProducts.add(item.getProductId());
+
+            // Coupon discount (assuming it's flat across all items)
+            if (item.getCouponDiscountAmount() != null) {
+                totalCouponDiscount = item.getCouponDiscountAmount();  // One-time deduction
+            }
+        }
+
+        BigDecimal totalGST = subTotal.multiply(BigDecimal.valueOf(0.18));  // 18% GST
+        BigDecimal grandTotal = subTotal.add(totalGST).subtract(totalCouponDiscount);
+
+        CartSummaryResponse response = new CartSummaryResponse();
+        response.setSubTotal(subTotal);
+        response.setTotalGST(totalGST);
+        response.setCouponDiscount(totalCouponDiscount);
+        response.setGrandTotal(grandTotal);
+        response.setTotalItems(uniqueProducts.size());
+        response.setTotalQuantity(totalQuantity);
+
+        return response;
+    }
+
+
+    public List<CartItemResponse> buildCartItemResponses(List<CartItemProjection> cartItems) {
+        List<CartItemResponse> responses = new ArrayList<>();
+
+        for (CartItemProjection item : cartItems) {
+            BigDecimal price = item.getCartItemPrice() != null ? item.getCartItemPrice() : item.getOriginalPrice();
+
+            BigDecimal discountPercent = item.getDiscountPercent() != null ? item.getDiscountPercent() : BigDecimal.ZERO;
+            BigDecimal discountAmount = price.multiply(discountPercent.divide(BigDecimal.valueOf(100)));
+
+            BigDecimal priceAfterDiscount = price.subtract(discountAmount);
+            BigDecimal totalPriceForThisItem = priceAfterDiscount.multiply(BigDecimal.valueOf(item.getQuantity()));
+
+            CartItemResponse response = new CartItemResponse(
+                    item.getProductId(),
+                    item.getName(),
+                    item.getImageUrl(),
+                    price,
+                    discountPercent,
+                    discountAmount,
+                    priceAfterDiscount,
+                    item.getQuantity(),
+                    totalPriceForThisItem,
+                    item.getProductRating()
+            );
+
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
+
+    public List<CouponResponseCart> buildCouponResponses(List<CartItemProjection> coupons) {
+        List<CouponResponseCart> responses = new ArrayList<>();
+
+        for (CartItemProjection coupon : coupons) {
+            CouponResponseCart response = new CouponResponseCart(
+                    coupon.getCouponName(),
+                    coupon.getCouponDiscountAmount());
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
+
+
+
+
 
     @Override
-    public String removeCartItem(int cartItemId) {
-        if (cartItemId <= 0) {
-            throw new IllegalArgumentException("Cart ID must be positive");
-        }
-        try {
-            if (!cartItemRepo.existsById(cartItemId)) {
-                throw new CartNotFoundException("Item not found in cart");
+    public CartResponse viewCart(Integer userId) {
+        // 1. Fetch cart items using projection
+        List<CartItemProjection> cartItems = cartItemRepo.getAllCartItems(userId);
+
+        // 2. Build cart item responses
+        List<CartItemResponse> cartItemResponses = buildCartItemResponses(cartItems);
+
+        // 3. Build cart summary
+        CartSummaryResponse summary = calculateCartSummary(cartItems);
+
+        // 4. Extract coupon (if any)
+        CouponResponseCart coupon = null;
+        for (CartItemProjection item : cartItems) {
+            if (item.getCouponName() != null && item.getCouponDiscountAmount() != null) {
+                coupon = new CouponResponseCart(item.getCouponName(), item.getCouponDiscountAmount());
+                break; // Only one coupon expected
             }
-            cartItemRepo.deleteById(cartItemId);
-            return "Item removed successfully";
+        }
+
+        // 5. Build and return final response
+        CartResponse cartResponse = new CartResponse();
+        cartResponse.setUserId(userId);
+        cartResponse.setCartItems(cartItemResponses);
+        cartResponse.setSummary(summary);
+        cartResponse.setCoupon(coupon);
+
+        return cartResponse;
+    }
 
 
-    } catch (DataAccessException e) {
-        logger.error("Database access while deleting  the cart Items : {}", e.getMessage(), e); // logs full stack trace
 
-        throw new DataBaseException("Internal server error");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private BigDecimal getActiveDiscountPercent(Integer productId) {
+        Optional<BigDecimal> discounts = productDiscountRepo.findDiscountPercentByProductId(productId);
+        if (discounts.isEmpty()) return null;
+        return  discounts.get();
     }
-        catch (Exception e) {
-        log.error("Unexpected error while deleting  the cart Items by Id  ", e);
-        throw e;
+
+    private BigDecimal applyDiscount(BigDecimal price, BigDecimal percent) {
+        if (percent == null) return price;
+        return price.subtract(price.multiply(percent).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
     }
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
+    @Transactional
     public Coupon createCoupon(Coupon coupon) {
 
-            if (coupon == null || coupon.getCode() == null) {
-                throw new IllegalArgumentException("Coupon code cannot be null");
-            }
-
-            if (couponRepo.findByCode(coupon.getCode().trim()).isPresent()) {
-                throw new CouponAlreadyExistsException("Coupon already exists");
-            }
-
-            return couponRepo.save(coupon);
-
-
+        if (coupon == null || coupon.getCode() == null || coupon.getCode().trim().isEmpty()) {
+            throw new IllegalArgumentException("Coupon code cannot be null or empty");
+        }
+        // Trim the code
+        coupon.setCode(coupon.getCode().trim());
+        // Check for duplicate
+        if (couponRepo.findByCode(coupon.getCode()).isPresent()) {
+            throw new CouponAlreadyExistsException("Coupon already exists");
+        }
+        // Validate usage limit
+        if (coupon.getUsageLimit() == null || coupon.getUsageLimit() < 1) {
+            throw new IllegalArgumentException("Usage limit must be at least 1");
+        }
+        // Set active status
+        coupon.setIsActive(true);
+        return couponRepo.save(coupon);
     }
+
 
 
     @Override
@@ -312,285 +439,3 @@ public  class CartServiceImpl implements CartService {
     }
 
 }
-//
-//    @Autowired
-//    private CartMapper cartMapper;
-//
-//    @Autowired
-//    private CartItemMapper cartItemMapper;
-//
-//    @Autowired
-//    private CouponMapper couponMapper;
-//
-//    @Autowired
-//    private AppliedCouponMapper appliedCouponMapper;
-//
-//    @Autowired
-//    private UserMapper userMapper;
-//
-//    @Autowired
-//    private ProductMapper productMapper;
-//
-//
-//    @Override
-//    //from json id,userId
-//    public Cart addToCart(Cart cart) {
-//        try {
-//            User user = userMapper.getUserByID(cart.getId());
-//            if (user != null) {
-//                int res = cartMapper.createCart(cart);
-//                if (res <= 0) {
-//                    throw new UserNotFoundException("User does not exists to add to the cart");
-//                }
-//            }
-//
-//            return cart;
-//        } catch (DataRetrievalException e) {
-//            throw new DataRetrievalException("Data could not be retrieved");
-//        }
-//    }
-//
-//
-//    //now inside the cart we are gonna add the cart item
-//    @Override
-//    public CartItem addToCartItem(CartItem cartItem) {
-//        //check the cartId and the productId
-//        try {
-//            Cart cart = cartMapper.getCartById(cartItem.getId());
-//            if (cart == null) {
-//                throw new CartNotFoundException("Cart does not exists");
-//            }
-//            Product product = productMapper.getProductById(cartItem.getProduct());
-//            if (product == null) {
-//                throw new ProductNotFoundException("Product could not be found");
-//            }
-//
-//
-//            if (product.getIsAvailable() == null || !product.getIsAvailable()) {
-//                throw new ProductNotFoundException("Product is not available for purchase.");
-//            }
-//            //set the price from the product table
-//            cartItem.setPrice(product.getPrice());
-//
-//
-//            // Check if the same product already exists in the cart
-//            CartItem existingItem = cartItemMapper.getCartItemByCartAndProduct(cartItem.getCartId(), cartItem.getProductId());
-//
-//
-//            if (existingItem != null) {
-//
-//                // Update quantity if already present
-//
-//                int newQuantity = existingItem.getQuantity() + cartItem.getQuantity();
-//
-//                existingItem.setQuantity(newQuantity);
-//                existingItem.setPrice(product.getPrice());
-//
-//                int updated = cartItemMapper.updateCartItem(existingItem);
-//                if (updated <= 0) {
-//                    throw new DataUpdateException("Failed to update cart item.");
-//                }
-//
-//                return existingItem;
-//            } else {
-//
-//                //Insert new cart item
-//
-//                int inserted = cartItemMapper.insertCartItem(cartItem);
-//                if (inserted <= 0) {
-//                    throw new DataCreationException("Failed to add item to cart.");
-//                }
-//                return cartItem;
-//            }
-//        } catch (DataCreationException e) {
-//            throw new DataCreationException("data cannot be created");
-//        }
-//    }
-//
-//
-//    //if I am going to retrieve all the cart Items based on the User Id I should
-//    //have the product name,image details ,based on the productId kind of
-//
-//    @Override
-//    public List<CartItemDto> getAllCartItemsById(int user_id) {
-//        try {
-//            List<CartItemDto> cartItem = cartItemMapper.getItemsByUserId(user_id);
-//            if (cartItem == null)
-//            {
-//                throw new CartNotFoundException("Cart Item does not exists");
-//            }
-//            return cartItem;
-//        }
-//        catch (DataRetrievalException e)
-//        {
-//            throw new DataRetrievalException("Data could not be retrieved");
-//        }
-//    }
-//
-//
-//    @Override
-//    public String removeCartItem(int cart_item_id) {
-//        try {
-//            int deletedItem = cartItemMapper.deleteOneCartItem(cart_item_id);
-//            if (deletedItem <= 0) {
-//                throw new DataDeletionException("Could not delete the cart Item");
-//            }
-//
-//            return "Item  removes Successfully";
-//        } catch (DataRetrievalException e) {
-//            throw new DataRetrievalException("Data could not be retrieved");
-//        }
-//    }
-//
-//
-//    //remove all the Cart items
-
-//    //from json the coupon entity to be sent
-//    @Override
-//    public Coupon addCoupons(Coupon coupon) {
-//
-//        if(coupon.getCode()==null && coupon==null)
-//        {
-//            throw new RuntimeException("The coupon code and coupon data cannot be null");
-//        }
-//       Coupon existingCoupon = couponMapper.getByCode(coupon.getCode());
-//       if(existingCoupon!=null)
-//       {
-//           throw new CouponAlreadyExistsException("Coupon already exists");
-//       }
-//        try {
-//            int res = couponMapper.insertCoupon(coupon);
-//            if (res <= 0) {
-//                throw new DataCreationException("Coupon was not be created");
-//            }
-//            return coupon;
-//        } catch (DataRetrievalException e) {
-//            throw new DataRetrievalException("Data could not be retrieved");
-//        }
-//    }
-//
-//    @Override
-//    public List<Coupon> getAllAvailableCoupons() {
-//        try {
-//            return couponMapper.getAllCoupons();
-//        } catch (DataRetrievalException e) {
-//            throw new DataRetrievalException("Data could not be retrieved");
-//        }
-//    }
-//
-//
-//    //apply coupon based on the orderId and the couponId that are present and store the data in the AppliedCoupon table
-//    @Override
-//    public AppliedCoupon ApplyCoupon(AppliedCoupon appliedCoupon) {
-//
-//        try {
-//            Coupon coupon = couponMapper.getById(appliedCoupon.getCouponId());
-//            if (coupon == null) {
-//                throw new CouponNotFoundException("Coupon does not exists");
-//            }
-//            if ((coupon.getDiscountAmount() != null && coupon.getDiscountPercent() != null) ||
-//                    (coupon.getDiscountAmount() == null && coupon.getDiscountPercent() == null)) {
-//                throw new InvalidCouponException("Set either discount percent or discount amount, but not both.");
-//            }
-//            int res = appliedCouponMapper.insertAppliedCoupon(appliedCoupon);
-//            if (res <= 0)
-//            {
-//                throw new DataCreationException("Could not apply the coupon");
-//            }
-//
-//            return appliedCoupon;
-//
-//        } catch (DataRetrievalException e) {
-//            throw new DataRetrievalException("Data could not be created");
-//        }
-//    }
-//
-//    @Override
-//    public String removeCoupon(int appliedCoupon_Id) {
-//        try {
-//            AppliedCoupon appliedCoupon = appliedCouponMapper.getAppliedCouponById(appliedCoupon_Id);
-//            if (appliedCoupon == null) {
-//                throw new CouponNotFoundException("Coupon is not applied");
-//            }
-//            appliedCouponMapper.deleteAppliedCoupon(appliedCoupon_Id);
-//            return "Coupon deleted successfully";
-//        } catch (DataDeletionException e) {
-//            throw new DataRetrievalException("Data could not be deleted");
-//        }
-//
-//    }
-//
-//
-//    @Override
-//    public CartAmountSummaryDto calculateCartSummary(int userId) {
-//        // 1. Get cart for user
-//        try {
-//            Cart cart = cartMapper.getCartByUserId(userId);
-//            if (cart == null) {
-//                throw new CartNotFoundException("Cart not found for user");
-//            }
-//
-//            // 2. Get all cart items
-//            List<CartItem> items = cartItemMapper.getItemsByCartId(cart.getId());
-//            if (items == null || items.isEmpty()) {
-//                throw new CartNotFoundException("No items in cart");
-//            }
-//
-//            BigDecimal subtotal = BigDecimal.ZERO;
-//
-//            // 3. Calculate subtotal = sum(price × quantity)
-//            for (CartItem item : items) {
-//                BigDecimal itemTotal = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-//                subtotal = subtotal.add(itemTotal);
-//            }
-//
-//            // 4. Check for applied coupon
-//            AppliedCoupon appliedCoupon = appliedCouponMapper.getAppliedCouponByCartId(cart.getId());
-//            BigDecimal discount = BigDecimal.ZERO;
-//            String couponCode = null;
-//
-//            if (appliedCoupon != null) {
-//                Coupon coupon = couponMapper.getById(appliedCoupon.getCouponId());
-//                if (coupon != null) {
-//                    couponCode = coupon.getCode();
-//
-//                    // Percent discount
-//                    if (coupon.getDiscountPercent() != null && coupon.getDiscountAmount() == null) {
-//                        discount = subtotal.multiply(coupon.getDiscountPercent())
-//                                .divide(BigDecimal.valueOf(100));
-//                    }
-//                    // Flat amount discount
-//                    else if (coupon.getDiscountAmount() != null && coupon.getDiscountPercent() == null) {
-//                        discount = coupon.getDiscountAmount();
-//                    }
-//                    // Safety check: if both are set, ignore both or throw error
-//                    else if (coupon.getDiscountAmount() != null && coupon.getDiscountPercent() != null) {
-//                        throw new RuntimeException("Invalid coupon: both discount types set.");
-//                    }
-//                }
-//            }
-//
-//
-//            // Tax and Shipping (example: 10% tax, ₹50 flat shipping)
-//            BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.10));  // 10% tax
-//            BigDecimal shipping = BigDecimal.valueOf(50);                  // ₹50 shipping
-//
-//            // Final total
-//            BigDecimal totalAmount = subtotal.subtract(discount).add(tax).add(shipping);
-//
-//            // Build response DTO
-//            CartAmountSummaryDto summary = new CartAmountSummaryDto();
-//            summary.setSubtotal(subtotal);
-//            summary.setDiscount(discount);
-//            summary.setTax(tax);
-//            summary.setShipping(shipping);
-//            summary.setTotalAmount(totalAmount);
-//            summary.setCouponCode(couponCode);
-//            return summary;
-//        }
-//        catch (DataRetrievalException e) {
-//            throw new DataRetrievalException("Data could not be deleted");
-//        }
-//
-//    }
-//}

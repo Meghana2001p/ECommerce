@@ -130,4 +130,8 @@ public interface ProductRepo extends JpaRepository<Product,Integer> {
             @Param("limit") int limit,
             @Param("offset") int offset
     );
+
+
+@Query(value = "select * from the product where product_id =:productID", nativeQuery = true)
+    boolean isAvaliable( @Param("productID") Integer productId);
 }

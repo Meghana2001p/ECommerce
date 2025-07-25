@@ -36,4 +36,7 @@ public class Coupon {
 
     @Column(name = "usage_limit", nullable = false)
     private Integer usageLimit;
+
+    @Column(nullable = false)
+    private Boolean isActive;
 }

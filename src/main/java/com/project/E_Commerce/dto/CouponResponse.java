@@ -17,4 +17,6 @@ public class CouponResponse {
     public CouponResponse() {
 
     }
+
+
 }
