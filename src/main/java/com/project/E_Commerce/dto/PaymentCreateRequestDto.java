@@ -8,6 +8,6 @@ import java.math.BigDecimal;
 @Data
 public class PaymentCreateRequestDto {
     private Integer orderId;
-    private Payment.PaymentMethod method;
+   // private Payment.PaymentMethod method;
     private BigDecimal amount;
 }

@@ -68,131 +68,113 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private PaymentRepo paymentRepo;
 
+    @Autowired
+    private UserRepo userRepo;
+
+    @Autowired
+    private TransactionRepo transactionRepo;
 
 
 
+//    @Transactional
+//    @Override
+//    public String placeOrder(OrderRequest orderRequest) {
+//        // Existing validations...
+//
+//        // Save Order and OrderItems
+//        orderRepo.save(order);
+//        orderItemRepo.saveAll(orderItems);
+//
+//        // ✅ Update Inventory
+//        for (OrderItem item : orderItems) {
+//            Integer productId = item.getProduct().getId();
+//            Integer quantityOrdered = item.getQuantity();
+//
+//            Inventory inventory = inventoryRepo.findByProductId(productId)
+//                    .orElseThrow(() -> new RuntimeException("Inventory not found for product ID: " + productId));
+//
+//            int updatedStock = inventory.getStockQuantity() - quantityOrdered;
+//            if (updatedStock < 0) {
+//                throw new RuntimeException("Insufficient stock for product ID: " + productId);
+//            }
+//
+//            inventory.setStockQuantity(updatedStock);
+//            inventory.setInStock(updatedStock > 0);
+//            inventory.setLastUpdated(LocalDateTime.now());
+//
+//            inventoryRepo.save(inventory);
+//        }
+//
+//        // ✅ (Optional Next Step) Send Email Notification
+//
+//        return "Order placed successfully with ID: " + order.getId();
+//    }
 
-  @Transactional
-    @Override
-    public OrderPlacedResponseDto placeOrder(Order orderRequest) {
-      if(orderRequest==null)
-      {
-          throw new IllegalArgumentException("Order request should not be null");
-      }
-      try {
-          if (orderRequest.getUser().getId() == null) {
-              throw new IllegalArgumentException("User ID cannot be null");
-          }
+@Transactional
+@Override
+public String placeOrder(OrderRequest orderRequest) {
+    if (orderRequest == null) {
+        throw new IllegalArgumentException("Invalid request");
+    }
 
-          // Get cart summary
-          CartAmountSummaryDto summary = cartService.calculateCartSummary(orderRequest.getUser().getId());
-          if (summary.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-              throw new OrderCouldNotBePlacedException("Cart is empty");
-          }
+    Integer userId = orderRequest.getUserId();
+    User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
-          // Create order
-          orderRequest.setOrderDate(LocalDateTime.now());
-          orderRequest.setCreatedAt(LocalDateTime.now());
-          orderRequest.setOrderStatus(Order.OrderStatus.PENDING);
-          orderRequest.setTotalAmount(summary.getTotalAmount());
+    CartResponse cartResponse = cartService.viewCart(userId);
+    if (cartResponse.getCartItems() == null || cartResponse.getCartItems().isEmpty()) {
+        throw new IllegalArgumentException("Cart is empty");
+    }
 
-          Order savedOrder = orderRepo.save(orderRequest);
+    BigDecimal grandTotal = cartResponse.getSummary().getGrandTotal();
 
-          // Get cart and items
-          Cart cart = cartRepo.findByUserId(orderRequest.getUser().getId())
-                  .orElseThrow(() -> new CartNotFoundException("Cart not found"));
+    // Create order
+    Order order = new Order();
+    order.setUser(user);
+    order.setShippingAddress(orderRequest.getShippingAddress());
+    order.setOrderDate(LocalDateTime.now());
+    order.setTotalAmount(grandTotal);
+    order.setPhoneNumber(orderRequest.getPhoneNumber());
+    order.setPaymentMethod(orderRequest.getPaymentMethod());
+    order.setGift(orderRequest.getIsGift());
+    order.setCreatedAt(LocalDateTime.now());
 
-          List<CartItem> cartItems = cartItemRepo.findByCartId(cart.getId());
-          if (cartItems.isEmpty()) throw new CartNotFoundException("No items in cart");
+    // Initialize payment
+    Payment payment = new Payment();
+    payment.setAmount(grandTotal); // set payment amount
+    payment.setPaidAt(LocalDateTime.now());
 
-          for (CartItem item : cartItems) {
-              // Save OrderItem
-              OrderItem orderItem = new OrderItem();
-              orderItem.setOrder(savedOrder);
-              orderItem.setProduct(item.getProduct());
-              orderItem.setQuantity(item.getQuantity());
-              orderItem.setPrice(item.getPrice());
-              orderItemRepo.save(orderItem);
+    Order.PaymentMethod paymentMethod = orderRequest.getPaymentMethod();
+    if (paymentMethod == Order.PaymentMethod.COD) {
+        order.setOrderStatus(Order.OrderStatus.CONFIRMED);
+        payment.setStatus(Payment.PaymentStatus.PENDING);
+    } else {
+        order.setPaymentMethod(Order.PaymentMethod.UPI);
+        payment.setStatus(Payment.PaymentStatus.PENDING);
 
-              // Deduct inventory
-              Inventory inventory = inventoryRepo.findByProductId(item.getProduct().getId())
-                      .orElseThrow(() -> new IllegalStateException("Inventory not found for product: " + item.getProduct().getId()));
+        Transaction transaction = transactionRepo.findByUserId(userId);
+        if (transaction != null) {
+            payment.setTransactionId(transaction.getTransactionId());
+            order.setOrderStatus(Order.OrderStatus.CONFIRMED);
+            payment.setStatus(Payment.PaymentStatus.SUCCESS);
+        } else {
+            order.setOrderStatus(Order.OrderStatus.CANCELLED);
+            payment.setStatus(Payment.PaymentStatus.FAILED);
+        }
+    }
 
-              int remaining = inventory.getStockQuantity() - item.getQuantity();
-              if (remaining < 0) {
-                  throw new IllegalArgumentException("Insufficient stock for product: " + item.getProduct().getName());
-              }
+    // Save order first to generate order ID
+    orderRepo.save(order);
 
-              inventory.setStockQuantity(remaining);
-              inventory.setInStock(remaining > 0);
-              inventory.setLastUpdated(LocalDateTime.now());
-              inventoryRepo.save(inventory);
-          }
+    // Set order in payment and save
+    payment.setOrder(order);
+    paymentRepo.save(payment);
 
-          // Save payment
-          String trackingNumber = "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-          Payment payment = new Payment();
-          payment.setOrder(savedOrder);
-          payment.setAmount(savedOrder.getTotalAmount());
-          payment.setPaidAt(LocalDateTime.now());
-          payment.setStatus(Payment.PaymentStatus.PENDING);
-          payment.setPaymentMethod(Payment.PaymentMethod.valueOf(orderRequest.getPaymentMethod().name()));
-          payment.setTransactionId(trackingNumber);
-          paymentRepo.save(payment);
+    // You can return an order ID or confirmation message
+    return "Order placed with ID: " + order.getId();
+}
 
-          // Save gift order if applicable
-          if (orderRequest.isGift()) {
-              GiftOrder giftOrder = new GiftOrder();
-              giftOrder.setOrder(savedOrder);
-              giftOrder.setGiftMessage("Happy Shopping!");
-              giftOrder.setGiftWrapping(true);
-              giftOrder.setHidePrice(true);
-              giftOrderRepo.save(giftOrder);
-          }
 
-          // Create delivery status
-          DeliveryStatus deliveryStatus = new DeliveryStatus();
-          deliveryStatus.setOrder(savedOrder);
-          deliveryStatus.setStatus(DeliveryStatus.DeliveryState.PENDING);
-          deliveryStatus.setUpdatedAt(LocalDateTime.now());
-          deliveryStatus.setTrackingNumber(trackingNumber);
-          deliveryStatus.setCarrier("Blue-dart");
-          deliveryStatus.setEstimatedDeliveryDate(LocalDateTime.now().plusDays(5));
-          deliveryStatus.setDeliveryType(DeliveryStatus.DeliveryType.STANDARD);
-          deliveryStatusRepo.save(deliveryStatus);
 
-          // Cleanup: clear cart & coupon
-          cartItemRepo.deleteAll(cartItems);
-          appliedCouponRepo.deleteByCartId(cart.getId());
-
-          // Notification
-          NotificationQueue notification = new NotificationQueue();
-          notification.setUser(orderRequest.getUser());
-          notification.setType(NotificationQueue.NotificationType.EMAIL);
-          notification.setMessage("🎉 Your order #" + savedOrder.getId() + " has been placed! Track ID: " + trackingNumber);
-          notification.setStatus(NotificationQueue.NotificationStatus.PENDING);
-          notification.setScheduledAt(LocalDateTime.now());
-          notificationQueueRepo.save(notification);
-
-          return new OrderPlacedResponseDto(
-                  "Order placed successfully!",
-                  savedOrder.getId(),
-                  trackingNumber,
-                  deliveryStatus.getEstimatedDeliveryDate(),
-                  savedOrder.getOrderStatus(),
-                  savedOrder.getTotalAmount()
-          );
-      }catch (DataAccessException e) {
-          logger.error("Database access while   Placing Order   : {}", e.getMessage(), e); // logs full stack trace
-
-          throw new DataBaseException("Internal server error");
-      }
-      catch (Exception e) {
-          log.error("Unexpected error while   Placing Order   ", e);
-          throw e;
-      }
-
-  }
     @Override
     public String updateDeliveryStatusByAgent(DeliveryStatusAgentUpdateDto dto) {
         if(dto==null)
@@ -351,233 +333,3 @@ public class OrderServiceImpl implements OrderService {
     }
 }
 
-    //the user is gonna place the order and the data is gonna be stored in the order table
-    //and also  the response is gonna be there
-    //and the data is gonna be stored in the database of the delivery status
-//    @Override
-//    @Transactional
-//    public OrderPlacedResponseDto placeOrder(Order order) {
-//        try {
-//            if (order.getUserId() == null) {
-//                throw new OrderValidationException("User ID cannot be null");
-//            }
-//            // Validate cart
-//            CartAmountSummaryDto cartSummary = cartService.calculateCartSummary(order.getUserId());
-//
-//            if (cartSummary.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-//                throw new OrderCouldNotBePlacedException("Cart is empty");
-//            }
-//
-//            order.setOrderDate(LocalDateTime.now());
-//            order.setCreatedAt(LocalDateTime.now());
-//            order.setOrderStatus(Order.OrderStatus.PENDING);
-//            CartAmountSummaryDto cartAmountSummaryDto = cartService.calculateCartSummary(order.getUserId());
-//            order.setTotalAmount(cartAmountSummaryDto.getTotalAmount());
-//
-//            //set the order date the time and also the total amount before saving it into the database
-//            int res = orderMapper.insertOrder(order);
-//
-//            if (res <= 0) {
-//                throw new OrderCouldNotBePlacedException("Order cannot be placed");
-//            }
-//
-//
-//            // Simulate delivery estimation and tracking generation (can later be real)
-//            String trackingNumber = "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-//            LocalDateTime estimatedDate = LocalDateTime.now().plusDays(5);
-//
-//
-//            //  Step 3: Insert Order Items
-//            Cart cart = cartMapper.getCartByUserId(order.getUserId());
-//            List<CartItem> cartItems = cartItemMapper.getItemsByCartId(cart.getId());
-//            for (CartItem item : cartItems) {
-//                OrderItem orderItem = new OrderItem();
-//                orderItem.setOrderId(order.getId());
-//                orderItem.setProductId(item.getProductId());
-//                orderItem.setQuantity(item.getQuantity());
-//                orderItem.setPrice(item.getPrice());
-//                orderItemMapper.insertOrderItem(orderItem);
-//            }
-//
-//            // Step 4: Insert Payment Info
-//            Payment payment = new Payment();
-//            payment.setOrderId(order.getId());
-//            payment.setAmount(order.getTotalAmount());
-//            payment.setPaidAt(LocalDateTime.now());
-//            payment.setStatus(Payment.PaymentStatus.PENDING); // Default: Pending
-//            payment.setPaymentMethod(Payment.PaymentMethod.valueOf(order.getPaymentMethod().name()));
-//            payment.setTransactionId(trackingNumber);
-//            paymentMapper.insertPayment(payment);
-//
-//            //  Step 5: Insert Gift Order if applicable
-//            if (order.isGift()) {
-//                GiftOrder giftOrder = new GiftOrder();
-//                giftOrder.setOrderId(order.getId());
-//                giftOrder.setGiftMessage("Happy Shopping!"); // default message
-//                giftOrder.setGiftWrapping(true);
-//                giftOrder.setHidePrice(true);
-//                giftOrderMapper.insertGiftOrder(giftOrder);
-//            }
-//
-//
-//            DeliveryStatus deliveryStatus = new DeliveryStatus();
-//            deliveryStatus.setOrderId(order.getId());
-//            deliveryStatus.setStatus(DeliveryStatus.DeliveryState.PENDING);
-//            deliveryStatus.setUpdatedAt(LocalDateTime.now());
-//            deliveryStatus.setTrackingNumber(trackingNumber);
-//            deliveryStatus.setCarrier("Blue-dart");
-//            deliveryStatus.setEstimatedDeliveryDate(estimatedDate);
-//            deliveryStatus.setDeliveryType(DeliveryStatus.DeliveryType.STANDARD);
-//
-//            int deliveryStatusRes = deliveryStatusMapper.insertDeliveryStatus(deliveryStatus);
-//            if (deliveryStatusRes <= 0) {
-//                throw new DeliveryStatusCreationException("delivery Status cannot be updated");
-//            }
-//
-//            Cart cart1 = cartMapper.getCartByUserId(order.getUserId());
-//            if (cart1 != null) {
-//                int cartId = cart1.getId();
-//
-//                CartItem cartItem = cartItemMapper.getAnyCartItemByCartId(cartId);
-//                if (cartItem != null) {
-//                    cartItemMapper.clearCartByCartId(cartId);
-//                }
-//                appliedCouponMapper.deleteByCartId(cartId);
-//
-//            }
-//            NotificationQueue notification = new NotificationQueue();
-//            notification.setUserId(order.getUserId());
-//            notification.setType(NotificationQueue.NotificationType.EMAIL);
-//            notification.setMessage("🎉 Your order " + order.getId() + " has been placed! Track ID: " + trackingNumber);
-//            notification.setStatus(NotificationQueue.NotificationStatus.PENDING);
-//            notification.setScheduledAt(LocalDateTime.now());
-//            notificationMapper.insertNotification(notification);
-//
-//
-//
-//            return new OrderPlacedResponseDto(
-//                    "Order placed successfully!",
-//                    order.getId(),
-//                    trackingNumber,
-//                    estimatedDate,
-//                    order.getOrderStatus(),
-//                    order.getTotalAmount()
-//            );
-//        }
-//    catch (DataCreationException e)
-//    {
-//        throw new DataCreationException("Data cannot be created");
-//    }
-//
-//    }
-//
-//
-//
-//    @Override
-//    public String updateDeliveryStatusByAgent(DeliveryStatusAgentUpdateDto dto) {
-//        try {
-//            int rowsUpdated = deliveryStatusMapper.updateDeliveryStatus(dto);
-//            if (rowsUpdated <= 0) {
-//                return "Delivery status update failed for Order ID: " + dto.getOrderId();
-//            }
-//            return " Delivery status updated for Order ID: " + dto.getOrderId();
-//        }
-//        catch (DataUpdateException e)
-//        {
-//            throw new DataUpdateException("Data cannot be  Update");
-//
-//        }
-//    }
-//
-//
-//
-//    @Override
-//    public void updateDeliveryStatusByAdmin(DeliveryStatusAdminUpdateDto dto) {
-//        try {
-//            int updated = deliveryStatusMapper.updateDeliveryStatusByAdmin(dto);
-//
-//            if (updated <= 0) {
-//                throw new RuntimeException("Failed to update delivery status for Order ID: " + dto.getOrderId());
-//            }
-//
-//            if (dto.getStatus() == DeliveryStatus.DeliveryState.DELIVERED) {
-//                Order order = orderMapper.getOrderById(dto.getOrderId());
-//
-//
-//
-//
-//                OrderStatusHistory orderHistory = new OrderStatusHistory();
-//                orderHistory.setOrderId(order.getId());
-//                orderHistory.setStatus(OrderStatusHistory.OrderStatus.DELIVERED);
-//                orderHistory.setUpdatedAt(LocalDateTime.now());
-//                orderStatusHistoryMapper.insertStatusHistory(orderHistory);
-//
-//
-//
-//                NotificationQueue notification = new NotificationQueue();
-//                notification.setUserId(order.getUserId());
-//                notification.setType(NotificationQueue.NotificationType.EMAIL);
-//                notification.setMessage("📦 Your order #" + dto.getOrderId() + " has been delivered. Thank you for shopping with us!");
-//                notification.setStatus(NotificationQueue.NotificationStatus.PENDING);
-//                notification.setScheduledAt(LocalDateTime.now());
-//                notificationMapper.insertNotification(notification);
-//            }
-//        }
-//        catch (DataUpdateException e)
-//        {
-//            throw new DataUpdateException("Data cannot be  Update");
-//
-//        }
-//
-//    }
-//
-//    @Override
-//    public String updateOrderByUser(UserOrderUpdateDto dto) {
-//        try {
-//            Order existingOrder = orderMapper.getOrderById(dto.getOrderId());
-//
-//            if (existingOrder == null) {
-//                throw new RuntimeException("Order not found.");
-//            }
-//
-//            // Prevent cancel if already shipped or beyond
-//            if (Boolean.TRUE.equals(dto.getCancelOrder()) &&
-//                    (existingOrder.getOrderStatus() == Order.OrderStatus.SHIPPED ||
-//                            existingOrder.getOrderStatus() == Order.OrderStatus.DELIVERED)) {
-//                throw new OrderCannotCancelException("You cannot cancel an order that is already shipped or delivered.");
-//            }
-//
-//            // 3. Update the order’s status to CANCELLED
-//            existingOrder.setOrderStatus(Order.OrderStatus.CANCELLED);
-//            orderMapper.updateOrderStatus(existingOrder.getId(),"CANCELLED");
-//
-//            // 4. Insert into history
-//            OrderStatusHistory history = new OrderStatusHistory();
-//            history.setOrderId(existingOrder.getId());
-//            history.setStatus(OrderStatusHistory.OrderStatus.CANCELLED);
-//            history.setUpdatedAt(LocalDateTime.now());
-//            orderStatusHistoryMapper.insertStatusHistory(history);
-//
-//            int updated = orderItemMapper.updateOrderByUser(dto);
-//            if (updated <= 0) {
-//                throw new RuntimeException("No changes applied.");
-//            }
-//
-//            return "Order updated successfully.";
-//        } catch (DataUpdateException e) {
-//            throw new DataUpdateException("Data cannot be  Update");
-//
-//        }
-//    }
-//
-//    @Override
-//    public Order getOrderById(int userId) {
-//        return null;
-//    }
-//
-//    @Override
-//    public List<Order> getAllOrders() {
-//        return List.of();
-//    }
-//
-//}

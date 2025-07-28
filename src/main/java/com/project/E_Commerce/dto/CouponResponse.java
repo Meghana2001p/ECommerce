@@ -12,7 +12,7 @@ public class CouponResponse {
     private String code;
     private BigDecimal discountAmount;
     private LocalDateTime expiryDate;
-    private Integer usageLimit;
+
 
     public CouponResponse() {
 

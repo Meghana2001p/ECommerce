@@ -87,7 +87,7 @@ private DiscountMapper discountMapper;
             //Payment payment = paymentRepo.findByOrderId(requestDto.getOrderId()).orElse(new Payment());
 
             payment.setOrder(order);
-            payment.setPaymentMethod(requestDto.getMethod());
+          //  payment.setPaymentMethod(requestDto.getMethod());
             payment.setAmount(requestDto.getAmount());
             payment.setPaidAt(LocalDateTime.now());
             payment.setStatus(Payment.PaymentStatus.SUCCESS);
@@ -99,7 +99,7 @@ private DiscountMapper discountMapper;
             PaymentResponseDto dto = new PaymentResponseDto();
             dto.setId(payment.getId());
             dto.setOrderId(payment.getOrder().getId());
-            dto.setMethod(payment.getPaymentMethod());
+          //  dto.setMethod(payment.getPaymentMethod());
             dto.setStatus(payment.getStatus());
             dto.setTransactionId(payment.getTransactionId());
             dto.setPaidAt(payment.getPaidAt());
@@ -133,7 +133,7 @@ private DiscountMapper discountMapper;
         Payment paymentexisting= payment.get();
 
   response.setOrderId(paymentexisting.getOrder().getId());
-  response.setMethod(paymentexisting.getPaymentMethod());
+ // response.setMethod(paymentexisting.getPaymentMethod());
   response.setStatus(paymentexisting.getStatus());
   response.setTransactionId(paymentexisting.getTransactionId());
   response.setPaidAt(paymentexisting.getPaidAt());

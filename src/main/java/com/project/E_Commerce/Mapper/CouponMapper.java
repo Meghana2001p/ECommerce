@@ -11,7 +11,6 @@ import java.util.List;
 @Mapper
 public interface CouponMapper {
     @Mappings({
-            @Mapping(target = "usageLimit", ignore = true)
     })
     CouponResponse toCouponResponse(Coupon coupon);
 }

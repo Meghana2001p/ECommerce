@@ -16,9 +16,8 @@ public interface CartItemProjection {
     String getBrandName();
     String getImageUrl();
     BigDecimal getDiscountPercent();
-    String getCouponName();
+    String getCouponCode();
     BigDecimal getCouponDiscountAmount();
-    Integer getUsageLimit();
     Double getProductRating();
 
 }

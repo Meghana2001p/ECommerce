@@ -34,8 +34,7 @@ public class Coupon {
     private LocalDateTime expiryDate;
 
 
-    @Column(name = "usage_limit", nullable = false)
-    private Integer usageLimit;
+
 
     @Column(nullable = false)
     private Boolean isActive;

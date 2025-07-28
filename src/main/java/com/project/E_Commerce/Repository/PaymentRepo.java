@@ -23,7 +23,7 @@ public interface PaymentRepo extends JpaRepository<Payment,Integer> {
         u.name,
         o.id,
         p.transactionId,
-        p.paymentMethod,
+      
         p.paidAt,
         pr.id,
         pr.name,

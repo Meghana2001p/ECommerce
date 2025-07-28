@@ -1,10 +1,7 @@
 package com.project.E_Commerce.Service;
 
 import com.project.E_Commerce.Entity.*;
-import com.project.E_Commerce.dto.DeliveryStatusAdminUpdateDto;
-import com.project.E_Commerce.dto.DeliveryStatusAgentUpdateDto;
-import com.project.E_Commerce.dto.OrderPlacedResponseDto;
-import com.project.E_Commerce.dto.UserOrderUpdateDto;
+import com.project.E_Commerce.dto.*;
 
 import java.util.List;
 
@@ -15,7 +12,7 @@ public interface OrderService {
     //the services that can be provided based on the order
 
 
-    OrderPlacedResponseDto placeOrder(Order orderRequest);
+    String placeOrder(OrderRequest orderRequest);
 
     String updateDeliveryStatusByAgent(DeliveryStatusAgentUpdateDto dto);
 

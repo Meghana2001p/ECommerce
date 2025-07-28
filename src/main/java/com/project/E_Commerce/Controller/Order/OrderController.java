@@ -1,11 +1,7 @@
 package com.project.E_Commerce.Controller.Order;
 
-import com.project.E_Commerce.Entity.Order;
 import com.project.E_Commerce.Service.OrderService;
-import com.project.E_Commerce.dto.DeliveryStatusAdminUpdateDto;
-import com.project.E_Commerce.dto.DeliveryStatusAgentUpdateDto;
-import com.project.E_Commerce.dto.OrderPlacedResponseDto;
-import com.project.E_Commerce.dto.UserOrderUpdateDto;
+import com.project.E_Commerce.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,39 +20,11 @@ public class OrderController {
     private  OrderService orderService;
 
 
-    @PostMapping("/place")
-    public ResponseEntity<OrderPlacedResponseDto> placeOrder(@RequestBody Order orderRequest) {
-        OrderPlacedResponseDto response = orderService.placeOrder(orderRequest);
-        return ResponseEntity.ok(response);
+
+    @PostMapping("/")
+    public ResponseEntity<?> placeOrder(@RequestBody OrderRequest orderRequest) {
+        //OrderPlacedResponseDto response = orderService.placeOrder(orderRequest);
+      return ResponseEntity.ok(" ");
     }
 
-    @PutMapping("/delivery/agent")
-    public ResponseEntity<String> updateDeliveryStatusByAgent(@RequestBody DeliveryStatusAgentUpdateDto dto) {
-        String result = orderService.updateDeliveryStatusByAgent(dto);
-        return ResponseEntity.ok(result);
-    }
-
-    @PutMapping("/delivery/admin")
-    public ResponseEntity<String> updateDeliveryStatusByAdmin(@RequestBody DeliveryStatusAdminUpdateDto dto) {
-        orderService.updateDeliveryStatusByAdmin(dto);
-        return ResponseEntity.ok("Delivery status updated successfully by admin.");
-    }
-
-    @PutMapping("/user/update")
-    public ResponseEntity<String> updateOrderByUser(@RequestBody UserOrderUpdateDto dto) {
-        String result = orderService.updateOrderByUser(dto);
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/{orderId}")
-    public ResponseEntity<Order> getOrderById(@PathVariable int orderId) {
-        Order order = orderService.getOrderById(orderId);
-        return ResponseEntity.ok(order);
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<Order>> getAllOrders() {
-        List<Order> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(orders);
-    }
 }

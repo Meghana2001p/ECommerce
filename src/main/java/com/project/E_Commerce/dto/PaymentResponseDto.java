@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class PaymentResponseDto {
     private Integer id;
     private Integer orderId;
-    private Payment.PaymentMethod method;
+    //private Payment.PaymentMethod method;
     private Payment.PaymentStatus status;
     private String transactionId;
     private LocalDateTime paidAt;

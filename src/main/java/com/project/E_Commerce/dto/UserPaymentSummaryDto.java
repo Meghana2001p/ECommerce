@@ -13,7 +13,7 @@ public class UserPaymentSummaryDto {
     private String userName;
     private Integer orderId;
     private String transactionId;
-    private Payment.PaymentMethod paymentMethod;
+    //private Payment.PaymentMethod paymentMethod;
     private LocalDateTime paidAt;
 
     private Integer productId;

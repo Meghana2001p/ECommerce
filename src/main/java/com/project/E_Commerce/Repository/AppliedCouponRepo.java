@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AppliedCouponRepo extends JpaRepository<AppliedCoupon,Integer> {
@@ -20,20 +21,14 @@ public interface AppliedCouponRepo extends JpaRepository<AppliedCoupon,Integer> 
     @Query("select a from AppliedCoupon a where a.coupon.id=:couponId")
     List<AppliedCoupon> findByCouponId(@Param("couponId") Integer couponId);
 
-    // 3. Insert is handled by save()
 
-    // 4. Delete applied coupon by ID is handled by deleteById()
-
-    // 5. Verify the coupon is applied or not (by ID)
-  //  Optional<AppliedCoupon> findById(Integer id);
-
-    // 6. Get applied coupon by cart ID
-    @Query("select a from AppliedCoupon a where a.cart.id=:cartId")
-    AppliedCoupon findByCartId(@Param("cartId") Integer cartId);
 
     // 7. Delete by cart ID
     @Modifying
     @Query("DELETE FROM AppliedCoupon a WHERE a.cart.id = :cartId")
     void deleteByCartId(@Param("cartId") Integer cartId);
+
+    Optional<AppliedCoupon> findByCartId(Integer cartId);
+
 
 }

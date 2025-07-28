@@ -24,16 +24,13 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @NotBlank(message = "Shipping address is required")
     @Column(name = "shipping_address", nullable = false, length = 255)
     private String shippingAddress;
 
-    @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^[0-9]{10}$", message = "Invalid phone number")
+
     @Column(name = "phone_number", nullable = false, length = 15)
     private String phoneNumber;
 
-    @NotNull(message = "Payment method is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
@@ -54,7 +51,7 @@ public class Order {
     @NotNull(message = "Order status is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
-    private OrderStatus orderStatus = OrderStatus.PENDING;
+    private OrderStatus orderStatus;
 
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be greater than 0")
@@ -64,12 +61,12 @@ public class Order {
 
 
     public enum OrderStatus {
-        PENDING,
-        PROCESSING,
+        CONFIRMED,
         SHIPPED,
         DELIVERED,
         CANCELLED,
-        REFUNDED
+        OUT_FOR_DELIVERY;
+
     }
 
     public enum PaymentMethod {
