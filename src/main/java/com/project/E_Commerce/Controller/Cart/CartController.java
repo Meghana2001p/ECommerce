@@ -1,17 +1,13 @@
 package com.project.E_Commerce.Controller.Cart;
 
-import com.project.E_Commerce.Entity.Cart;
-import com.project.E_Commerce.Entity.CartItem;
-import com.project.E_Commerce.Service.CartService;
-import com.project.E_Commerce.dto.CartItemDto;
-import com.project.E_Commerce.dto.CartRequest;
-import com.project.E_Commerce.dto.CartResponse;
+
+import com.project.E_Commerce.Service.Cart.CartService;
+import com.project.E_Commerce.dto.Cart.CartRequest;
+import com.project.E_Commerce.dto.Cart.CartResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/cart")
@@ -49,6 +45,15 @@ public class CartController {
   }
 
 
+    @DeleteMapping("/clear/{userId}")
+    public ResponseEntity<String> clearCart(@PathVariable Integer userId) {
+        try {
+            cartService.clearCart(userId);
+            return ResponseEntity.ok("Cart has been cleared successfully for user ID: " + userId);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+    }
 
 
 

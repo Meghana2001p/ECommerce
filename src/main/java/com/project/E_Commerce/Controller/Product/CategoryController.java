@@ -1,9 +1,9 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Entity.Category;
-import com.project.E_Commerce.Service.ProductService;
-import com.project.E_Commerce.dto.CategoryRequest;
-import com.project.E_Commerce.dto.CategoryResponse;
+import com.project.E_Commerce.Entity.Product.Category;
+import com.project.E_Commerce.Service.Product.ProductService;
+import com.project.E_Commerce.dto.Product.CategoryRequest;
+import com.project.E_Commerce.dto.Product.CategoryResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

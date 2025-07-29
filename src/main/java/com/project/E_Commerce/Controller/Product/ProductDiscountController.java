@@ -1,8 +1,8 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Entity.ProductDiscount;
-import com.project.E_Commerce.Service.PaymentService;
-import com.project.E_Commerce.dto.ProductDiscountRequest;
+import com.project.E_Commerce.Entity.Product.ProductDiscount;
+import com.project.E_Commerce.Service.Payment.PaymentService;
+import com.project.E_Commerce.dto.Product.ProductDiscountRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class ProductDiscountController {
 private PaymentService paymentService;
 
     @PostMapping("/")
-    public ResponseEntity<String> assignDiscountToProduct(@Valid @RequestBody  ProductDiscountRequest request) {
+    public ResponseEntity<String> assignDiscountToProduct(@Valid @RequestBody ProductDiscountRequest request) {
         paymentService.assignDiscountToProduct(request);
         return ResponseEntity.ok("Discount assigned to product successfully");
     }

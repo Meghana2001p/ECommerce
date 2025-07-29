@@ -1,8 +1,8 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Entity.Product;
-import com.project.E_Commerce.Service.ProductSearchService;
-import com.project.E_Commerce.dto.ProductFilterRequest;
+import com.project.E_Commerce.Entity.Product.Product;
+import com.project.E_Commerce.Service.Product.ProductSearchService;
+import com.project.E_Commerce.dto.Product.ProductFilterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,8 +1,8 @@
 package com.project.E_Commerce.Controller.User;
 
-import com.project.E_Commerce.Service.UserWishlistService;
-import com.project.E_Commerce.dto.WishlistRequest;
-import com.project.E_Commerce.dto.WishlistResponse;
+import com.project.E_Commerce.Service.User.UserWishlistService;
+import com.project.E_Commerce.dto.User.WishlistRequest;
+import com.project.E_Commerce.dto.User.WishlistResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ public class WishlistController {
 
     //add to the wishlist
     @PostMapping("/")
-    public ResponseEntity<?> addToWishlist(@RequestBody  WishlistRequest request)
+    public ResponseEntity<?> addToWishlist(@RequestBody WishlistRequest request)
     {
     String message=  userWishlistService.addToWishlist(request.getUserId(), request.getProductId());
         return ResponseEntity.ok(message);

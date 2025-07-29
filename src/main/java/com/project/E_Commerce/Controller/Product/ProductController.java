@@ -1,10 +1,10 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Entity.Product;
-import com.project.E_Commerce.Service.ProductService;
-import com.project.E_Commerce.dto.ProductDetail;
-import com.project.E_Commerce.dto.ProductList;
-import com.project.E_Commerce.dto.ProductRequest;
+import com.project.E_Commerce.Entity.Product.Product;
+import com.project.E_Commerce.Service.Product.ProductService;
+import com.project.E_Commerce.dto.Product.ProductDetail;
+import com.project.E_Commerce.dto.Product.ProductList;
+import com.project.E_Commerce.dto.Product.ProductRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -18,12 +18,11 @@ import java.util.List;
 @RequestMapping("/product")
 public class ProductController
 {
-
     @Autowired
     private ProductService productService;
 
     //admin
-@PostMapping("/addProduct")
+@PostMapping("/")
 public ResponseEntity<?> createProduct(@RequestBody @Valid ProductRequest product)
 {
 Product addedProduct    =productService.addProduct(product);
@@ -32,7 +31,7 @@ return ResponseEntity.ok("Product added successfully");
 
 
 //admin update
-    @PutMapping("/update-product")
+    @PutMapping("/")
     public ResponseEntity<?> updateProduct( int productID,   @Valid @RequestBody Product product)
     {
         Product updatedProduct    = productService.updateProduct(productID,product);
@@ -42,18 +41,11 @@ return ResponseEntity.ok("Product added successfully");
 
 //admin delete
 
-    @DeleteMapping("/delete-product")
-    public ResponseEntity<?> deleteProduct( @RequestParam  int productID)
+    @DeleteMapping("/{productID}")
+    public ResponseEntity<?> deleteProduct( @PathVariable  int productID)
     {
       String message =   productService.deleteProduct(productID);
         return ResponseEntity.ok(message);
-    }
-
-
-    @GetMapping("/product/{id}")
-    public ResponseEntity<?> getProductById(@RequestParam int productId) {
- Product product= productService.getProductById(productId);
-        return ResponseEntity.ok(product);
     }
 
 

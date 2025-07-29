@@ -1,9 +1,8 @@
 package com.project.E_Commerce.Controller.Search;
 
-import com.project.E_Commerce.Service.ProductSearchService;
-import com.project.E_Commerce.Service.SearchService;
-import com.project.E_Commerce.dto.SearchRequest;
-import com.project.E_Commerce.dto.SearchResponse;
+import com.project.E_Commerce.Service.User.SearchService;
+import com.project.E_Commerce.dto.User.SearchRequest;
+import com.project.E_Commerce.dto.User.SearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

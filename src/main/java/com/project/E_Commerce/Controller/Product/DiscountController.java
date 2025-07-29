@@ -1,7 +1,7 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Service.PaymentService;
-import com.project.E_Commerce.dto.DiscountRequest;
+import com.project.E_Commerce.Service.Payment.PaymentService;
+import com.project.E_Commerce.dto.Product.DiscountRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

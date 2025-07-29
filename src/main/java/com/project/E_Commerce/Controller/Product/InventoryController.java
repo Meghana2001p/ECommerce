@@ -1,6 +1,6 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Service.InventoryService;
+import com.project.E_Commerce.Service.Product.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +14,16 @@ import org.springframework.web.bind.annotation.*;
 public class InventoryController {
 
     @Autowired
-    private  InventoryService inventoryService;
+    private InventoryService inventoryService;
 
 
-    @PutMapping("/{productId}")
-    public ResponseEntity<Void> updateStock(
+    @PutMapping("/{productId}/{quantity}")
+    public ResponseEntity<?> updateStock(
             @PathVariable Integer productId,
-            @RequestParam("quantity") Integer quantity) {
+            @PathVariable("quantity") Integer quantity) {
 
         log.info("Admin request: update stock of product {} → {}", productId, quantity);
         inventoryService.updateStock(productId, quantity);
-        return ResponseEntity.noContent().build();   // 204
+        return ResponseEntity.ok("Data added successfully");
     }
 }

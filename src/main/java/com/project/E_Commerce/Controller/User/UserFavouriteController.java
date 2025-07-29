@@ -1,8 +1,8 @@
 package com.project.E_Commerce.Controller.User;
 
-import com.project.E_Commerce.Service.*;
-import com.project.E_Commerce.dto.FavouriteRequest;
-import com.project.E_Commerce.dto.WishlistResponse;
+import com.project.E_Commerce.Service.User.UserFavouriteService;
+import com.project.E_Commerce.dto.User.FavouriteRequest;
+import com.project.E_Commerce.dto.User.WishlistResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

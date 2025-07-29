@@ -1,7 +1,7 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Service.ProductService;
-import com.project.E_Commerce.dto.ProductAttributeAssignmentRequest;
+import com.project.E_Commerce.Service.Product.ProductService;
+import com.project.E_Commerce.dto.Product.ProductAttributeAssignmentRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

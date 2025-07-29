@@ -1,7 +1,7 @@
 package com.project.E_Commerce.Scheduler;
 
-import com.project.E_Commerce.Entity.Discount;
-import com.project.E_Commerce.Repository.DiscountRepo;
+import com.project.E_Commerce.Entity.Cart.Discount;
+import com.project.E_Commerce.Repository.Product.DiscountRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

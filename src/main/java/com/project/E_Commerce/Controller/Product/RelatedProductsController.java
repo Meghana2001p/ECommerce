@@ -1,8 +1,8 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Service.RelatedProductService;
-import com.project.E_Commerce.dto.RelatedProductRequest;
-import com.project.E_Commerce.dto.RelatedProductResponse;
+import com.project.E_Commerce.Service.Product.RelatedProductService;
+import com.project.E_Commerce.dto.Product.RelatedProductRequest;
+import com.project.E_Commerce.dto.Product.RelatedProductResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

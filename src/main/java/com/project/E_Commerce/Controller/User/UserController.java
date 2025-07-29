@@ -1,9 +1,9 @@
 package com.project.E_Commerce.Controller.User;
 
-import com.project.E_Commerce.Entity.User;
-import com.project.E_Commerce.Repository.UserRepo;
-import com.project.E_Commerce.Service.UserService;
-import com.project.E_Commerce.dto.*;
+import com.project.E_Commerce.Entity.User.User;
+import com.project.E_Commerce.Repository.User.UserRepo;
+import com.project.E_Commerce.Service.User.UserService;
+import com.project.E_Commerce.dto.User.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +19,13 @@ import java.util.Optional;
 public class UserController {
 
     @Autowired
-  private   UserService userService;
+  private UserService userService;
 
     @Autowired
     private UserRepo userRepo;
 
 //user
-    @PostMapping("/register")
+    @PostMapping("/")
     public ResponseEntity<?> registerUser(@RequestBody @Valid User user){
 
         UserResponse addedUser = userService.createUser(user);
@@ -34,7 +34,8 @@ public class UserController {
 
     //user
   @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody  @Valid LoginRequest req)
+    public ResponseEntity<?> loginUser(@RequestBody  @Valid
+                                         LoginRequest req)
   {
       User user = userService.loginUser(req.getEmail(), req.getPassword());
       UserResponse resp = new UserResponse(
@@ -49,7 +50,7 @@ public class UserController {
   }
 
   //admin
-@GetMapping("/all-users")
+@GetMapping("/")
 public ResponseEntity<?> getAllUsers()
 {
     List<User> users = userRepo.findAll();
@@ -102,14 +103,6 @@ public ResponseEntity<?> updateByUser( @PathVariable("id") Integer id, @RequestB
         return ResponseEntity.ok(updatedUser);
     }
 
-//admin
-    @DeleteMapping("/admin/delete/{id}")
-    public ResponseEntity<?> deleteUserById(@PathVariable("id") int userId) {
-        userService.deleteUser(userId);
-        return ResponseEntity.ok("User with ID " + userId + " deleted successfully");
-    }
-
-
 
 //user
     @PutMapping("/change-password/{id}")
@@ -124,61 +117,5 @@ public ResponseEntity<?> updateByUser( @PathVariable("id") Integer id, @RequestB
 
 
 
-
-//UserEmailPrefernces
-
-    //create User Email preference
-    @PostMapping("/email-preference/{userId}")
-    public ResponseEntity<?> createOrUpdateEmailPreferences( @PathVariable("userId") Integer userId,
-                                                             @RequestBody List<EmailPreferenceRequest> preferences){
-         userService.createOrUpdateEmailPreferences(userId,preferences);
-         return ResponseEntity.ok("User Preferences set successfully ");
-    }
-
-    @DeleteMapping("/clear/email-preference/{userId}")
-    public ResponseEntity<?> clearAllPreferences(@PathVariable("userId") Integer userId) {
-        userService.clearAllPreferencesForUser(userId);
-        return ResponseEntity.ok("All email preferences cleared for user ID: " + userId);
-    }
-
-    @GetMapping("/get/email-preference/{userId}")
-    public ResponseEntity<List<EmailPreferenceRequest>> getUserEmailPreferences(
-            @PathVariable("userId") Integer userId) {
-
-        List<EmailPreferenceRequest> preferences =
-                userService.getPreferencesByUserId(userId);
-
-        return ResponseEntity.ok(preferences);
-    }
-
-
-   //Seach history
-
-    @PostMapping("/search-history/save")
-    public ResponseEntity<String> saveSearchKeyword(@RequestBody SearchHistoryRequest request) {
-        userService.saveSearchKeyword(request);
-        return ResponseEntity.ok("Search keyword saved successfully.");
-    }
-
-    // Get recent search history for a user
-    @GetMapping("/search-history/{userId}")
-    public ResponseEntity<List<SearchHistoryResponse>> getSearchHistoryByUser(@PathVariable Integer userId) {
-        List<SearchHistoryResponse> historyList = userService.getSearchHistoryByUserId(userId);
-        return ResponseEntity.ok(historyList);
-    }
-
-    // Clear search history for a user
-    @DeleteMapping("/search-history/clear/{userId}")
-    public ResponseEntity<String> clearSearchHistory(@PathVariable Integer userId) {
-        userService.clearSearchHistory(userId);
-        return ResponseEntity.ok("Search history cleared successfully.");
-    }
-
-    // View product associated with a search entry
-    @GetMapping("/search-history/view-product/{searchId}")
-    public ResponseEntity<SearchHistoryResponse> viewProductFromSearch(@PathVariable Integer searchId) {
-        SearchHistoryResponse response = userService.viewProductFromSearch(searchId);
-        return ResponseEntity.ok(response);
-    }
 
 }

@@ -1,9 +1,8 @@
 package com.project.E_Commerce.Controller.User;
 
-import com.project.E_Commerce.Service.ReviewService;
-import com.project.E_Commerce.dto.ReviewRequestDto;
-import com.project.E_Commerce.dto.ReviewResponse;
-import lombok.RequiredArgsConstructor;
+import com.project.E_Commerce.Service.Product.ReviewService;
+import com.project.E_Commerce.dto.Product.ReviewRequestDto;
+import com.project.E_Commerce.dto.Product.ReviewResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,7 @@ import java.util.List;
 public class ReviewController
 {
   @Autowired
-    private  ReviewService reviewService;
+    private ReviewService reviewService;
 
 
     @PostMapping("/")

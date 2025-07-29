@@ -1,10 +1,10 @@
 package com.project.E_Commerce.Mapper;
 
-import com.project.E_Commerce.Entity.Product;
-import com.project.E_Commerce.Entity.Review;
-import com.project.E_Commerce.Entity.User;
-import com.project.E_Commerce.dto.ReviewRequestDto;
-import com.project.E_Commerce.dto.ReviewResponse;
+import com.project.E_Commerce.Entity.Product.Product;
+import com.project.E_Commerce.Entity.Product.Review;
+import com.project.E_Commerce.Entity.User.User;
+import com.project.E_Commerce.dto.Product.ReviewRequestDto;
+import com.project.E_Commerce.dto.Product.ReviewResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

@@ -1,6 +1,9 @@
 package com.project.E_Commerce.Mapper;
-import com.project.E_Commerce.Entity.*;
+import com.project.E_Commerce.Entity.Cart.Coupon;
+import com.project.E_Commerce.Entity.Cart.Discount;
+import com.project.E_Commerce.Entity.Product.*;
 import com.project.E_Commerce.dto.*;
+import com.project.E_Commerce.dto.Product.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
