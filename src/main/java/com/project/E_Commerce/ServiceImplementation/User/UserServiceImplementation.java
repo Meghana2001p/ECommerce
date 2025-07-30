@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -52,6 +53,9 @@ public class UserServiceImplementation implements UserService {
    @Autowired
    private CartRepo cartRepo;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     @Override
     public UserResponse createUser(User user) {
@@ -79,6 +83,9 @@ public class UserServiceImplementation implements UserService {
             {
                 user.setActive(true);
             }
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+
             User createdUser = userRepo.save(user);
             Cart cart = new Cart();
             cart.setUser(createdUser);

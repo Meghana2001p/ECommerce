@@ -7,6 +7,7 @@ import com.project.E_Commerce.dto.User.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,13 +25,15 @@ public class UserController {
     @Autowired
     private UserRepo userRepo;
 
-//user
+
+
+
     @PostMapping("/")
     public ResponseEntity<?> registerUser(@RequestBody @Valid User user){
-
         UserResponse addedUser = userService.createUser(user);
         return  ResponseEntity.ok(addedUser);
     }
+
 
     //user
   @PostMapping("/login")
