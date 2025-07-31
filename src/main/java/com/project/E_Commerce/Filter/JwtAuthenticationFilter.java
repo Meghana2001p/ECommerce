@@ -83,13 +83,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.getWriter().close();
                 return;
             }
-
-
-
         }
-
-
-
+        filterChain.doFilter(request,response);
 
     }
 }

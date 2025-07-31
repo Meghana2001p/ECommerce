@@ -11,13 +11,13 @@ public interface UserService {
     //user profile related-- create,login,update,get the profile
     UserResponse createUser(User user);
 
-    User loginUser(String email, String password);
-
     String deactivateUser(Integer id);
+     String activateUser(Integer id);
 
-    String updateUserProfile(int userId, UserUpdateRequest dto);
 
-    User updateUserByAdmin(User user);
+        String updateUserProfile(int userId, UserUpdateRequest dto);
+
+    User updateUserByAdmin(UserAdminUpdateRequest user);
 
      void deleteUser(int userId);
 

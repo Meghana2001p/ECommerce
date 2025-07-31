@@ -1,5 +1,6 @@
 package com.project.E_Commerce.Configuration;
 
+import com.project.E_Commerce.Exception1.CustomAccessDeniedHandler;
 import com.project.E_Commerce.Filter.JwtAuthenticationFilter;
 import com.project.E_Commerce.Jwt.JwtUtility;
 import com.project.E_Commerce.UserDetails.CustomUserDetailsService;
@@ -13,6 +14,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
@@ -27,7 +29,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.util.stream.Collectors;
 
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true) // Enables @PreAuthorize and @PostAuthorize
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration
 {
     @Autowired
@@ -35,6 +38,10 @@ public class SecurityConfiguration
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder()
@@ -74,14 +81,20 @@ public class SecurityConfiguration
     public SecurityFilterChain acessTokenFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/user/").permitAll()
+                        .requestMatchers("/user/register").permitAll()
+                        .requestMatchers("/user/login").permitAll()
+
 
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(accessDeniedHandler)
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -24,7 +24,7 @@ import java.util.Optional;
 public interface UserRepo extends JpaRepository<User,Integer> {
 
     //  Login user based on email and password
-    @Query("select  u from User u where u.email = :email and u.password= :password")
+    @Query("SELECT u FROM User u WHERE u.email = :email ")
     Optional<User> findByEmailAndPassword(@Param("email") String email, @Param("password") String password);
 
     //  Check if user exists by email
@@ -48,6 +48,10 @@ public interface UserRepo extends JpaRepository<User,Integer> {
     int deactivateUser(Integer userId);
 
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.isActive = true WHERE u.id = :id")
+    int activateUser(@Param("id") Integer id);
     //UPDATE
 
     @Modifying
@@ -63,10 +67,14 @@ public interface UserRepo extends JpaRepository<User,Integer> {
                          @Param("status") User.Status status);
 
 
+
     //DELETE
     @Modifying
     @Transactional
     @Query("DELETE FROM User u WHERE u.id = :userId")
     int deleteByUserId(@Param("userId") Integer userId);
+
+
+
 
 }

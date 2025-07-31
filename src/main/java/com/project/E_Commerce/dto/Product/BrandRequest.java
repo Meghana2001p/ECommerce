@@ -6,8 +6,6 @@ import java.util.List;
 
 @Data
 public class BrandRequest {
-
     private String brandName;
     private List<Integer> categoryIds;
-
 }

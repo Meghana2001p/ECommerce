@@ -6,6 +6,7 @@ import com.project.E_Commerce.dto.Product.CategoryRequest;
 import com.project.E_Commerce.dto.Product.CategoryResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,36 +17,36 @@ public class CategoryController {
     @Autowired
     private ProductService productService;
 
-    // Create Category
-    @PostMapping("/category/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/")
     public ResponseEntity<Category> createCategory(@RequestBody CategoryRequest category) {
         Category created = productService.createCategory(category);
         return ResponseEntity.ok(created);
     }
 
-    //  Update Category
-    @PutMapping("/category/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Integer id, @RequestBody Category category) {
         Category updated = productService.updateCategory(id, category);
         return ResponseEntity.ok(updated);
     }
 
-    // Get Category by ID
-    @GetMapping("/category/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
         Category category = productService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
 
-    //Get All Categories
-    @GetMapping("/category/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/")
     public ResponseEntity<List<?>> getAllCategories() {
         List<CategoryResponse> categories = productService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 
-    // Delete Category
-    @DeleteMapping("/category/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable Integer id) {
         productService.deleteCategory(id);
         return ResponseEntity.ok("Category deleted successfully");

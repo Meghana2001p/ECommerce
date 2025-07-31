@@ -110,23 +110,9 @@ public class UserServiceImplementation implements UserService {
 
             }
             return userResponse;
-
     }
 
-    @Override
-    public User loginUser(String email, String password) {
 
-        if (email == null || password == null) {
-            throw new IllegalArgumentException("Email and password cannot be null");
-        }
-
-            Optional<User> user = userRepo.findByEmailAndPassword(email, password);
-            if (user == null) {
-                throw new RuntimeException("Invalid email or password");
-            }
-            return user.get();
-
-    }
 
     @Override
     public String deactivateUser(Integer id) {
@@ -149,10 +135,34 @@ public class UserServiceImplementation implements UserService {
             }
             log.info("User with ID {} was successfully deactivated", id);
             return "SuccessFully deactivated the User";
-
-
-
     }
+
+
+
+    @Override
+    public String activateUser(Integer id) {
+
+        Optional<User> existingUser = userRepo.findById(id);
+        if (!existingUser.isPresent()) {
+            throw new RuntimeException("User not found with ID: " + id);
+        }
+
+        User user = existingUser.get();
+
+        if (user.isActive()) {
+            throw new RuntimeException("User with ID " + id + " is already active");
+        }
+
+        int result = userRepo.activateUser(id);
+        if (result <= 0) {
+            throw new RuntimeException("Failed to activate user with ID: " + id);
+        }
+
+        log.info("User with ID {} was successfully activated", id);
+        return "Successfully activated the User";
+    }
+
+
 
     @Override
     public String updateUserProfile(int userId, UserUpdateRequest dto) {
@@ -165,62 +175,58 @@ public class UserServiceImplementation implements UserService {
 
             User user = optionalUser.get();
 
-            // Update name
+
             user.setName(dto.getName());
+        user.setName(dto.getName());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setEmail(dto.getEmail());
 
-            // Update phone number
-            user.setPhoneNumber(dto.getPhoneNumber());
-
-            // Update password (if provided)
-            if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                if (!dto.getPassword().equals(dto.getConfirmPassword())) {
-                    throw new IllegalArgumentException("Password and confirm password do not match");
-                }
-            }
-
-            userRepo.save(user);
+        userRepo.save(user);
             return "User profile updated successfully";
 
 
     }
 
     @Override
-    public User updateUserByAdmin(User user) {
+    public User updateUserByAdmin(UserAdminUpdateRequest user) {
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
         }
+
         if (user.getId() == null) {
             throw new IllegalArgumentException("User ID must not be null for update");
         }
 
-        // Check if user exists
+        Optional<User> existingUserOpt = userRepo.findById(user.getId());
+        if (!existingUserOpt.isPresent()) {
+            throw new IllegalArgumentException("User with ID " + user.getId() + " not found");
+        }
 
-            Optional<User> existingUserOpt = userRepo.findById(user.getId());
-            if (!existingUserOpt.isPresent()) {
-                throw new IllegalArgumentException("User with ID " + user.getId() + " not found");
-            }
+        User existingUser = existingUserOpt.get();
 
+        String encodedPassword;
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            encodedPassword = passwordEncoder.encode(user.getPassword());
+        } else {
+            encodedPassword = existingUser.getPassword();
+        }
 
-            // Run the JPQL update
-            int result = userRepo.updateUserFields(
-                    user.getId(),
-                    user.getName(),
-                    user.getEmail(),
-                    user.getPassword(),
-                    user.getPhoneNumber(),
-                    user.getRole(),
-                    user.getStatus()
-            );
+        int result = userRepo.updateUserFields(
+                user.getId(),
+                user.getName() != null ? user.getName() : existingUser.getName(),
+                user.getEmail() != null ? user.getEmail() : existingUser.getEmail(),
+                encodedPassword,
+                user.getPhoneNumber() != null ? user.getPhoneNumber() : existingUser.getPhoneNumber(),
+                user.getRole() != null ? user.getRole() : existingUser.getRole(),
+                user.getStatus() != null ? user.getStatus() : existingUser.getStatus()
+        );
 
-            if (result <= 0) {
-                throw new IllegalArgumentException("Failed to update user with ID: " + user.getId());
-            }
+        if (result <= 0) {
+            throw new RuntimeException("Failed to update user with ID: " + user.getId());
+        }
 
-            // Fetch updated user to return
-            return userRepo.findById(user.getId()).orElseThrow(() ->
-                    new IllegalArgumentException("User not found after update")
-            );
-
+        return userRepo.findById(user.getId()).orElseThrow(() ->
+                new RuntimeException("User update failed, record not found after update"));
     }
 
 
@@ -247,13 +253,14 @@ public class UserServiceImplementation implements UserService {
             User user = userRepo.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
-            if (!request.getOldPassword().equals(user.getPassword())) {
-                throw new IllegalArgumentException("Old password does not match");
-            }
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Old password does not match");
+        }
 
-            if (request.getOldPassword().equals(request.getNewPassword())) {
-                throw new IllegalArgumentException("New password must be different from old password");
-            }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from old password");
+        }
 
             if (!request.getNewPassword().equals(request.getConfirmPassword())) {
                 throw new IllegalArgumentException("New password and confirm password do not match");
@@ -267,19 +274,6 @@ public class UserServiceImplementation implements UserService {
             return "Password changed successfully";
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     @Override
     public void createOrUpdateEmailPreferences(Integer userId, List<EmailPreferenceRequest> preferences) {

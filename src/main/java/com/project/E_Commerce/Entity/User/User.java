@@ -54,11 +54,11 @@ public class User {
     private boolean isActive;
 
     public enum Role {
-        ADMIN, USER, SELLER
+        ADMIN, USER, SELLER,DELIVERY
     }
 
     public enum Status {
-        ACTIVE, INACTIVE, SUSPENDED, DELETED
+        ACTIVE, INACTIVE
     }
 
 
