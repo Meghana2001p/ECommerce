@@ -1,10 +1,8 @@
 package com.project.E_Commerce.Configuration;
 
-import com.project.E_Commerce.Exception1.CustomAccessDeniedHandler;
+import com.project.E_Commerce.Exception.CustomAccessDeniedHandler;
 import com.project.E_Commerce.Filter.JwtAuthenticationFilter;
-import com.project.E_Commerce.Jwt.JwtUtility;
 import com.project.E_Commerce.UserDetails.CustomUserDetailsService;
-import com.project.E_Commerce.UserDetails.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +18,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -89,6 +86,8 @@ public class SecurityConfiguration
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/user/register").permitAll()
                         .requestMatchers("/user/login").permitAll()
+                        .requestMatchers("/product/view").permitAll()
+                        .requestMatchers("/product/view/{productId}").permitAll()
 
 
                         .anyRequest().authenticated()

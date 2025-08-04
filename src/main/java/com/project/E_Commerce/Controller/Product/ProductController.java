@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class ProductController
     @Autowired
     private ProductService productService;
 
-    //admin
+    @PreAuthorize("hasAnyRole('ADMIN')")
 @PostMapping("/")
 public ResponseEntity<?> createProduct(@RequestBody @Valid ProductRequest product)
 {
@@ -30,17 +31,19 @@ return ResponseEntity.ok("Product added successfully");
 }
 
 
-//admin update
-    @PutMapping("/")
-    public ResponseEntity<?> updateProduct( int productID,   @Valid @RequestBody Product product)
-    {
-        Product updatedProduct    = productService.updateProduct(productID,product);
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{productId}")
+    public ResponseEntity<?> updateProduct(
+            @PathVariable("productId") int productId,
+            @Valid @RequestBody ProductRequest productRequest) {
+
+        String updatedProduct = productService.updateProduct(productId, productRequest);
         return ResponseEntity.ok(updatedProduct);
     }
 
 
-//admin delete
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{productID}")
     public ResponseEntity<?> deleteProduct( @PathVariable  int productID)
     {

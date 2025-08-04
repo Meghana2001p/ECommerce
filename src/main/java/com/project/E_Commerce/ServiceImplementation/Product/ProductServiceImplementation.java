@@ -14,6 +14,7 @@ import com.project.E_Commerce.Repository.User.WishlistRepo;
 import com.project.E_Commerce.Service.Product.ProductService;
 import com.project.E_Commerce.Service.Product.RelatedProductService;
 import com.project.E_Commerce.dto.Product.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductServiceImplementation implements ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductServiceImplementation.class);
@@ -108,7 +110,6 @@ private RelatedProductService relatedProductService;
                     .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
 
 
-
             // 2. Create new Product
             Product newproduct = new Product();
             newproduct.setName(product.getName());
@@ -119,17 +120,19 @@ private RelatedProductService relatedProductService;
             newproduct.setIsAvailable(product.getIsAvailable());
             newproduct.setBrand(brand);
 
+
             // 3. Add images
             List<ProductImage> images = product.getImageUrls().stream().map(url -> {
                 ProductImage img = new ProductImage();
                 img.setImageUrl(url);
-                img.setProduct(newproduct); // set back-reference
+                img.setProduct(newproduct);
                 return img;
             }).collect(Collectors.toList());
 
+
             newproduct.setImages(images);
 
-            // 4. Save product → will also save images if you set cascade correctly
+
             return productRepo.save(newproduct);
 
     }
@@ -145,33 +148,53 @@ private RelatedProductService relatedProductService;
                     .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
         }
 
-    public Product updateProduct(Integer id, Product updatedProduct) {
-        if (id == null || id <= 0 || updatedProduct == null) {
+
+     @Override
+    public String updateProduct(Integer id, ProductRequest dto) {
+        if (id == null || id <= 0 || dto == null) {
             throw new IllegalArgumentException("Invalid product data or ID");
         }
 
+        Product existing = productRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
 
-            Product existing = productRepo.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
+        // Update core fields
+        existing.setName(dto.getName());
+        existing.setDescription(dto.getDescription());
+        existing.setImageAddress(dto.getImageAddress());
+        existing.setPrice(dto.getPrice());
+        existing.setSku(dto.getSku());
+        existing.setIsAvailable(dto.getIsAvailable());
 
-            // Update fields
-            existing.setName(updatedProduct.getName());
-            existing.setDescription(updatedProduct.getDescription());
-            existing.setImageAddress(updatedProduct.getImageAddress());
-            existing.setPrice(updatedProduct.getPrice());
-            existing.setSku(updatedProduct.getSku());
-            existing.setIsAvailable(updatedProduct.getIsAvailable());
-            existing.setBrand(updatedProduct.getBrand());
+        // Update brand
+        Brand brand = brandRepository.findById(dto.getBrandId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid brand ID"));
+        existing.setBrand(brand);
 
-            Product saved = productRepo.save(existing);
-            if (saved.getId() == null || saved.getId() <= 0) {
-                throw new IllegalArgumentException("Product could not be updated");
+        // Save product first (in case product_id is needed for images)
+        Product savedProduct = productRepo.save(existing);
+
+        // Remove old images
+        productImageRepo.deleteByProductId(savedProduct.getId());
+
+        // Add new images
+        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+            List<ProductImage> images = new ArrayList<>();
+
+            for (int i = 0; i < dto.getImageUrls().size(); i++) {
+                ProductImage img = new ProductImage();
+                img.setProduct(savedProduct);
+                img.setImageUrl(dto.getImageUrls().get(i));
+                img.setAltText(savedProduct.getName() + " image " + (i + 1));
+
+                images.add(img);
             }
 
-            return saved;
+            productImageRepo.saveAll(images);
+        }
 
+        return "Product updated successfully";
     }
-
 
     public String deleteProduct(Integer id) {
         if (id == null || id <= 0) {
@@ -408,7 +431,6 @@ private RelatedProductService relatedProductService;
             throw new IllegalArgumentException("Brand cannot be null");
         }
 
-            // Check if brand name already exists
             if (brandRepository.existsByBrandName(brandRequest.getBrandName())) {
                 throw new IllegalArgumentException("Brand with name '" + brandRequest.getBrandName() + "' already exists.");
             }
@@ -417,7 +439,6 @@ private RelatedProductService relatedProductService;
 
             if (brandRequest.getCategoryIds() != null && !brandRequest.getCategoryIds().isEmpty()) {
                 List<Category> categories = categoryRepository.findAllById(brandRequest.getCategoryIds());
-                //the categoried size should be equal to the categories that is sent therough the request
                 if (categories.size() != brandRequest.getCategoryIds().size()) {
                     throw new IllegalArgumentException("One or more category IDs are invalid");
                 }

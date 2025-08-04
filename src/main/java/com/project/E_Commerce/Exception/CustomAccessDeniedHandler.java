@@ -1,4 +1,4 @@
-package com.project.E_Commerce.Exception1;
+package com.project.E_Commerce.Exception;
 
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.http.HttpServletRequest;

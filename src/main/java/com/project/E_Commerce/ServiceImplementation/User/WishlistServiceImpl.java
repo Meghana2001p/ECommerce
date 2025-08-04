@@ -4,7 +4,7 @@ import com.project.E_Commerce.Entity.Product.Product;
 import com.project.E_Commerce.Entity.Product.ProductImage;
 import com.project.E_Commerce.Entity.User.User;
 import com.project.E_Commerce.Entity.User.Wishlist;
-import com.project.E_Commerce.Exception1.ResourceAlreadyExistsException;
+import com.project.E_Commerce.Exception.ResourceAlreadyExistsException;
 import com.project.E_Commerce.Repository.Product.ProductDiscountRepo;
 import com.project.E_Commerce.Repository.Product.ProductImageRepo;
 import com.project.E_Commerce.Repository.Product.ProductRepo;

@@ -53,7 +53,6 @@ public interface ProductAttributeValueMapper {
 
 
 
-  // ✅ Attribute value mapping
   @Mapping(target = "attributeName", source = "attribute.name")
   @Mapping(target = "value", source = "value")
   ProductAttributeResponse mapAttribute(ProductAttributeValue pav);
