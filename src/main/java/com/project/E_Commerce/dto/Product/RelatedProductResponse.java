@@ -10,11 +10,12 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class RelatedProductResponse {
     private Integer productId;
+    private String imageAdress;
     private String name;
-    private String thumbnailUrl;
-    private BigDecimal price;
+    private String description;
     private BigDecimal originalPrice;
-    private Integer discountPercent;
+    private BigDecimal discountPercent;
+    private BigDecimal discountPrice;
     private Double averageRating;
     private Boolean isAvailable;
     private RelatedProduct.RelationshipType relationshipType;

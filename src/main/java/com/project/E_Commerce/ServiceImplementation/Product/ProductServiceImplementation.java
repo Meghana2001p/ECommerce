@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //Product, ProductImage, ProductAttribue, ProductAttributeValue, Brand, Category, RelatedProduct
@@ -735,9 +732,29 @@ private RelatedProductService relatedProductService;
         Double avgRating = reviewRepo.findAverageRating(productId);
         dto1.setAverageRating(avgRating != null ? avgRating : 0.0);
 
-        List<RelatedProductResponse> related = relatedProductService.getRelatedProductsByProductId(productId);
-        dto1.setRelatedProducts(related);
+        List<RelatedProduct> related = relatedProductRepo.findActiveRelatedByProductId(productId);
 
+        List<RelatedProductResponse> relatedProductResponses = related.stream().map(rp -> {
+            Product p = rp.getRelatedProduct();
+
+            BigDecimal discountPercent = getActiveDiscountPercent(p.getId());
+            BigDecimal discountPrice = applyDiscount(p.getPrice(), discountPercent);
+
+            RelatedProductResponse response = new RelatedProductResponse();
+            response.setProductId(p.getId());
+            response.setImageAdress(p.getImageAddress());
+            response.setName(p.getName());
+            response.setDescription(p.getDescription());
+            response.setOriginalPrice(p.getPrice());
+            response.setDiscountPercent(discountPercent);
+            response.setDiscountPrice(discountPrice);
+            response.setIsAvailable(p.getIsAvailable());
+            Double avgRating1 = reviewRepo.findAverageRating(p.getId());
+            response.setAverageRating(avgRating1 != null ? avgRating1 : 0.0);
+            return response;
+        }).collect(Collectors.toList());
+
+        dto1.setRelatedProducts(relatedProductResponses);
 
 
         List<CouponResponse1> couponResponses = couponRepo.findActiveCoupons()
@@ -789,7 +806,7 @@ private RelatedProductService relatedProductService;
             productList.setName(p.getName());
             productList.setBrandName(p.getBrand().getBrandName());
             productList.setDescription(p.getDescription());
-            productList.setThumbnailUrl(p.getImageAddress()); // Assuming this is imageAddress
+            productList.setThumbnailUrl(p.getImageAddress());
             productList.setPrice(p.getPrice());
             productList.setDiscountedPrice(discountPrice);
             productList.setDiscountPercentage(discountPercent != null ? discountPercent.intValue() : 0);
@@ -840,24 +857,49 @@ private RelatedProductService relatedProductService;
             discountDTO.setDiscountedPrice(appliedPrice);
             dto.setActiveDiscount(discountDTO);
 
-//return  discountDTO;
+
         }else {
-            dto.setActiveDiscount(null); // No discount
+            dto.setActiveDiscount(null);
         }
 
 
 
-        // 7️⃣ Set reviews
+        //  Set reviews
         List<Review> reviews = reviewRepo.findByProductId(productId);
         dto.setReviews(pavMapper.toReviewResponseList(reviews));
 
-        // 8️⃣ Set average rating
+        //  Set average rating
         Double avgRating = reviewRepo.findAverageRating(productId);
         dto.setAverageRating(avgRating != null ? avgRating : 0.0);
 
-        // 9️⃣ Set related products
+        // 9️⃣ Set related products manually
         List<RelatedProduct> related = relatedProductRepo.findActiveRelatedByProductId(productId);
-        dto.setRelatedProducts(pavMapper.toRelatedProductResponseList(related));
+
+        List<RelatedProductResponse> relatedProductResponses = related.stream().map(rp -> {
+            Product p = rp.getRelatedProduct();
+
+            BigDecimal discountPercent = getActiveDiscountPercent(p.getId());
+            BigDecimal discountPrice = applyDiscount(p.getPrice(), discountPercent);
+
+            RelatedProductResponse response = new RelatedProductResponse();
+            response.setProductId(p.getId());
+            response.setImageAdress(p.getImageAddress());
+            response.setName(p.getName());
+            response.setDescription(p.getDescription());
+            response.setOriginalPrice(p.getPrice());
+             response.setDiscountPercent(discountPercent);
+             response.setDiscountPrice(discountPrice);
+             response.setIsAvailable(p.getIsAvailable());
+            Double avgRating1 = reviewRepo.findAverageRating(p.getId());
+            response.setAverageRating(avgRating1 != null ? avgRating1 : 0.0);
+            return response;
+        }).collect(Collectors.toList());
+
+        dto.setRelatedProducts(relatedProductResponses);
+
+
+
+
 
         // 🔟 Set available coupons
         List<Coupon> coupons = couponRepo.findActiveCoupons();

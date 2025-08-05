@@ -69,14 +69,14 @@ private ProductDiscountRepo productDiscountRepo;
             RelatedProductResponse response = new RelatedProductResponse();
             response.setProductId(p.getId());
             response.setName(p.getName());
-            response.setThumbnailUrl(p.getImageAddress()); // adjust if you use separate image repo
-            response.setPrice(discountedPrice);
+            response.setImageAdress(p.getImageAddress()); // adjust if you use separate image repo
+            response.setDiscountPercent(discountedPrice);
             response.setOriginalPrice(p.getPrice());
-            response.setDiscountPercent(discountPercent != null ? discountPercent.intValue() : 0);
+            response.setDiscountPercent(discountPercent);
             response.setAverageRating(avgRating);
             response.setIsAvailable(p.getIsAvailable());
             response.setRelationshipType(r.getRelationshipType());
-
+            response.setAverageRating(null);
             return response;
         }).collect(Collectors.toList());
     }
