@@ -24,6 +24,7 @@ import com.project.E_Commerce.dto.Payment.UserPaymentSummaryDto;
 import com.project.E_Commerce.dto.Product.DiscountRequest;
 import com.project.E_Commerce.dto.Product.PriceHistoryDto;
 import com.project.E_Commerce.dto.Product.ProductDiscountRequest;
+import com.project.E_Commerce.dto.Product.ProductDiscountResponse;
 import com.project.E_Commerce.dto.Return.RefundResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -454,16 +455,22 @@ private DiscountMapper discountMapper;
 
 
     }
+    public ProductDiscountResponse getDiscountForProduct(Integer productId) {
+        ProductDiscount pd = productDiscountRepo.findByProductId(productId);
+        if (pd == null) {
+            throw new IllegalArgumentException("No discount found for product ID: " + productId);
+        }
 
-    @Override
-    public ProductDiscount getDiscountForProduct(Integer productId) {
-            ProductDiscount discount = productDiscountRepo.findByProductId(productId);
-            if (discount == null) {
-                throw new IllegalArgumentException("No discount found for product ID: " + productId);
-            }
-            return discount;
+        Discount d = pd.getDiscount();
 
+        ProductDiscountResponse response = new ProductDiscountResponse();
+        response.setProductId(productId);
+        response.setDiscountName(d.getName());
+        response.setDiscountPercent(d.getDiscountPercent());
+        response.setStartDate(d.getStartDate());
+        response.setEndDate(d.getEndDate());
 
+        return response;
     }
 
     @Override

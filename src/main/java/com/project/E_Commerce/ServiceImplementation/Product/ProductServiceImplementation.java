@@ -397,13 +397,15 @@ private RelatedProductService relatedProductService;
         ProductAttributeValue pav =   productAttributeValueRepo.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Attribute value not found with ID: " + id));
 
-            return new ProductAttributeValueResponse
-                    (
-                    pav.getId(),
-                    pav.getValue(),
-                    pav.getProduct().getId(),
-                    pav.getAttribute().getId()
-            );
+        ProductAttributeValueResponse response = new ProductAttributeValueResponse();
+response.setId(pav.getId());
+response.setValue(pav.getValue());
+response.setAttributeName(pav.getValue());
+response.setProductId(pav.getProduct().getId());
+response.setProductName(pav.getProduct().getName());
+response.setAttributeId(pav.getAttribute().getId());
+response.setAttributeName(pav.getAttribute().getName());
+return  response;
 
     }
 

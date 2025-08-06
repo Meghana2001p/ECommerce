@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/product-search")
+@RequestMapping("/productSearch")
 public class ProductSearchController {
     @Autowired
    private ProductSearchService productSearchService;
@@ -24,7 +24,6 @@ public class ProductSearchController {
     )
 
     {
-        // Override values in filter from URL
         filter.setPage(page);
         filter.setSize(size);
         filter.setSortBy(sortBy);

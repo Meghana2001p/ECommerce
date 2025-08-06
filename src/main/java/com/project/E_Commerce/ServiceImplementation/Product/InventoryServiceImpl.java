@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -32,19 +33,30 @@ public class InventoryServiceImpl implements InventoryService {
         if (newQuantity == null || newQuantity < 0) {
             throw new IllegalArgumentException("Stock quantity must be 0 or more");
         }
-//
-//
-        Product product= productRepo.findById(productId).orElseThrow(()->new RuntimeException("Product not found"));
-  if(product!=null) {
-      Inventory inventory = new Inventory();
-      inventory.setProduct(product);
-      inventory.setStockQuantity(newQuantity);
-      inventory.setInStock(newQuantity > 0);
-      inventory.setLastUpdated(LocalDateTime.now());
 
-      inventoryRepo.save(inventory);
-  }
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
+        Optional<Inventory> optionalInventory = inventoryRepo.findByProductId(productId);
 
+        if (optionalInventory.isPresent()) {
+            // UPDATE existing inventory
+            Inventory inventory = optionalInventory.get();
+            inventory.setStockQuantity(newQuantity);
+            inventory.setInStock(newQuantity > 0);
+            inventory.setLastUpdated(LocalDateTime.now());
+
+            inventoryRepo.save(inventory);
+        } else {
+            // INSERT new inventory
+            Inventory inventory = new Inventory();
+            inventory.setProduct(product);
+            inventory.setStockQuantity(newQuantity);
+            inventory.setInStock(newQuantity > 0);
+            inventory.setLastUpdated(LocalDateTime.now());
+
+            inventoryRepo.save(inventory);
+        }
     }
+
 }

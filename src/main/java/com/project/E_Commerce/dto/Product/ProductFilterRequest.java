@@ -16,10 +16,10 @@ public class ProductFilterRequest {
     private Float maxPrice;
     private List<String> brands;
     private List<String> categories;
-    private String keyword; // For search by name or description
+    private String keyword;
 
-    private String sortBy;            // e.g., "price", "name"
-    private String sortDirection;     // "asc" or "desc"
-    private Integer page = 0;         // default to 0
-    private Integer size = 10;        // default page size
+    private String sortBy;
+    private String sortDirection;
+    private Integer page = 0;
+    private Integer size = 10;
 }

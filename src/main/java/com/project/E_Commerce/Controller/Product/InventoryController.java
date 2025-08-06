@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +18,8 @@ public class InventoryController {
     private InventoryService inventoryService;
 
 
+
+    @PreAuthorize("hasRole('SELLER')")
     @PutMapping("/{productId}/{quantity}")
     public ResponseEntity<?> updateStock(
             @PathVariable Integer productId,
@@ -24,6 +27,6 @@ public class InventoryController {
 
         log.info("Admin request: update stock of product {} → {}", productId, quantity);
         inventoryService.updateStock(productId, quantity);
-        return ResponseEntity.ok("Data added successfully");
+        return ResponseEntity.ok("Data added"+quantity +" successfully");
     }
 }

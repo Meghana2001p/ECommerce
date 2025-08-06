@@ -13,6 +13,7 @@ import com.project.E_Commerce.dto.Payment.UserPaymentSummaryDto;
 import com.project.E_Commerce.dto.Product.DiscountRequest;
 import com.project.E_Commerce.dto.Product.PriceHistoryDto;
 import com.project.E_Commerce.dto.Product.ProductDiscountRequest;
+import com.project.E_Commerce.dto.Product.ProductDiscountResponse;
 import com.project.E_Commerce.dto.Return.RefundResponseDto;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public interface PaymentService {
 
     // Product Discount Management
     void assignDiscountToProduct(ProductDiscountRequest request);
-    ProductDiscount getDiscountForProduct(Integer productId);
+    ProductDiscountResponse getDiscountForProduct(Integer productId);
     void removeDiscountFromProduct(Integer productId);
 
 
