@@ -8,5 +8,5 @@ public interface SearchResponse {
     BigDecimal getPrice();
     String getBrandName();
     String getImageUrl();
-    Double getAverageRating();
+    Integer getAverageRating();
 }

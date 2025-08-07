@@ -88,7 +88,8 @@ public class SecurityConfiguration
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/product/view").permitAll()
                         .requestMatchers("/product/view/{productId}").permitAll()
-                        .requestMatchers("/productSearch/search").permitAll()
+                        .requestMatchers("/products/search").permitAll()
+                        .requestMatchers("/relatedProduct/{productId}").permitAll()
 
 
                         .anyRequest().authenticated()

@@ -46,18 +46,6 @@ public class SearchServiceImpl implements SearchService {
         int page = (request.getPage() != null && request.getPage() > 0) ? request.getPage() : 1;
         int limit = 5;
         int offset = (page - 1) * limit;
-        System.out.println("Search Params -> keyword: " + keyword +
-                ", brand: " + brand +
-                ", color: " + color +
-                ", sizes: " + sizes +
-                ", sizesLength: " + sizesLength +
-                ", categories: " + categories +
-                ", categoriesLength: " + categoriesLength +
-                ", minPrice: " + minPrice +
-                ", maxPrice: " + maxPrice +
-                ", ratings: " + ratings +
-                ", offset: " + offset);
-
 
         return productRepository.searchProducts(
                 keyword,

@@ -5,6 +5,7 @@ import com.project.E_Commerce.dto.Product.RelatedProductRequest;
 import com.project.E_Commerce.dto.Product.RelatedProductResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,7 @@ public class RelatedProductsController {
     @Autowired
 private RelatedProductService relatedProductService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/")
     public ResponseEntity<?> addRelatedProduct(@RequestBody RelatedProductRequest request) {
         relatedProductService.addRelatedProduct(request);
@@ -30,7 +32,7 @@ private RelatedProductService relatedProductService;
         return ResponseEntity.ok(relatedProducts);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{relatedProductId}")
     public ResponseEntity<String> removeRelatedProduct(
             @PathVariable Integer relatedProductId) {

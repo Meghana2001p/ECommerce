@@ -66,9 +66,14 @@ public interface ProductRepo extends JpaRepository<Product,Integer> {
                     (
                         SELECT pi.image_url
                         FROM product_image pi
-                        WHERE pi.product_id = p.product_id AND pi.is_primary = 1
+                        WHERE pi.product_id = p.product_id 
                         LIMIT 1
-                    ) AS imageUrl
+                    ) AS imageUrl,
+             (
+                    SELECT AVG(r.rating)
+                    FROM review r
+                    WHERE r.product_id = p.product_id
+                ) AS averageRating
             
                 FROM product p
                     LEFT JOIN brand b ON p.brand_id = b.brand_id
