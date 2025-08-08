@@ -126,4 +126,13 @@ public interface CartItemRepo extends JpaRepository<CartItem, Integer> {
     )
 """, nativeQuery = true)
     void clearCartByUserId(@Param("userId") Integer userId);
+
+
+
+
+@Query(value = "SELECT ci.item_id, ci.cart_id, c.user_id\n" +
+        "FROM cart_item ci\n" +
+        "LEFT JOIN cart c ON ci.cart_id = c.cart_id\n" +
+        "WHERE ci.item_id  = :cartItem",nativeQuery = true)
+    Integer getUserIdFromCartItem(Integer cartItem);
 }

@@ -22,7 +22,5 @@ public class CouponRequest
     @Future(message = "Expiry date must be in the future")
     private LocalDateTime expiryDate;
 
-    @NotNull(message = "Usage limit is required")
-    @Min(value = 1, message = "Usage limit must be at least 1")
-    private Integer usageLimit;
+
 }

@@ -323,8 +323,9 @@ public  class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public void applyCouponToCart(Integer cartId, String couponCode) {
-        Cart cart = cartRepo.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+     CartItem cartItem=   cartItemRepo.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+
 
         Coupon coupon = couponRepo.findByCode(couponCode)
                 .orElseThrow(() -> new RuntimeException("Coupon not found"));
@@ -341,7 +342,7 @@ public  class CartServiceImpl implements CartService {
         });
 
         AppliedCoupon appliedCoupon = new AppliedCoupon();
-        appliedCoupon.setCart(cart);
+       appliedCoupon.setCart(cartItem);
         appliedCoupon.setCoupon(coupon);
         appliedCoupon.setOrder(null); // since order not placed yet
 

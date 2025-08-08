@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class CouponController {
     @Autowired
     private CartService cartService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/")
     public ResponseEntity<Coupon> createCoupon(@RequestBody @Valid Coupon coupon)
     {
@@ -33,7 +35,7 @@ public class CouponController {
         return ResponseEntity.ok(coupons);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{couponId}")
     public ResponseEntity<String> updateCouponById(@PathVariable Integer couponId,@RequestBody @Valid CouponRequest request)
     {
@@ -42,7 +44,7 @@ public class CouponController {
         return ResponseEntity.ok("Coupon updated successfully");
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{couponId}")
     public ResponseEntity<String> deleteCouponById(@PathVariable Integer couponId)
     {
