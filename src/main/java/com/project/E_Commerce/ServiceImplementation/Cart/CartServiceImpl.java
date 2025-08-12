@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -324,7 +325,8 @@ public  class CartServiceImpl implements CartService {
     @Transactional
     public void applyCouponToCart(Integer cartId, String couponCode) {
 
-     CartItem cartItem=   cartItemRepo.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+        Cart cartItem = cartRepo.findById(cartId)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
 
 
         Coupon coupon = couponRepo.findByCode(couponCode)
@@ -340,6 +342,14 @@ public  class CartServiceImpl implements CartService {
         appliedCouponRepo.findByCartId(cartId).ifPresent(ac -> {
             throw new RuntimeException("Coupon already applied to cart");
         });
+
+        Integer products= cartItemRepo.countByCartId(cartId);
+        if(products==null || products<=0)
+        {
+            throw new RuntimeException("Cart is empty");
+        }
+
+
 
         AppliedCoupon appliedCoupon = new AppliedCoupon();
        appliedCoupon.setCart(cartItem);

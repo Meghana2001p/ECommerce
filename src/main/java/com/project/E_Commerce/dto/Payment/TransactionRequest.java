@@ -8,5 +8,5 @@ import java.math.BigDecimal;
 public class TransactionRequest {
     private Integer orderID;
 
-    private BigDecimal amount;
+        private BigDecimal amount;
 }

@@ -138,6 +138,8 @@ public String placeOrder(OrderRequest orderRequest) {
             payment.setTransactionId(transaction.getTransactionId());
             order.setOrderStatus(Order.OrderStatus.CONFIRMED);
             payment.setStatus(Payment.PaymentStatus.SUCCESS);
+        } else {
+            order.setOrderStatus(Order.OrderStatus.CONFIRMED);
         }
 
     }

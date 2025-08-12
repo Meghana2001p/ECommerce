@@ -92,6 +92,7 @@ public class SecurityConfiguration
                         .requestMatchers("/relatedProduct/{productId}").permitAll()
                         .requestMatchers("/coupon/all").permitAll()
                         .requestMatchers("/applyCoupon/**").permitAll()
+                        .requestMatchers("/transactions/**").permitAll()
 
 
 
