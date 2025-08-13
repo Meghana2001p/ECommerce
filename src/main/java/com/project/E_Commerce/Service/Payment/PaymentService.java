@@ -27,11 +27,7 @@ public interface PaymentService {
     List<UserPaymentSummaryDto> getPaymentsByUserId(Integer userId);
     void updatePaymentStatus(Integer paymentId, Payment.PaymentStatus status);
 
-    // Refund Management
-    RefundResponseDto initiateRefund(Integer orderId);
-    RefundResponseDto getRefundById(Integer refundId);
-    List<RefundResponseDto> getRefundsByUserId(Integer userId);
-    RefundResponseDto updateRefundStatus(Integer refundId, Refund.RefundStatus status);
+
 
     // Price History Tracking
     void recordPriceChange(Integer productId, Double newPrice);

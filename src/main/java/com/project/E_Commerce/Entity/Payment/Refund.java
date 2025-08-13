@@ -11,6 +11,18 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.project.E_Commerce.Entity.Order.Order;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "refund")
@@ -21,32 +33,38 @@ public class Refund {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @NotNull(message = "Payment is required")
+    // Link refund to the order directly
+    @NotNull(message = "Order is required")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id", nullable = false)
-    private Payment payment;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
+    // Refund amount
     @NotNull(message = "Refund amount cannot be null")
     @DecimalMin(value = "0.01", inclusive = true, message = "Refund amount must be positive")
-    @Column(nullable = false, precision = 60, scale = 30)
+    @Column(nullable = false, precision = 38, scale = 2)
     private BigDecimal amount;
 
-    @NotNull(message = "Refund status cannot be null")
+    // Refund status
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RefundStatus status;
+    private RefundStatus status = RefundStatus.PENDING;
 
-    @PastOrPresent(message = "Refund date cannot be in the future")
+    // When refund was created
+    @PastOrPresent
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "refunded_at", nullable = false)
-    private LocalDateTime refundedAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    // Optional: updated/refunded at
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public enum RefundStatus {
-        INITIATED,
-        PROCESSING,
-        SUCCESS,
-        FAILED
+        PENDING, COMPLETED, FAILED
     }
+
 }

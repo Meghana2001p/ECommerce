@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface RefundRepo extends JpaRepository<Refund,Integer> {
-    @Query("SELECT r FROM Refund r WHERE r.payment.order.user.id = :userId")
-    List<Refund> findAllByPaymentOrderUserId(Integer userId);
+
 
 }

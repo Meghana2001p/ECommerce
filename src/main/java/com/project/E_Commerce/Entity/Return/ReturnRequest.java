@@ -1,7 +1,7 @@
 package com.project.E_Commerce.Entity.Return;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.project.E_Commerce.Entity.Order.OrderItem;
+import com.project.E_Commerce.Entity.Order.Order;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,8 +26,8 @@ public class ReturnRequest {
 
     @NotNull(message = "Order item must not be null")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_item_id", nullable = false)
-    private OrderItem orderItem;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order orderItem;
 
     @NotBlank(message = "Return reason must not be blank")
     @Size(max = 500, message = "Reason can't exceed 500 characters")

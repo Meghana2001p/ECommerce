@@ -70,7 +70,8 @@ public class Order {
         SHIPPED,
         DELIVERED,
         CANCELLED,
-        OUT_FOR_DELIVERY;
+        OUT_FOR_DELIVERY,
+        RETURNED;
 
     }
 
