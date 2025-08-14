@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notification_queue")
@@ -42,11 +41,6 @@ public class NotificationQueue {
     @Column(nullable = false)
     private NotificationStatus status;
 
-    @NotNull(message = "Scheduled time is required")
-    @FutureOrPresent(message = "Scheduled time must be now or in the future")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "scheduled_at", nullable = false)
-    private LocalDateTime scheduledAt;
 
     public enum NotificationType {
         EMAIL, SMS, IN_APP

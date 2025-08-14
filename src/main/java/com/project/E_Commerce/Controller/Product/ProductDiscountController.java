@@ -1,6 +1,5 @@
 package com.project.E_Commerce.Controller.Product;
 
-import com.project.E_Commerce.Entity.Product.ProductDiscount;
 import com.project.E_Commerce.Service.Payment.PaymentService;
 import com.project.E_Commerce.dto.Product.ProductDiscountRequest;
 import com.project.E_Commerce.dto.Product.ProductDiscountResponse;
@@ -12,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/productdiscount")
-public class ProductDiscountController {
-
-//ProductDiscount
+public class ProductDiscountController
+{
+//Product Discount
 @Autowired
 private PaymentService paymentService;
 
@@ -38,7 +37,4 @@ private PaymentService paymentService;
         paymentService.removeDiscountFromProduct(productId);
         return ResponseEntity.ok("Discount removed from product successfully");
     }
-
-
-
 }

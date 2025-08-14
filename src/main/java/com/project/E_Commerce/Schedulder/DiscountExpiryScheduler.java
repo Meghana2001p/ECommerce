@@ -1,7 +1,9 @@
-package com.project.E_Commerce.Scheduler;
+package com.project.E_Commerce.Schedulder;
 
 import com.project.E_Commerce.Entity.Cart.Discount;
 import com.project.E_Commerce.Repository.Product.DiscountRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -12,10 +14,13 @@ import java.util.List;
 @Component
 public class DiscountExpiryScheduler {
 
+    private static final Logger log = LoggerFactory.getLogger(DiscountExpiryScheduler.class);
+
+
     @Autowired
     private DiscountRepo discountRepo;
 
-    @Scheduled(cron = "0 0 0 * * ?") // Runs every day at midnight
+    @Scheduled(cron = "0 0 0/5 * * ?")//runs every 5 hours
     public void expireOldDiscounts() {
         LocalDateTime now = LocalDateTime.now();
         List<Discount> expiredDiscounts = discountRepo.findAllByIsActiveTrueAndEndDateBefore(now);
@@ -25,7 +30,7 @@ public class DiscountExpiryScheduler {
                 discount.setIsActive(false);
             }
             discountRepo.saveAll(expiredDiscounts);
-            System.out.println("Expired " + expiredDiscounts.size() + " discounts at " + now);
+            log.info("Expired " + expiredDiscounts.size() + " discounts at " + now);
         }
     }
 }

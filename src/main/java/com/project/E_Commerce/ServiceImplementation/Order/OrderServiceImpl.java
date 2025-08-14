@@ -191,7 +191,6 @@ public String placeOrder(OrderRequest orderRequest) {
     emailNotification.setUser(user);
     emailNotification.setType(NotificationQueue.NotificationType.EMAIL);
     emailNotification.setStatus(NotificationQueue.NotificationStatus.PENDING);
-    emailNotification.setScheduledAt(LocalDateTime.now().plusMinutes(30));
     String message = "Hey " + user.getName() + ", your order (ID: " + order.getId() + ") has been successfully placed! 🎉\n\n" +
             "We'll notify you once it's packed and on its way.\n" +
             "Thank you for shopping with us! 🛍️\n\n" +
@@ -233,9 +232,8 @@ public String placeOrder(OrderRequest orderRequest) {
             emailNotification.setUser(user);
             emailNotification.setType(NotificationQueue.NotificationType.EMAIL);
             emailNotification.setStatus(NotificationQueue.NotificationStatus.PENDING);
-            emailNotification.setScheduledAt(LocalDateTime.now().plusMinutes(3000));
 
-            String message = "Hey " + user.getName() + ", your order (ID: " + order.getId() + ") has been successfully delivered! 📦\n\n" +
+            String message = "Hey " + user.getName() + ", your order (ID: " + order.getId() + ") has been successfully updated! 📦\n\n" +
                     "We hope you love it. If you have any feedback, let us know!\n\n" +
                     "Thanks again for shopping with us! 🛍️";
 
@@ -249,6 +247,8 @@ public String placeOrder(OrderRequest orderRequest) {
     public String cancelOrderByUser(Integer orderId, Integer userId) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        User user= userRepo.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
 
         // Ownership check
         if (!order.getUser().getId().equals(userId)) {
@@ -278,23 +278,31 @@ public String placeOrder(OrderRequest orderRequest) {
             if (order.getPaymentMethod() == Order.PaymentMethod.COD) {
                 payment.setStatus(Payment.PaymentStatus.FAILED);
             } else {
-                // Initiate refund
                 payment.setStatus(Payment.PaymentStatus.REFUNDED);
             }
+           //3.Notification
+            NotificationQueue emailNotification = new NotificationQueue();
+            emailNotification.setUser(user);
+            emailNotification.setType(NotificationQueue.NotificationType.EMAIL);
+            emailNotification.setStatus(NotificationQueue.NotificationStatus.PENDING);
+            String message = "Hey " + user.getName() +
+                    ", your order (ID: " + order.getId() + ") has been cancelled. ❌\n\n" +
+                    "If this was a mistake, you can place the order again from your cart.\n" +
+                    "For any queries, please contact our support team.\n\n" +
+                    "We hope to serve you again soon! 🛍️";
+
+            emailNotification.setMessage(message);
+
+            notificationQueueRepo.save(emailNotification);
+
 
             paymentRepo.save(payment);
         }
-
-
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
         NotificationQueue emailNotification = new NotificationQueue();
         emailNotification.setUser(user);
         emailNotification.setType(NotificationQueue.NotificationType.EMAIL);
         emailNotification.setStatus(NotificationQueue.NotificationStatus.PENDING);
-        emailNotification.setScheduledAt(LocalDateTime.now().plusMinutes(400));
         String message = "Hey " + user.getName() + ", your order (ID: " + orderId + ") has been cancelled as per your request. ❌\n\n" +
                 "If any payment was made, the refund will be initiated shortly.\n\nThanks for using our platform!";
         emailNotification.setMessage(message);

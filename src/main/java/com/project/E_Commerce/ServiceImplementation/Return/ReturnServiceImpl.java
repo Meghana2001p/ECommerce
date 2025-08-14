@@ -1,5 +1,4 @@
 package com.project.E_Commerce.ServiceImplementation.Return;
-
 import com.project.E_Commerce.Entity.Order.Order;
 import com.project.E_Commerce.Entity.Order.OrderItem;
 import com.project.E_Commerce.Entity.Product.Inventory;
@@ -10,9 +9,10 @@ import com.project.E_Commerce.Repository.Product.InventoryRepo;
 import com.project.E_Commerce.Repository.Return.ReturnRequestRepo;
 import com.project.E_Commerce.Service.Return.ReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Service;
 import java.util.List;
 
+@Service
 public class ReturnServiceImpl implements ReturnService {
 
     @Autowired
