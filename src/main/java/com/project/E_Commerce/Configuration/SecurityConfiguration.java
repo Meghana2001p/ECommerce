@@ -1,6 +1,7 @@
 package com.project.E_Commerce.Configuration;
 
 import com.project.E_Commerce.Exception.CustomAccessDeniedHandler;
+import com.project.E_Commerce.Exception.CustomAuthenticationEntryPoint;
 import com.project.E_Commerce.Filter.JwtAuthenticationFilter;
 import com.project.E_Commerce.UserDetails.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +76,8 @@ public class SecurityConfiguration
 
     @Bean
 
-    public SecurityFilterChain acessTokenFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain acessTokenFilterChain(HttpSecurity http,
+                                                     CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
 
@@ -99,7 +101,8 @@ public class SecurityConfiguration
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

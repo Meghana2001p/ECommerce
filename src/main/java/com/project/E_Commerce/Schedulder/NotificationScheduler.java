@@ -13,7 +13,7 @@ public class NotificationScheduler {
     @Autowired
     private NotificationService emailNotificationService;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 600000)  // 10 minutes = 600,000 ms
     public void sendPendingNotifications() {
         emailNotificationService.processPendingEmails();
     }
