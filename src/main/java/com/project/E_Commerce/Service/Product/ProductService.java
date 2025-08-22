@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 
-//Product, ProductImage, ProductAttribue, ProductAttributeValue, Brand, Category, RelatedProduct
 
 public interface ProductService {
 
@@ -40,7 +39,6 @@ public interface ProductService {
 
     //Product Attribute Value
     String addAttributeValue(ProductAttributeAssignmentRequest value);
-    // void updateAttributeValue(Integer id, ProductAttributeValue updatedValue);
 
     void updateAttributeValue(ProductAttributeAssignmentRequest request);
 
@@ -72,21 +70,6 @@ public interface ProductService {
     void deleteCategory(Integer categoryId);
 
 
-    //RelatedProduct
-
-    RelatedProduct createRelatedProduct(RelatedProduct relatedProduct);
-
-    RelatedProduct updateRelatedProduct(Integer id, RelatedProduct updated);
-
-    RelatedProduct getRelatedProductById(Integer id);
-
-    List<RelatedProduct> getAllRelatedProducts();
-
-    void deleteRelatedProduct(Integer id);
-
-
-    //list of all the products and the specific product details in that too
-
     List<ProductList> getAllAvailableProducts(Pageable pageable);
 
     ProductDetail getProductDetailById(Integer productId);
@@ -95,11 +78,5 @@ public interface ProductService {
 
     ProductDetail getProductByIdAndUserId(int userId, int page, int productId);
 
-//    List<ProductList> getAllAvailableProducts(Pageable pageable);
-//
-//    ProductDetail getProductDetailById(Integer productId);
-//
-//    List<ProductList> getAllProductsAfterLogin(int userId, int page);
-//
-//   ProductList getSpecificProductDetailsByIdandUserId(int userId, int page,int productId);
+
 }

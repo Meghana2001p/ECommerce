@@ -29,8 +29,6 @@ public class Payment {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-
-
     @NotNull(message = "Payment status is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,7 +46,6 @@ public class Payment {
     @DecimalMin(value = "0.01", inclusive = true, message = "Amount must be greater than 0")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
-
 
 
     public enum PaymentStatus {

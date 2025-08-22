@@ -69,7 +69,7 @@ private ProductDiscountRepo productDiscountRepo;
             RelatedProductResponse response = new RelatedProductResponse();
             response.setProductId(p.getId());
             response.setName(p.getName());
-            response.setImageAdress(p.getImageAddress()); // adjust if you use separate image repo
+            response.setImageAdress(p.getImageAddress());
             response.setDiscountPercent(discountedPrice);
             response.setOriginalPrice(p.getPrice());
             response.setDiscountPercent(discountPercent);

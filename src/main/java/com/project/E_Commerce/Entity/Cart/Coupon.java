@@ -31,8 +31,6 @@ public class Coupon {
     private LocalDateTime expiryDate;
 
 
-
-
     @Column(nullable = false)
     private Boolean isActive;
 }

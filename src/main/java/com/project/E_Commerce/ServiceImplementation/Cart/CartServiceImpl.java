@@ -139,7 +139,6 @@ public  class CartServiceImpl implements CartService {
             totalQuantity += item.getQuantity();
             uniqueProducts.add(item.getProductId());
 
-            // Coupon discount (assuming it's flat across all items)
             if (item.getCouponDiscountAmount() != null) {
                 totalCouponDiscount = item.getCouponDiscountAmount();  // One-time deduction
             }
@@ -171,10 +170,6 @@ public  class CartServiceImpl implements CartService {
 
             BigDecimal discountPercent = item.getDiscountPercent() != null ? item.getDiscountPercent() : BigDecimal.ZERO;
             int quantity = item.getQuantity() != null ? item.getQuantity() : 0;
-
-            //this is bringing the discount Percentage of the specific product
-            // we have the price in the price and the discountPercent in the discountPercentage of the Specific product
-
 
             BigDecimal discountAmount = price.multiply(discountPercent.divide(BigDecimal.valueOf(100)));
 
@@ -217,25 +212,16 @@ public  class CartServiceImpl implements CartService {
 
     @Override
     public CartResponse viewCart(Integer userId) {
-        // 1. Fetch cart items using projection
         List<CartItemProjection> cartItems = cartItemRepo.getAllCartItems(userId);
-
-        // 2. Build cart item responses
         List<CartItemResponse> cartItemResponses = buildCartItemResponses(cartItems);
-
-        // 3. Build cart summary
         CartSummaryResponse summary = calculateCartSummary(cartItems);
-
-        // 4. Extract coupon (if any)
         CouponResponseCart coupon = null;
         for (CartItemProjection item : cartItems) {
             if (item.getCouponCode() != null && item.getCouponDiscountAmount() != null) {
                 coupon = new CouponResponseCart(item.getCouponCode(), item.getCouponDiscountAmount());
-                break; // Only one coupon expected
+                break;
             }
         }
-
-        // 5. Build and return final response
         CartResponse cartResponse = new CartResponse();
         cartResponse.setUserId(userId);
         cartResponse.setCartItems(cartItemResponses);
@@ -297,7 +283,6 @@ public  class CartServiceImpl implements CartService {
         Coupon existingCoupon = couponRepo.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
 
-        // Check if the new code is already taken by another coupon
         Optional<Coupon> existingWithSameCode = couponRepo.findByCode(dto.getCode());
         if (existingWithSameCode.isPresent() && !existingWithSameCode.get().getId().equals(couponId)) {
             throw new IllegalArgumentException("Coupon code already exists");
@@ -332,13 +317,11 @@ public  class CartServiceImpl implements CartService {
         Coupon coupon = couponRepo.findByCode(couponCode)
                 .orElseThrow(() -> new RuntimeException("Coupon not found"));
 
-        // Validate coupon (expiry, usageLimit etc.)
         if (coupon.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Coupon expired");
         }
 
 
-        // Check if already applied
         appliedCouponRepo.findByCartId(cartId).ifPresent(ac -> {
             throw new RuntimeException("Coupon already applied to cart");
         });
@@ -349,12 +332,10 @@ public  class CartServiceImpl implements CartService {
             throw new RuntimeException("Cart is empty");
         }
 
-
-
         AppliedCoupon appliedCoupon = new AppliedCoupon();
        appliedCoupon.setCart(cartItem);
         appliedCoupon.setCoupon(coupon);
-        appliedCoupon.setOrder(null); // since order not placed yet
+        appliedCoupon.setOrder(null);
 
         appliedCouponRepo.save(appliedCoupon);
     }
@@ -386,8 +367,6 @@ public  class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new RuntimeException("Cart not found for userId: " + userId));
 
         cartItemRepo.clearCartByUserId(userId);
-
-        // Optionally reset other cart values (if needed)
         cartRepo.save(cart);
 
     }

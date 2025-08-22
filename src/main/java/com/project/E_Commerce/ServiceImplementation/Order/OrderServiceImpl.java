@@ -109,7 +109,6 @@ public String placeOrder(OrderRequest orderRequest) {
 
     BigDecimal grandTotal = cartResponse.getSummary().getGrandTotal();
 
-    // Create order
     Order order = new Order();
     order.setUser(user);
     order.setShippingAddress(orderRequest.getShippingAddress());
@@ -143,15 +142,12 @@ public String placeOrder(OrderRequest orderRequest) {
         }
 
     }
-
     // Save order first to generate order ID
     orderRepo.save(order);
-
     // Set order in payment and save
     payment.setOrder(order);
     paymentRepo.save(payment);
-
-    // ✅ Save OrderItems and update inventory
+    //  Save OrderItems and update inventory
     List<OrderItem> orderItems = new ArrayList<>();
     for (CartItemResponse itemDto : cartResponse.getCartItems()) {
         Product product = productRepo.findById(itemDto.getProductId())
@@ -207,7 +203,6 @@ public String placeOrder(OrderRequest orderRequest) {
     @Override
     public String updateDeliveryStatusByAgent(Integer orderId, Order.OrderStatus newStatus) {
 
-        // 1. Fetch the order
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
 
@@ -216,13 +211,9 @@ public String placeOrder(OrderRequest orderRequest) {
             throw new IllegalStateException("Cannot update status after delivery or cancellation.");
         }
 
-
         order.setOrderStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepo.save(order);
-
-
-
         //Send email notification if status is DELIVERED
         if (newStatus == Order.OrderStatus.DELIVERED) {
             User user = userRepo.findById(order.getUser().getId())
@@ -250,7 +241,6 @@ public String placeOrder(OrderRequest orderRequest) {
 
         User user= userRepo.findById(userId).orElseThrow(()->new RuntimeException("User not found"));
 
-        // Ownership check
         if (!order.getUser().getId().equals(userId)) {
             throw new IllegalStateException("Unauthorized: This order doesn't belong to you.");
         }
@@ -261,26 +251,24 @@ public String placeOrder(OrderRequest orderRequest) {
             throw new IllegalStateException("Order already delivered or cancelled.");
         }
 
-        // 1. Update order status
+        // Update order status
         order.setOrderStatus(Order.OrderStatus.CANCELLED);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepo.save(order);
 
-        // 2. Update payment table
+        //Update payment table
         Optional<Payment> paymentOpt = paymentRepo.findByOrderId(orderId);
         if (paymentOpt.isPresent()) {
             Payment payment = paymentOpt.get();
             if (order.getPaymentMethod() == null) {
                 throw new IllegalStateException("Payment method not specified.");
             }
-
-
             if (order.getPaymentMethod() == Order.PaymentMethod.COD) {
                 payment.setStatus(Payment.PaymentStatus.FAILED);
             } else {
                 payment.setStatus(Payment.PaymentStatus.REFUNDED);
             }
-           //3.Notification
+           //Notification
             NotificationQueue emailNotification = new NotificationQueue();
             emailNotification.setUser(user);
             emailNotification.setType(NotificationQueue.NotificationType.EMAIL);
@@ -292,10 +280,7 @@ public String placeOrder(OrderRequest orderRequest) {
                     "We hope to serve you again soon! 🛍️";
 
             emailNotification.setMessage(message);
-
             notificationQueueRepo.save(emailNotification);
-
-
             paymentRepo.save(payment);
         }
 
@@ -313,8 +298,6 @@ public String placeOrder(OrderRequest orderRequest) {
 
     @Override
     public Order getOrderById(int orderId) {
-
-
         if(orderId<=0)
         {
             throw new IllegalArgumentException("Delivery Status should not be null");
@@ -327,7 +310,6 @@ public String placeOrder(OrderRequest orderRequest) {
 
     @Override
     public List<Order> getAllOrders() {
-
         return orderRepo.findAll();
 
     }

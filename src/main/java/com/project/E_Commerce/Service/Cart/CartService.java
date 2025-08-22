@@ -1,40 +1,41 @@
-    package com.project.E_Commerce.Service.Cart;
+package com.project.E_Commerce.Service.Cart;
 
-    import com.project.E_Commerce.Entity.Cart.Coupon;
-    import com.project.E_Commerce.dto.Cart.CartRequest;
-    import com.project.E_Commerce.dto.Cart.CartResponse;
-    import com.project.E_Commerce.dto.Product.CartAmountSummaryDto;
-    import com.project.E_Commerce.dto.Product.CouponRequest;
-    import com.project.E_Commerce.dto.Product.CouponResponse;
-    import jakarta.validation.Valid;
+import com.project.E_Commerce.Entity.Cart.Coupon;
+import com.project.E_Commerce.dto.Cart.CartRequest;
+import com.project.E_Commerce.dto.Cart.CartResponse;
+import com.project.E_Commerce.dto.Product.CartAmountSummaryDto;
+import com.project.E_Commerce.dto.Product.CouponRequest;
+import com.project.E_Commerce.dto.Product.CouponResponse;
+import jakarta.validation.Valid;
 
-    import java.util.List;
+import java.util.List;
 
-    //CartService
-    //Cart, CartItem, AppliedCoupon
-    public interface CartService {
-
-
-
-        void addProductToCart(CartRequest request);
-        void removeProductFromCart(Integer userId, Integer productId);
-        CartResponse viewCart(Integer userId);
+//CartService
+//Cart, CartItem, AppliedCoupon
+public interface CartService {
 
 
+    void addProductToCart(CartRequest request);
 
-        Coupon createCoupon(Coupon coupon);
-        List<CouponResponse>getAllAvailableCoupons();
-        void updateCouponById(Integer couponId, @Valid CouponRequest request);
-        void deleteCouponById(Integer couponId);
+    void removeProductFromCart(Integer userId, Integer productId);
 
-
+    CartResponse viewCart(Integer userId);
 
 
-        void applyCouponToCart(Integer cartId, String couponCode);
-        void removeCouponFromCart(Integer cartId);
+    Coupon createCoupon(Coupon coupon);
 
-        CartAmountSummaryDto calculateCartSummary(Integer id);
+    List<CouponResponse> getAllAvailableCoupons();
+
+    void updateCouponById(Integer couponId, @Valid CouponRequest request);
+
+    void deleteCouponById(Integer couponId);
 
 
-        void clearCart(Integer userId);
-    }
+    void applyCouponToCart(Integer cartId, String couponCode);
+
+    void removeCouponFromCart(Integer cartId);
+
+    CartAmountSummaryDto calculateCartSummary(Integer id);
+
+    void clearCart(Integer userId);
+}

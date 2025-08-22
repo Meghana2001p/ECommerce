@@ -96,14 +96,14 @@ public class UserFavouriteServiceImpl implements UserFavouriteService {
                     p.getName(),
                     p.getBrand().getBrandName(),
                     p.getDescription(),
-                    p.getImageAddress(), // Thumbnail
+                    p.getImageAddress(),
                     p.getPrice(),
                     discountedPrice,
                     discountPercent != null ? discountPercent.intValue() : 0,
                     avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
                     reviewCount,
                     p.getIsAvailable(),
-                    null, // Optional label
+                    null,
                     imageUrls
             );
         }).toList();

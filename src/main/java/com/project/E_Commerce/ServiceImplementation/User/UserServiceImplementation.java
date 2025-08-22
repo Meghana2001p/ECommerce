@@ -92,9 +92,6 @@ public class UserServiceImplementation implements UserService {
             cart.setCreatedAt(LocalDateTime.now());
             cartRepo.save(cart);
 
-
-
-
             UserResponse userResponse= new UserResponse();
 
             userResponse.setStatus(createdUser.getStatus().name());
@@ -118,18 +115,21 @@ public class UserServiceImplementation implements UserService {
     public String deactivateUser(Integer id) {
 
             Optional<User> existingUser = userRepo.findById(id);
-            if (!existingUser.isPresent()) {
+            if (!existingUser.isPresent())
+            {
                 throw new RuntimeException("User not found with ID: " + id);
             }
 
             User user = existingUser.get();
 
-            if (user.isActive()==false) {
+            if (user.isActive()==false)
+            {
                 throw new RuntimeException("User with ID " + id + " is already deactivated");
             }
 
             int result = userRepo.deactivateUser(id);
-            if (result <= 0) {
+            if (result <= 0)
+            {
                 throw new RuntimeException("Failed to deactivate user with ID: " + id);
 
             }
@@ -273,106 +273,6 @@ public class UserServiceImplementation implements UserService {
             log.info("Password changed for user ID {}", userId);
             return "Password changed successfully";
 
-    }
-
-    @Override
-    public void createOrUpdateEmailPreferences(Integer userId, List<EmailPreferenceRequest> preferences) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-
-        for (EmailPreferenceRequest dto : preferences) {
-            // Check if the preference already exists for the user and email type
-            Optional<UserEmailPreferences> existingPreferenceOpt =
-                    userEmailPreferencesRepo.findByUserIdAndEmailType(userId, dto.getEmailType());
-
-            if (existingPreferenceOpt.isPresent()) {
-                // Update existing preference
-                UserEmailPreferences preference = existingPreferenceOpt.get();
-                preference.setIsSubscribed(dto.getIsSubscribed());
-                userEmailPreferencesRepo.save(preference);
-            } else {
-                // Create new preference
-                UserEmailPreferences newPreference = new UserEmailPreferences();
-                newPreference.setUser(user);
-                newPreference.setEmailType(dto.getEmailType());
-                newPreference.setIsSubscribed(dto.getIsSubscribed());
-                userEmailPreferencesRepo.save(newPreference);
-            }
-        }
-
-    }
-
-
-
-
-@Override
-    public void clearAllPreferencesForUser(Integer userId) {
-        if (!userRepo.existsById(userId)) {
-            throw new IllegalArgumentException("User not found with ID: " + userId);
-        }
-        userEmailPreferencesRepo.deleteByUserId(userId);
-    }
-
-    @Override
-    public List<EmailPreferenceRequest> getPreferencesByUserId(Integer userId) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-
-        List<UserEmailPreferences> preferences = userEmailPreferencesRepo.findAllByUserId(userId);
-
-        return preferences.stream()
-                .map(pref -> new EmailPreferenceRequest(pref.getEmailType(), pref.getIsSubscribed()))
-                .collect(Collectors.toList());    }
-
-
-
-
-    //Search History
-
-    @Override
-    public void saveSearchKeyword(SearchHistoryRequest request) {
-        SearchHistory history = new SearchHistory();
-        history.setUser(userRepo.findById(request.getUserId()).orElseThrow());
-        if (request.getProductId() != null) {
-            history.setProduct(productRepo.findById(request.getProductId()).orElse(null));
-        }
-        history.setKeyword(request.getKeyword());
-        history.setSearchedAt(LocalDateTime.now());
-        searchHistoryRepo.save(history);
-    }
-
-    @Override
-    public List<SearchHistoryResponse> getSearchHistoryByUserId(Integer userId) {
-        return searchHistoryRepo.findByUserIdOrderBySearchedAtDesc(userId).stream().map(h -> {
-            SearchHistoryResponse resp = new SearchHistoryResponse();
-            resp.setSearchId(h.getSearchId());
-            resp.setKeyword(h.getKeyword());
-            resp.setSearchedAt(h.getSearchedAt());
-            if (h.getProduct() != null) {
-                resp.setProductId(h.getProduct().getId());
-                resp.setProductName(h.getProduct().getName());
-            }
-            return resp;
-        }).toList();
-    }
-
-    @Override
-    public void clearSearchHistory(Integer userId) {
-        searchHistoryRepo.deleteByUserId(userId);
-    }
-
-    @Override
-    public SearchHistoryResponse viewProductFromSearch(Integer searchId) {
-        SearchHistory h = searchHistoryRepo.findById(searchId).orElseThrow();
-        if (h.getProduct() == null) throw new RuntimeException("No product associated with this search.");
-        SearchHistoryResponse resp = new SearchHistoryResponse();
-        resp.setSearchId(h.getSearchId());
-        resp.setKeyword(h.getKeyword());
-        resp.setSearchedAt(h.getSearchedAt());
-        resp.setProductId(h.getProduct().getId());
-        resp.setProductName(h.getProduct().getName());
-        resp. setProductImageUrl(h.getProduct().getImageAddress());
-        return resp;
     }
 
 

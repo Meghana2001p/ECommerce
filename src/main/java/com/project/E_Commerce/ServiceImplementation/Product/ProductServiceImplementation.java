@@ -606,54 +606,6 @@ return  response;
     }
 
 
-    //Realted Products
-
-
-    @Override
-    public RelatedProduct createRelatedProduct(RelatedProduct relatedProduct) {
-
-            return relatedProductRepo.save(relatedProduct);
-
-    }
-
-    @Override
-    public RelatedProduct updateRelatedProduct(Integer id, RelatedProduct updated) {
-
-            RelatedProduct existing = relatedProductRepo.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Related product not found"));
-
-            existing.setProduct(updated.getProduct());
-            existing.setRelatedProduct(updated.getRelatedProduct());
-            existing.setRelationshipType(updated.getRelationshipType());
-
-            return relatedProductRepo.save(existing);
-
-    }
-
-    @Override
-    public RelatedProduct getRelatedProductById(Integer id) {
-
-            return relatedProductRepo.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Related product not found"));
-
-    }
-
-    @Override
-    public List<RelatedProduct> getAllRelatedProducts() {
-
-            return relatedProductRepo.findAll();
-
-    }
-
-    @Override
-    public void deleteRelatedProduct(Integer id) {
-
-            RelatedProduct rp = relatedProductRepo.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Related product not found"));
-            relatedProductRepo.delete(rp);
-
-    }
-
     @Override
     public List<ProductList> getAllAvailableProducts(Pageable pageable) {
 
@@ -664,12 +616,9 @@ return  response;
             //for calculating the discount
             BigDecimal discountPercent = getActiveDiscountPercent(p.getId());
             BigDecimal discountPrice = applyDiscount(p.getPrice(), discountPercent);
-//get the ratings
-
+           //get the ratings
             Double avgRating = reviewRepo.findAverageRatingByProductId(p.getId());
             Integer reviewCount = reviewRepo.countByProductId(p.getId());
-//wishlist or cart stat
-
 
             ProductList productList = new ProductList();
 
@@ -677,7 +626,7 @@ return  response;
             productList.setName(p.getName());
             productList.setBrandName(p.getBrand().getBrandName());
             productList.setDescription(p.getDescription());
-            productList.setThumbnailUrl(p.getImageAddress()); // Assuming this is imageAddress
+            productList.setThumbnailUrl(p.getImageAddress());
             productList.setPrice(p.getPrice());
             productList.setDiscountedPrice(discountPrice);
             productList.setDiscountPercentage(discountPercent != null ? discountPercent.intValue() : 0);
@@ -685,7 +634,6 @@ return  response;
             productList.setReviewCount(reviewCount);
             productList.setInStock(p.getIsAvailable());
             productList.setLabel(null); // Set as needed
-
             return productList;
         }).toList();
     }
@@ -705,11 +653,6 @@ return  response;
 
         List<ProductAttributeValue> pavs = productAttributeValueRepo.findByProductId(productId);
         dto1.setAttributes(pavMapper.mapAttributes(pavs));
-
-
-
-
-
       Optional<Discount> discount = productDiscountRepo.findDiscountDetailsByProductId(productId);
      Product product1= productRepo.findById(productId).orElseThrow(()->new IllegalArgumentException("product not found"));
    BigDecimal price= product1.getPrice();
@@ -758,7 +701,6 @@ return  response;
 
         dto1.setRelatedProducts(relatedProductResponses);
 
-
         List<CouponResponse1> couponResponses = couponRepo.findActiveCoupons()
                 .stream()
                 .map(coupon -> {
@@ -771,8 +713,6 @@ return  response;
                 .collect(Collectors.toList());
 
         dto1.setAvailableCoupons(couponResponses);
-
-
         return dto1;
     }
 
@@ -815,7 +755,7 @@ return  response;
             productList.setAverageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
             productList.setReviewCount(reviewCount);
             productList.setInStock(p.getIsAvailable());
-            productList.setLabel(null); // Set as needed
+            productList.setLabel(null);
           productList.setInWishlist(inWishlist);
           productList.setIsLiked(inLiked);
             return productList;
@@ -828,18 +768,14 @@ return  response;
     @Override
     public ProductDetail getProductByIdAndUserId(int userId, int page, int productId) {
 
-        // 1️⃣ Fetch product and brand projection
         ProductWithBrandProjection product = productRepo.findWithBrand(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // 2️⃣ Map basic product + brand info
         ProductDetail dto = pavMapper.toProductDetail(product);
 
-        // 3️⃣ Set image URLs
         List<ProductImage> images = imageRepository.findByProductIdOrderByIsPrimary(productId);
         dto.setImageUrls(pavMapper.mapImagesToUrls(images));
 
-        // 4️⃣ Set attributes
         List<ProductAttributeValue> pavs = productAttributeValueRepo.findByProductId(productId);
         dto.setAttributes(pavMapper.mapAttributes(pavs));
 
@@ -858,23 +794,16 @@ return  response;
             discountDTO.setDiscountPercent(discountPer);
             discountDTO.setDiscountedPrice(appliedPrice);
             dto.setActiveDiscount(discountDTO);
-
-
-        }else {
+        }else
+        {
             dto.setActiveDiscount(null);
         }
-
-
-
-        //  Set reviews
         List<Review> reviews = reviewRepo.findByProductId(productId);
         dto.setReviews(pavMapper.toReviewResponseList(reviews));
 
-        //  Set average rating
         Double avgRating = reviewRepo.findAverageRating(productId);
         dto.setAverageRating(avgRating != null ? avgRating : 0.0);
 
-        // 9️⃣ Set related products manually
         List<RelatedProduct> related = relatedProductRepo.findActiveRelatedByProductId(productId);
 
         List<RelatedProductResponse> relatedProductResponses = related.stream().map(rp -> {
@@ -899,15 +828,8 @@ return  response;
 
         dto.setRelatedProducts(relatedProductResponses);
 
-
-
-
-
-        // 🔟 Set available coupons
         List<Coupon> coupons = couponRepo.findActiveCoupons();
         dto.setAvailableCoupons(pavMapper.toCouponResponseList(coupons));
-
-        // 🔁  Set wishlist/cart flags (user-specific)
         if (userId > 0) {
             Set<Integer> wishlistProductIds = wishlistRepo.findProductIdsByUserId(userId);
             Set<Integer> cartProductIds = userFavouriteRepo.findProductIdsByUserId(userId);

@@ -50,13 +50,10 @@ public   class ReviewServiceImpl implements ReviewService {
         Product product = productRepo.findById(dto.getProductId()).orElseThrow(() -> new IllegalArgumentException("Product could not be found"));
 
         Review review = reviewMapper.toEntity(dto);
-        review.setCreatedAt(LocalDateTime.now()); // not part of mapping, add manually
+        review.setCreatedAt(LocalDateTime.now());
         reviewRepo.save(review);
 
-
         Review savedReview = reviewRepo.findByIdWithUser(review.getReviewId());
-
-        // Step 5: Manually build response
         ReviewResponse reviewResponseDto = new ReviewResponse();
         reviewResponseDto.setComment(savedReview.getComment());
         reviewResponseDto.setRating(savedReview.getRating());

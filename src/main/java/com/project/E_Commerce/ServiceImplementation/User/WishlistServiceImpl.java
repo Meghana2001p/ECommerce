@@ -115,7 +115,7 @@ public class WishlistServiceImpl implements UserWishlistService {
                     avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
                     reviewCount,
                     p.getIsAvailable(),
-                    null, // Optional label
+                    null,
                     imageUrls
             );
         }).toList();

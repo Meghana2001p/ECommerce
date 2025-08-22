@@ -41,7 +41,7 @@ public class SearchServiceImpl implements SearchService {
         Double minPrice = request.getMinPrice();
         Double maxPrice = request.getMaxPrice();
         Integer ratings = request.getRatings();
-        String sortBy = request.getSortBy(); // optional if not used in native SQL
+        String sortBy = request.getSortBy();
 
         int page = (request.getPage() != null && request.getPage() > 0) ? request.getPage() : 1;
         int limit = 5;
